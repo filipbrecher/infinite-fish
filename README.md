@@ -7,14 +7,21 @@ Custom frontend for Infinite Craft written in Vanilla TypeScript.
 
 You need to download docker.
 
-Then run in bash like this for dev (auto updates on code changes):
+Then run in bash like this with docker:
 
 ```bash
 docker compose up
 ```
 
-Your application will be available at `http://localhost:8080`.
+The application will be available at `http://localhost:8080`.
 
+Or with npm (for live updates):
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`.
 
 # Windows
 
@@ -38,6 +45,13 @@ The application will be available at `http://localhost:8080`.
 To stop the application from running, you can either press Ctrl+C in the terminal where you started the application, or stop it in Docker Desktop.
 
 To run the application for the second time (or more), you can just open Docker Desktop and run the application's container (probably the one with the name "infinite-fish").
+
+Alternately you can also run the application from a terminal using
+
+```bash
+npm run dev
+```
+but you need to install npm for that. Then the application will be available at `http://localhost:5173`.
 
 ### Update to a newer version
 
