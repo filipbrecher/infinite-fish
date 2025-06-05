@@ -1,0 +1,49 @@
+
+html, body {
+    margin: 0; padding: 0;
+    overflow: hidden;
+    user-select: none;
+}
+
+h1, h2, h3 {
+    margin: 0;
+    user-select: none;
+}
+
+:root {
+    --board-bg: dark gray;
+    --sidebar-bg: gray;
+    --sidebar-border: black;
+}
+
+#board {
+    background-color: var(--board-bg);
+    white-space: nowrap;
+    z-index: 0;
+}
+
+#drag-layer {
+    background-color: transparent;
+    white-space: nowrap;
+    z-index: 100;
+}
+
+#sidebar {
+    background-color: var(--sidebar-bg);
+    border-left: 2px solid var(--sidebar-border);
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    z-index: 1;
+}
+
+#resizer {
+    background-color: transparent;
+    position: absolute;
+    top: 0; bottom: 0; left: -5px;
+    width: 10px;
+    cursor: ew-resize;
+}

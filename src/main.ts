@@ -1,4 +1,13 @@
-import './style.css'
+import "./style.css";
+import {RenderUtils} from "./utils/RenderUtils";
+import { Sidebar } from  "./sidebar/Sidebar.ts";
 
-const app = document.querySelector<HTMLDivElement>('#app');
-app!.innerHTML = '<h1>Hello, World!</h1>';
+class Main {
+    public static main() {
+        console.log("Loaded");
+        RenderUtils.setup();
+        Sidebar.setup();
+    }
+}
+
+Main.main();
