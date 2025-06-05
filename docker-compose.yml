@@ -1,0 +1,10 @@
+
+services:
+  frontent:
+    build: .
+    ports:
+      - "8080:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh ./bin/docker-entrypoint.sh
