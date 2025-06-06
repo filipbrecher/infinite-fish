@@ -1,4 +1,3 @@
-import { RenderUtils} from "../utils/RenderUtils";
 
 export class Sidebar {
     private static sidebar: HTMLDivElement;
@@ -20,7 +19,6 @@ export class Sidebar {
 
     private static onClickResizer = (e: MouseEvent) => {
         this.isResizing = true;
-        RenderUtils.setGlobalCursor("ew-resize");
 
         document.addEventListener("mousemove", this.onMouseMove);
         document.addEventListener("mouseup", this.onMouseUp);
@@ -37,7 +35,6 @@ export class Sidebar {
 
     private static onMouseUp = (e: MouseEvent) => {
         this.isResizing = false;
-        RenderUtils.unsetGlobalCursor("ew-resize");
 
         document.removeEventListener("mousemove", this.onMouseMove);
         document.removeEventListener("mouseup", this.onMouseUp);

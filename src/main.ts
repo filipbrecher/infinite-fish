@@ -1,13 +1,10 @@
 import "./style.css";
-import {RenderUtils} from "./utils/RenderUtils";
 import { Sidebar } from  "./sidebar/Sidebar.ts";
 
 class Main {
-    public static main() {
-        console.log("Loaded");
-        RenderUtils.setup();
+    public static async main() {
         Sidebar.setup();
     }
 }
 
-Main.main();
+await Main.main();
