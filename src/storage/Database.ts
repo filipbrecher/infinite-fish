@@ -10,15 +10,17 @@ import {
 } from "./types";
 
 export class Database {
-    private static db: IDBDatabase;
+    private initialized: boolean = false;
+    private db: IDBDatabase;
 
-    public static async setup(): Promise<boolean> {
+    public async connect(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
 
             const request = window.indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
 
             request.onsuccess = () => {
                 this.db = request.result;
+                this.initialized = true;
                 Logger.log("info", "db", "IndexedDB opened successfully.");
                 resolve(true);
             }
