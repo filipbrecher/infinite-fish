@@ -7,10 +7,7 @@ const DATABASE_VERSION: number = 1;
 const SETTINGS_STORE: string = "settings";
 
 type Settings = {
-    active_save_id: number;
-    active_workspace_id: number;
-    theme?: "light" | "dark";
-    // todo
+    theme: "light" | "dark";
 }
 
 
@@ -21,13 +18,13 @@ type Save = {
     id: number;
     name: string;
     description: string;
-    datetime_created: number;
-    datetime_edited: number;
+    datetimeCreated: number;
+    datetimeUpdated: number;
 
     // metadata
-    element_count: number;
-    recipe_count: number;
-    discovery_count: number;
+    elementCount: number;
+    recipeCount: number;
+    discoveryCount: number;
 }
 
 
@@ -41,7 +38,7 @@ type Recipe = [ // sorted in ascending order
 
 type Element = {
     id: number;
-    save_id: number;
+    saveId: number;
     emoji: string;
     text: string;
     recipes?: Recipe[];
@@ -53,6 +50,7 @@ const WORKSPACE_STORE: string = "workspaces";
 
 type Workspace = {
     id: number;
+    saveId: number;
     name: string;
 }
 
@@ -69,8 +67,7 @@ type InstanceData = ElementInstanceData;
 
 type Instance = {
     id: number;
-    save_id: number;
-    workspace_id: number;
+    workspaceId: number;
     x: number;
     y: number;
     type: InstanceType;
