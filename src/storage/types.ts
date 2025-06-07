@@ -19,11 +19,9 @@ const SAVE_STORE: string = "saves";
 type Save = {
     id: number;
     name: string;
-    description: string;
     datetimeCreated: number;
     datetimeUpdated: number;
 
-    // metadata
     elementCount: number;
     recipeCount: number;
     discoveryCount: number;
@@ -43,7 +41,9 @@ type Element = {
     saveId: number;
     emoji: string;
     text: string;
-    recipes?: Recipe[];
+    discovered?: boolean;   // false by default
+    hidden?: boolean;       // false by default
+    recipes?: Recipe[];     // [] by default
 }
 
 
@@ -54,6 +54,9 @@ type Workspace = {
     id: number;
     saveId: number;
     name: string;
+    x: number;
+    y: number;
+    scale: number;
 }
 
 
@@ -64,7 +67,7 @@ enum InstanceType {
     Element = 0,
 }
 
-type ElementInstanceData = number;          // id
+type ElementInstanceData = number;          // id of the element
 type InstanceData = ElementInstanceData;
 
 type Instance = {
@@ -72,7 +75,7 @@ type Instance = {
     workspaceId: number;
     x: number;
     y: number;
-    type: InstanceType;
+    type?: InstanceType;                    // ElementInstanceData type by default
     data: InstanceData;
 }
 

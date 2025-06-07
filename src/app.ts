@@ -1,7 +1,7 @@
 import {Database} from "./storage/Database";
 import {Sidebar} from "./sidebar/Sidebar";
 import {Logger} from "./log/Logger";
-import {DEFAULT_SETTINGS, SettingsManager} from "./settings/SettingsManager";
+import {SettingsManager} from "./managers/SettingsManager";
 
 
 export class App {
@@ -29,6 +29,11 @@ export class App {
         // load data from db
         this._settingsManager = new SettingsManager();
         if ( !await this._settingsManager.init()) {
+            return;
+        }
+
+        const saves = await this._database.loadSaveInfo();
+        if ( !saves) {
             return;
         }
     }
