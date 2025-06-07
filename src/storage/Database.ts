@@ -76,14 +76,14 @@ export class Database {
             }
 
             req.onsuccess = () => {
-                const settings = req.result;
-                if (settings === undefined) {
-                    app.logger.log("info", "db", "Settings not found in IndexedDB");
-                    resolve(DEFAULT_SETTINGS);
-                } else {
-                    app.logger.log("info", "db", "Settings loaded successfully")
-                    resolve(settings);
+                const settings = DEFAULT_SETTINGS;
+                const loaded: Settings = req.result;
+                for (const property in loaded) {
+                    settings[property] = loaded[property];
                 }
+
+                app.logger.log("info", "db", "Settings loaded successfully")
+                resolve(settings);
             }
         });
     }
