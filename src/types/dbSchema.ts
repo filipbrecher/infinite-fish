@@ -41,6 +41,7 @@ export type Element = {
 export type Workspace = {
     id: number;
     saveId: number;
+    position: number;
     name: string;
     x: number;
     y: number;
