@@ -8,7 +8,8 @@ export class Logger {
         switch (type) {
             case "db":
                 const color = Logger.getColor(level);
-                const prefix = `%c[${level.toUpperCase()}] ${type.toUpperCase()}:`;
+                const time = new Date().toLocaleString("ja-JP");
+                const prefix = `${time} %c[${level.toUpperCase()}] ${type.toUpperCase()}:`;
                 console.log(prefix, `color: ${color}; font-weight: bold;`, message);
                 break;
 
