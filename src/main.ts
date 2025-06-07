@@ -1,16 +1,6 @@
 import "./style.css";
-import {Sidebar} from "./sidebar/Sidebar";
-import {Database} from "./storage/Database";
+import {App} from "./app.ts"
 
-class Main {
-    public static async main() {
-        if ( !await database.connect()) {
-            return;
-        }
-    }
-}
 
-export const database: Database = new Database();
-export const sidebar: Sidebar = new Sidebar();
-
-await Main.main();
+export const app = new App();
+await app.init();
