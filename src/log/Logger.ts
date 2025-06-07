@@ -1,15 +1,27 @@
 
 type LogLevel = "info" | "warning" | "error";
-type LogType = "db";
+type LogType = "db" | string;
 
 export class Logger {
-    public log(level: LogLevel, type: LogType | string, message: any): void {
+    public log(level: LogLevel, type: LogType, message: any): void {
+
         switch (type) {
             case "db":
-                console.log(message);
+                const color = Logger.getColor(level);
+                const prefix = `%c[${level.toUpperCase()}] ${type.toUpperCase()}:`;
+                console.log(prefix, `color: ${color}; font-weight: bold;`, message);
                 break;
+
             default:
-                console.log(`${type}: `, message);
+                console.log(`${type}:`, message);
+        }
+    }
+
+    private static getColor(level: LogLevel): string {
+        switch (level) {
+            case "info": return "dodgerblue";
+            case "warning": return "orange";
+            case "error": return "crimson";
         }
     }
 }
