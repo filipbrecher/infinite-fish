@@ -1,22 +1,20 @@
+import {app} from "../main";
 import {
     DATABASE_NAME,
     DATABASE_VERSION,
-    ELEMENT_STORE,
-    INSTANCE_STORE, type Save,
-    SAVE_STORE, type Settings,
-    SETTINGS_KEY,
+    ELEMENT_STORE, INSTANCE_STORE,
+    SAVE_STORE, SETTINGS_KEY,
     SETTINGS_STORE,
     WORKSPACE_STORE
-} from "./types";
-import {app} from "../main";
-import {DEFAULT_SETTINGS} from "../managers/SettingsManager";
-import {DEFAULT_ELEMENTS, DEFAULT_SAVE_NAME} from "../managers/SavesManager";
+} from "../constants/dbSchema";
+import type {Save, Settings} from "../types/dbSchema";
+import {DEFAULT_ELEMENTS, DEFAULT_SAVE_NAME, DEFAULT_SETTINGS} from "../constants/defaults";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
 // todo - write to db always in one transaction (like write new element, add new instance, delete old instances, update save metadata)
 
-export class Database {
+export class DatabaseService {
     private _db: IDBDatabase;
 
     // connect to the db, create if needed (upgrading from previous versions not implemented / needed atm)

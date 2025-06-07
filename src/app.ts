@@ -1,18 +1,18 @@
-import {Database} from "./storage/Database";
+import {DatabaseService} from "./services/DatabaseService";
 import {Sidebar} from "./sidebar/Sidebar";
-import {Logger} from "./log/Logger";
-import {SettingsManager} from "./managers/SettingsManager";
+import {Logger} from "./services/Logger";
+import {SettingsService} from "./services/SettingsService";
 
 
 export class App {
     private _logger: Logger;
-    private _database: Database;
-    private _settingsManager: SettingsManager;
+    private _databaseService: DatabaseService;
+    private _settingsService: SettingsService;
     private _sidebar: Sidebar;
 
     public get logger() { return this._logger; }
-    public get database() { return this._database; }
-    public get settingsManager() { return this._settingsManager; }
+    public get databaseService() { return this._databaseService; }
+    public get settingsService() { return this._settingsService; }
     public get sidebar() { return this._sidebar; }
 
     public async init() {
@@ -21,18 +21,18 @@ export class App {
         this._sidebar = new Sidebar();
 
         // setup db
-        this._database = new Database();
-        if ( !await this.database.connect()) {
+        this._databaseService = new DatabaseService();
+        if ( !await this.databaseService.connect()) {
             return;
         }
 
         // load data from db
-        this._settingsManager = new SettingsManager();
-        if ( !await this._settingsManager.init()) {
+        this._settingsService = new SettingsService();
+        if ( !await this._settingsService.init()) {
             return;
         }
 
-        const saves = await this._database.loadSaveInfo();
+        const saves = await this._databaseService.loadSaveInfo();
         if ( !saves) {
             return;
         }

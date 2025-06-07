@@ -1,19 +1,15 @@
 import {app} from "../main";
-import {SETTINGS_KEY, type Settings} from "../storage/types";
+import type {Settings} from "../types/dbSchema";
 
-export const DEFAULT_SETTINGS: Settings = {
-    id: SETTINGS_KEY,
-    theme: "dark",
-}
 
-export class SettingsManager {
+export class SettingsService {
     private _settings: Settings;
     public get settings() {
         return this._settings;
     }
 
     public async init(): Promise<boolean> {
-        const loaded = await app.database.loadSettings();
+        const loaded = await app.databaseService.loadSettings();
         if ( !loaded) {
             return false;
         }
