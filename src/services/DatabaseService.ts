@@ -7,7 +7,7 @@ import {
     SETTINGS_STORE,
     WORKSPACE_STORE
 } from "../constants/dbSchema";
-import type {Save, Settings} from "../types/dbSchema";
+import type {Element, Instance, Save, Settings, Workspace} from "../types/dbSchema";
 import {DEFAULT_ELEMENTS, DEFAULT_SAVE_NAME, DEFAULT_SETTINGS} from "../constants/defaults";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
@@ -87,7 +87,7 @@ export class DatabaseService {
         });
     }
 
-    public async saveSettings(settings: Settings): Promise<boolean> {
+    public async updateSettings(settings: Settings): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             const req = this._db
                 .transaction(SETTINGS_STORE, "readwrite")
@@ -143,7 +143,7 @@ export class DatabaseService {
         return saves;
     }
 
-    private async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<Save | null> {
+    public async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<Save | null> {
         return new Promise<Save | null>((resolve) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
@@ -181,11 +181,24 @@ export class DatabaseService {
         });
     }
 
-    // private async prepareSaves(store: IDBObjectStore): Promise<boolean> {
-    //     return new Promise<boolean>((resolve) => {
-    //         resolve(true);
-    //     });
-    // }
+    // todo - functions to modify db below (if applicable, they modify the save info as well as their main function)
+    public async updateSave(): Promise<boolean> {}
+    public async deleteSave(): Promise<boolean> {}
+    public async createWorkspace(): Promise<Workspace | null> {}
+    public async updateWorkspace(): Promise<boolean> {} // like update name / x / y / scale
+    public async moveWorkspace(workspaceId: number, newPosition: number): Promise<boolean> {}
+    public async deleteWorkspace(): Promise<boolean> {}
+    public async updateElement(): Promise<boolean> {} // hide x show
+    public async createElement(): Promise<Element | null> {} // create new element, and also remove old instances, add the new instance to workspace
+    public async createInstance(): Promise<Instance> {}
+    public async createInstances(): Promise<Instance[] | null> {}
+    public async moveInstance(): Promise<boolean> {}
+    public async moveInstances(): Promise<boolean> {}
+    public async deleteInstance(): Promise<boolean> {}
+    public async deleteInstances(): Promise<boolean> {}
+
+    // todo - and other functions, that load and export whole savefiles (or workspaces in the future?)
+
 
     // loads the most recently modified / created save and its one workspace (if it has one)
     // todo - figure out exact return values / types

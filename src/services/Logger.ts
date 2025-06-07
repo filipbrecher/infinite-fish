@@ -2,6 +2,9 @@
 type LogLevel = "info" | "warning" | "error";
 type LogType = "db" | string;
 
+// todo - make an array of structured log messages, which isn't displayed, but can be copies (for example in settings)
+//        that contains all logs, for debugging purposes (upon error, user can copy (or download a file?) and paste to discord)
+//        this could also be optional (if someone doesn't want it to take additional memory)
 export class Logger {
     public log(level: LogLevel, type: LogType, message: any): void {
 
