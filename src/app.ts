@@ -1,7 +1,7 @@
 import {Database} from "./storage/Database";
 import {Sidebar} from "./sidebar/Sidebar";
 import {Logger} from "./log/Logger";
-import {SettingsManager} from "./settings/SettingsManager";
+import {DEFAULT_SETTINGS, SettingsManager} from "./settings/SettingsManager";
 
 
 export class App {
@@ -24,11 +24,12 @@ export class App {
         this._database = new Database();
         if ( !await this.database.connect()) {
             return;
-        } else if ( !await this.database.prepare()) {
-            return;
         }
 
         // load data from db
         this._settingsManager = new SettingsManager();
+        if ( !await this._settingsManager.init()) {
+            return;
+        }
     }
 }

@@ -5,8 +5,10 @@ const DATABASE_VERSION: number = 1;
 
 //============ SETTINGS ============//
 const SETTINGS_STORE: string = "settings";
+const SETTINGS_KEY: number = 0;
 
 type Settings = {
+    id: number;
     theme: "light" | "dark";
 }
 
@@ -75,20 +77,10 @@ type Instance = {
 }
 
 export {
-    DATABASE_NAME,
-    DATABASE_VERSION,
-    SETTINGS_STORE,
-    Settings,
-    SAVE_STORE,
-    Save,
-    ELEMENT_STORE,
-    Recipe,
-    Element,
-    WORKSPACE_STORE,
-    Workspace,
-    INSTANCE_STORE,
-    InstanceType,
-    ElementInstanceData,
-    InstanceData,
-    Instance,
+    DATABASE_NAME, DATABASE_VERSION,
+    SETTINGS_STORE, SETTINGS_KEY, Settings,
+    SAVE_STORE, Save,
+    ELEMENT_STORE, Recipe, Element,
+    WORKSPACE_STORE, Workspace,
+    INSTANCE_STORE, InstanceType, ElementInstanceData, InstanceData, Instance,
 }
