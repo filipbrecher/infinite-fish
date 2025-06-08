@@ -17,6 +17,9 @@ export class App {
 
     public async init() {
         try {
+            // temp
+            indexedDB.deleteDatabase("infinite-fish");
+
             // setup site structure
             this._logger = new Logger();
             this._sidebar = new Sidebar();
@@ -30,6 +33,19 @@ export class App {
             await this._settingsService.init();
 
             const saves = await this._databaseService.loadSaveInfo();
+
+            await this._databaseService.createNewSave()
+            await this._databaseService.renameSave(1, "baba");
+            await this._databaseService.createWorkspace(1, "workspace 1");
+            await this._databaseService.createWorkspace(1, "workspace 2");
+            await this._databaseService.updateWorkspace(2, {name: "workspace 2 updated"});
+            await this._databaseService.moveWorkspace(2, 1);
+            await this._databaseService.moveWorkspace(2, 2);
+            await this._databaseService.createWorkspace(1, "workspace 3");
+            await this._databaseService.createWorkspace(1, "workspace 4");
+            await this._databaseService.createWorkspace(1, "workspace 5");
+            await this._databaseService.moveWorkspace(2, 4);
+            await this._databaseService.deleteWorkspace(3);
         } catch (e) {
             return;
         }

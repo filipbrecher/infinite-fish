@@ -205,7 +205,7 @@ export class DatabaseService {
             getReq.onsuccess = () => {
                 const save = getReq.result;
                 if ( !save) {
-                    abortReason = `Failed to rename save with ${saveId}: Save not found`;
+                    abortReason = `Failed to rename save with id ${saveId}: Save not found`;
                     tx.abort();
                     return;
                 }
@@ -370,9 +370,132 @@ export class DatabaseService {
         });
     }
 
-    public async moveWorkspace(workspaceId: number, newPosition: number): Promise<void> {}
+    public async moveWorkspace(workspaceId: number, newPosition: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (newPosition < 1) {
+                app.logger.log("error", "db", `Error moving workspace with id ${workspaceId} to position ${newPosition}: Position isn't natural`);
+                return reject();
+            }
+            const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
+            const store = tx.objectStore(WORKSPACE_STORE);
 
-    public async deleteWorkspace(): Promise<void> {}
+            const getReq = store.get(workspaceId);
+
+            let abortReason: AbortReason;
+            getReq.onsuccess = () => {
+                const targetWorkspace = getReq.result;
+                if ( !targetWorkspace) {
+                    abortReason = `Error moving workspace with id ${workspaceId} to position ${newPosition}: Workspace not found`;
+                    tx.abort();
+                    return;
+                }
+
+                const saveId = targetWorkspace.saveId;
+                const minPos = Math.min(targetWorkspace.position, newPosition);
+                const maxPos = Math.max(targetWorkspace.position, newPosition);
+                if (minPos === maxPos) return;
+
+                let workspaceCount = 0;
+                const inc = newPosition < targetWorkspace.position ? 1 : -1;
+
+                const cursorReq = store
+                    .index(SAVE_ID_INDEX)
+                    .openCursor(saveId);
+
+                cursorReq.onsuccess = () => {
+                    const cursor = cursorReq.result;
+                    if ( !cursor) {
+                        if (newPosition > workspaceCount) {
+                            abortReason = `Error moving workspace with id ${workspaceId} to position ${newPosition}: Position larger than the total amount of workspaces`;
+                            tx.abort();
+                        }
+                        return;
+                    }
+
+                    const workspace = cursor.value;
+                    workspaceCount++;
+                    if (workspace.id === workspaceId) {
+                        workspace.position = newPosition;
+                        cursor.update(workspace);
+                    } else if (workspace.position >= minPos && workspace.position <= maxPos) {
+                        workspace.position += inc;
+                        cursor.update(workspace);
+                    }
+                    cursor.continue();
+                }
+            }
+
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db", event.target.error?.message);
+                }
+                event.stopPropagation();
+                reject();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db",`Workspace with id ${workspaceId} moved to position ${newPosition} successfully`);
+                resolve();
+            }
+        });
+    }
+
+    public async deleteWorkspace(workspaceId: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
+            const store = tx.objectStore(WORKSPACE_STORE);
+
+            const getReq = store.get(workspaceId);
+
+            let abortReason: AbortReason;
+            getReq.onsuccess = () => {
+                const targetWorkspace = getReq.result;
+                if ( !targetWorkspace) {
+                    abortReason = `Error deleting workspace with id ${workspaceId}: Workspace not found`;
+                    tx.abort();
+                    return;
+                }
+
+                const saveId = targetWorkspace.saveId;
+                const thresholdPos = targetWorkspace.position;
+                const cursorReq = store
+                    .index(SAVE_ID_INDEX)
+                    .openCursor(saveId);
+
+                cursorReq.onsuccess = () => {
+                    const cursor = cursorReq.result;
+                    if ( !cursor) return;
+
+                    const workspace = cursor.value;
+                    if (workspace.id === workspaceId) {
+                        cursor.delete();
+                    } else if (workspace.position > thresholdPos) {
+                        workspace.position -= 1;
+                        cursor.update(workspace);
+                    }
+                    cursor.continue();
+                }
+            }
+
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db", event.target.error?.message);
+                }
+                event.stopPropagation();
+                reject();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db",`Workspace with id ${workspaceId} deleted successfully`);
+                resolve();
+            }
+        });
+    }
+
     public async updateElement(): Promise<void> {} // hide x show
     // adds element + its recipe -> call smth like addElement().then(... combineInstances)
     public async addElement(): Promise<Element> {}
