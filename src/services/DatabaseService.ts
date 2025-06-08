@@ -60,7 +60,6 @@ export class DatabaseService {
     private async onOpenSuccess(request: IDBOpenDBRequest, resolve) {
         this._db = request.result;
 
-        this._db.onerror = this.handleError;
         this._db.onabort = this.handleAbort;
 
         app.logger.log("info", "db", "IndexedDB opened successfully");
@@ -74,8 +73,9 @@ export class DatabaseService {
                 .objectStore(SETTINGS_STORE)
                 .get(SETTINGS_KEY);
 
-            req.onerror = () => {
+            req.onerror = (event) => {
                 app.logger.log("error", "db", `Error reading settings: ${req.error?.message}`);
+                event.stopPropagation();
                 resolve();
             }
 
@@ -99,8 +99,9 @@ export class DatabaseService {
                 .objectStore(SETTINGS_STORE)
                 .put(settings);
 
-            req.onerror = () => {
+            req.onerror = (event) => {
                 app.logger.log("error", "db", `Error saving settings: ${req.error?.message}`);
+                event.stopPropagation();
                 resolve(false);
             }
 
@@ -172,6 +173,7 @@ export class DatabaseService {
 
             tx.onabort = (event) => {
                 app.logger.log("error", "db", `Failed to create new save: ${tx.error?.message}`);
+                event.stopPropagation();
                 resolve();
             }
 
@@ -204,8 +206,8 @@ export class DatabaseService {
                 .objectStore(SAVE_STORE)
                 .put(newSave);
 
-            req.onerror = () => {
-                app.logger.log("error", "db", `Failed to rename save with id ${saveId} to '${newSave.name}': ${req.error?.message}`);
+            tx.onabort = () => {
+                app.logger.log("error", "db", `Failed to rename save with id ${saveId} to '${newSave.name}': ${tx.error?.message}`);
                 resolve(false);
             }
 
@@ -245,14 +247,12 @@ export class DatabaseService {
                 saveStore.delete(saveId);
             }
 
-            tx.onerror = (event) => {
-                event.stopPropagation();
-            }
             tx.onabort = (event) => {
                 app.logger.log("error", "db", `Failed to delete save with id ${saveId}: ${tx.error?.message}`);
                 event.stopPropagation();
                 resolve(false);
             }
+
             tx.oncomplete = () => {
                 app.logger.log("info", "db",`Successfully delete save with id ${saveId}`);
                 resolve(true);
@@ -298,8 +298,9 @@ export class DatabaseService {
                 }
             }
 
-            tx.onabort = () => {
+            tx.onabort = (event) => {
                 app.logger.log("error", "db", `Failed to create new workspace: ${tx.error?.message}`);
+                event.stopPropagation();
                 resolve();
             }
 
@@ -370,11 +371,50 @@ export class DatabaseService {
         }
     }
 
-    private handleError = (event) => {
-        app.logger.log("error", "db", `IndexedDB error: ${event.target.error?.message}`);
-    }
-
+    // to log all unhandled aborted transactions
     private handleAbort = (event) => {
         app.logger.log("error", "db", `IndexedDB error: Transaction aborted: ${event.target.error?.message}`);
+    }
+
+    public async testPropagation(): Promise<string> {
+        return new Promise<string>(async (resolve, reject) => {
+            this._db.onerror = (event) => {
+                console.log("db.onerror: ", (<{error: {message: any}}>event.target).error?.message);
+            }
+            this._db.onabort = (event) => {
+                console.log("db.onabort: ", (<{error: {message: any}}>event.target).error?.message);
+            }
+
+            const tx = this._db.transaction(SETTINGS_STORE, "readwrite");
+            const store = tx.objectStore(SETTINGS_STORE);
+
+            store.add({id: 1});
+
+            const keyReq = store.add({id: 1});
+            keyReq.onerror = (event) => {
+                console.log("keyReq.onerror", keyReq.result, keyReq.error?.message);
+            }
+            keyReq.onsuccess = (event) => {
+                console.log("keyReq.onsuccess", keyReq.result, keyReq.error?.message);
+            }
+
+            const keyReq2 = store.add({id: 2});
+            keyReq2.onerror = (event) => {
+                console.log("keyReq2.onerror", keyReq2.result, keyReq2.error?.message);
+            }
+            keyReq2.onsuccess = (event) => {
+                console.log("keyReq2.onsuccess", keyReq2.result, keyReq2.error?.message);
+            }
+
+            tx.onerror = (event) => {
+                console.log("tx.onerror", tx.error?.message);
+            }
+            tx.onabort = (event) => {
+                console.log("tx.onabort", tx.error?.message);
+            }
+            tx.oncomplete = (event) => {
+                console.log("tx.oncomplete", tx.error?.message);
+            }
+        });
     }
 }
