@@ -2,12 +2,20 @@ import {app} from "../main";
 import {
     DATABASE_NAME,
     DATABASE_VERSION,
-    ELEMENT_STORE, INSTANCE_STORE, MIN_WORKSPACE_POS, SAVE_ID_INDEX,
+    ELEMENT_STORE, INSTANCE_STORE, SAVE_ID_INDEX,
     SAVE_STORE, SETTINGS_KEY,
     SETTINGS_STORE, WORKSPACE_ID_INDEX,
     WORKSPACE_STORE
 } from "../constants/dbSchema";
-import type {Element, IDBTransactionEvent, Instance, Save, Settings, Workspace} from "../types/dbSchema";
+import type {
+    Element,
+    IDBTransactionEvent,
+    Instance,
+    Save,
+    Settings,
+    Workspace,
+    WorkspaceChanges
+} from "../types/dbSchema";
 import {
     DEFAULT_ELEMENTS, DEFAULT_SAVE,
     DEFAULT_SAVE_NAME,
@@ -281,7 +289,7 @@ export class DatabaseService {
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 if ( !getReq.result) {
-                    abortReason = `Failed to create workspace in save with id ${saveId}: Save not found`
+                    abortReason = `Failed to create workspace in save with id ${saveId}: Save not found`;
                     tx.abort();
                     return;
                 }
@@ -291,23 +299,13 @@ export class DatabaseService {
                     saveId: saveId,
                     name: name,
                 }
-                const cursorReq = workspaceStore
+                const countReq = workspaceStore
                     .index(SAVE_ID_INDEX)
-                    .openCursor(IDBKeyRange.only(saveId));
+                    .count(IDBKeyRange.only(saveId));
 
-                cursorReq.onsuccess = () => {
-                    let maxPos = MIN_WORKSPACE_POS - 1;
-                    const cursor = cursorReq.result;
-                    if (cursor) {
-                        const req = cursor.value;
-                        req.onsuccess = () => {
-                            maxPos = Math.max(maxPos, req.result);
-                            cursor.continue();
-                        }
-                    }
-
-                    workspace.position = maxPos + 1;
-
+                countReq.onsuccess = () => {
+                    const count = countReq.result;
+                    workspace.position = count + 1;
                     const wsReq = workspaceStore.add(workspace);
                     wsReq.onsuccess = () => {
                         workspace.id = <number>wsReq.result;
@@ -332,25 +330,25 @@ export class DatabaseService {
         });
     }
 
-    public async updateWorkspace(workspaceChanges: Partial<Workspace> & { id: number }): Promise<void> {
+    public async updateWorkspace(workspaceId: number, changes: Partial<WorkspaceChanges>): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
             const store = tx.objectStore(WORKSPACE_STORE);
 
-            const getReq = store.get(workspaceChanges.id);
+            const getReq = store.get(workspaceId);
 
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 const workspace = getReq.result;
                 if ( !workspace) {
-                    abortReason = `Error updating workspace with id ${workspace.id}: Workspace not found`;
+                    abortReason = `Error updating workspace with id ${workspaceId}: Workspace not found`;
                     tx.abort();
                     return;
                 }
 
                 const newWorkspace = {
                     ...workspace,
-                    ...workspaceChanges,
+                    ...changes,
                 }
                 store.put(newWorkspace);
             }
@@ -359,20 +357,21 @@ export class DatabaseService {
                 if (abortReason) {
                     app.logger.log("error", "db", abortReason);
                 } else {
-                    app.logger.log("error", "db", `Error updating workspace with id ${workspaceChanges.id}: ${event.target.error?.message}`);
+                    app.logger.log("error", "db", `Error updating workspace with id ${workspaceId}: ${event.target.error?.message}`);
                 }
                 event.stopPropagation();
                 reject();
             }
 
             tx.oncomplete = () => {
-                app.logger.log("info", "db", `Workspace with id ${workspaceChanges.id} updated successfully`);
+                app.logger.log("info", "db", `Workspace with id ${workspaceId} updated successfully`);
                 resolve();
             }
         });
     }
 
     public async moveWorkspace(workspaceId: number, newPosition: number): Promise<void> {}
+
     public async deleteWorkspace(): Promise<void> {}
     public async updateElement(): Promise<void> {} // hide x show
     // adds element + its recipe -> call smth like addElement().then(... combineInstances)

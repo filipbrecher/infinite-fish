@@ -12,5 +12,3 @@ export const INSTANCE_STORE: string = "instances";
 
 export const SAVE_ID_INDEX: string = "saveId";
 export const WORKSPACE_ID_INDEX: string = "workspaceId";
-
-export const MIN_WORKSPACE_POS: number = 1;

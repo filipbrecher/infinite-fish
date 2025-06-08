@@ -45,7 +45,14 @@ export type Element = {
 export type Workspace = {
     id: number;
     saveId: number;
-    position: number;
+    position: number;   // positions go always from 1 ... n (number of workspaces in a given save)
+    name: string;
+    x: number;
+    y: number;
+    scale: number;
+}
+
+export type WorkspaceChanges = {
     name: string;
     x: number;
     y: number;
