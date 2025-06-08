@@ -266,40 +266,52 @@ export class DatabaseService {
             const saveStore = tx.objectStore(SAVE_STORE);
             const workspaceStore = tx.objectStore(WORKSPACE_STORE);
 
-            if ( !await this.doesSaveExist(saveStore, saveId)) {
-                app.logger.log("error", "db", `Failed to create workspace in save with id ${saveId}: Save not found`);
-            }
+            const getReq = saveStore.get(saveId);
 
-            const workspace: Partial<Workspace> = {
-                ...DEFAULT_WORKSPACE,
-                saveId: saveId,
-                name: name,
-            }
-            const cursorReq = workspaceStore
-                .index(SAVE_ID_INDEX)
-                .openCursor(IDBKeyRange.only(saveId));
-
-            cursorReq.onsuccess = () => {
-                let maxPos = MIN_WORKSPACE_POS - 1;
-                const cursor = cursorReq.result;
-                if (cursor) {
-                    const req = cursor.value;
-                    req.onsuccess = () => {
-                        maxPos = Math.max(maxPos, req.result);
-                        cursor.continue();
-                    }
+            let workspace: Partial<Workspace>;
+            let abortReason: string | undefined;
+            getReq.onsuccess = () => {
+                if ( !getReq.result) {
+                    abortReason = `Failed to create workspace in save with id ${saveId}: Save not found`
+                    tx.abort();
+                    return resolve();
                 }
 
-                workspace.position = maxPos + 1;
+                workspace = {
+                    ...DEFAULT_WORKSPACE,
+                    saveId: saveId,
+                    name: name,
+                }
+                const cursorReq = workspaceStore
+                    .index(SAVE_ID_INDEX)
+                    .openCursor(IDBKeyRange.only(saveId));
 
-                const wsReq = workspaceStore.add(workspace);
-                wsReq.onsuccess = () => {
-                    workspace.id = <number>wsReq.result;
+                cursorReq.onsuccess = () => {
+                    let maxPos = MIN_WORKSPACE_POS - 1;
+                    const cursor = cursorReq.result;
+                    if (cursor) {
+                        const req = cursor.value;
+                        req.onsuccess = () => {
+                            maxPos = Math.max(maxPos, req.result);
+                            cursor.continue();
+                        }
+                    }
+
+                    workspace.position = maxPos + 1;
+
+                    const wsReq = workspaceStore.add(workspace);
+                    wsReq.onsuccess = () => {
+                        workspace.id = <number>wsReq.result;
+                    }
                 }
             }
 
             tx.onabort = (event) => {
-                app.logger.log("error", "db", `Failed to create new workspace: ${tx.error?.message}`);
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db", `Failed to create new workspace: ${tx.error?.message}`);
+                }
                 event.stopPropagation();
                 resolve();
             }
