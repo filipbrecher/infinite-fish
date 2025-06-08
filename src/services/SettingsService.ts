@@ -8,12 +8,7 @@ export class SettingsService {
         return this._settings;
     }
 
-    public async init(): Promise<boolean> {
-        const loaded = await app.databaseService.loadSettings();
-        if ( !loaded) {
-            return false;
-        }
-        this._settings = loaded;
-        return true;
+    public async init(): Promise<void> {
+        this._settings = await app.databaseService.loadSettings();
     }
 }

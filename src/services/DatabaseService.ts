@@ -27,19 +27,19 @@ export class DatabaseService {
     private _db: IDBDatabase;
 
     // connect to the db, create if needed (upgrading from previous versions not implemented / needed atm)
-    public async connect(): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
+    public async connect(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             const request = window.indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
 
-            request.onerror = () => this.onOpenError(request, resolve);
+            request.onerror = () => this.onOpenError(request, reject);
             request.onupgradeneeded = () => this.onUpgradeNeeded(request);
             request.onsuccess = () => this.onOpenSuccess(request, resolve);
         });
     }
 
-    private async onOpenError(request: IDBOpenDBRequest, resolve) {
+    private async onOpenError(request: IDBOpenDBRequest, reject) {
         app.logger.log("error", "db", `Error occurred when accessing IndexedDB: ${request.error?.message}`);
-        resolve(false);
+        reject();
     }
 
     private async onUpgradeNeeded(request: IDBOpenDBRequest) {
@@ -67,11 +67,11 @@ export class DatabaseService {
         this._db.onabort = this.handleAbort;
 
         app.logger.log("info", "db", "IndexedDB opened successfully");
-        resolve(true);
+        resolve();
     }
 
-    public async loadSettings(): Promise<Settings | undefined> {
-        return new Promise<Settings>((resolve) => {
+    public async loadSettings(): Promise<Settings> {
+        return new Promise<Settings>((resolve, reject) => {
             const req = this._db
                 .transaction([SETTINGS_STORE], "readonly")
                 .objectStore(SETTINGS_STORE)
@@ -80,7 +80,7 @@ export class DatabaseService {
             req.onerror = (event) => {
                 app.logger.log("error", "db", `Error reading settings: ${req.error?.message}`);
                 event.stopPropagation();
-                resolve();
+                reject();
             }
 
             req.onsuccess = () => {
@@ -95,8 +95,8 @@ export class DatabaseService {
         });
     }
 
-    public async updateSettings(settings: Settings): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
+    public async updateSettings(settings: Settings): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             const req = this._db
                 .transaction(SETTINGS_STORE, "readwrite")
                 .objectStore(SETTINGS_STORE)
@@ -105,37 +105,38 @@ export class DatabaseService {
             req.onerror = (event) => {
                 app.logger.log("error", "db", `Error saving settings: ${req.error?.message}`);
                 event.stopPropagation();
-                resolve(false);
+                reject();
             }
 
             req.onsuccess = () => {
                 app.logger.log("info", "db", "Settings saved successfully");
-                resolve(true);
+                resolve();
             }
         });
     }
 
     // loads all saves' info from db, and if no save is present, then it creates a default save
     // (new one is created to ensure that when a user loads the page, there is always a save that the user's progress gets saved to)
-    public async loadSaveInfo(): Promise<Map<number, Save> | undefined> {
-        let req: IDBRequest;
+    public async loadSaveInfo(): Promise<Map<number, Save>> {
+        let savesArr: Save[];
 
-        const success = await new Promise<boolean>((resolve) => {
-            req = this._db
+        await new Promise<boolean>((resolve, reject) => {
+            const req = this._db
                 .transaction(SAVE_STORE, "readonly")
                 .objectStore(SAVE_STORE)
                 .getAll();
 
-            req.onerror = () => resolve(false);
-            req.onsuccess = () => resolve(true);
+            req.onerror = () => {
+                app.logger.log("error", "db", `Failed to load save info: ${req.error?.message}`);
+                reject();
+            }
+
+            req.onsuccess = () => {
+                savesArr = req.result;
+                resolve();
+            }
         });
 
-        if ( !success) {
-            app.logger.log("error", "db", `Failed to load save info: ${req.error?.message}`);
-            return;
-        }
-
-        const savesArr: Save[] = req.result;
         const saves: Map<number, Save> = new Map(savesArr.map(save => [save.id, save]));
 
         if (saves.size === 0) {
@@ -149,8 +150,8 @@ export class DatabaseService {
         return saves;
     }
 
-    public async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<Save | undefined> {
-        return new Promise<Save | undefined>((resolve) => {
+    public async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<Save> {
+        return new Promise<Save>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
 
@@ -175,7 +176,7 @@ export class DatabaseService {
             tx.onabort = (event: IDBTransactionEvent) => {
                 app.logger.log("error", "db", `Failed to create new save: ${event.target.error?.message}`);
                 event.stopPropagation();
-                resolve();
+                reject();
             }
 
             tx.oncomplete = () => {
@@ -185,8 +186,8 @@ export class DatabaseService {
         });
     }
 
-    public async renameSave(saveId: number, newName: string): Promise<boolean> {
-        return new Promise<boolean>(async (resolve) => {
+    public async renameSave(saveId: number, newName: string): Promise<void> {
+        return new Promise<void>(async (resolve, reject) => {
             const tx = this._db.transaction(SAVE_STORE, "readwrite");
             const store = tx.objectStore(SAVE_STORE);
 
@@ -216,18 +217,18 @@ export class DatabaseService {
                     app.logger.log("error", "db", `Failed to rename save with id ${saveId} to '${newName}': ${event.target.error?.message}`);
                 }
                 event.stopPropagation();
-                resolve(false);
+                reject();
             }
 
             tx.oncomplete = () => {
                 app.logger.log("info", "db", `Save with id ${saveId} renamed to '${newName}' successfully`);
-                resolve(true);
+                resolve();
             }
         });
     }
 
-    public async deleteSave(saveId: number): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
+    public async deleteSave(saveId: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE, WORKSPACE_STORE, INSTANCE_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
             const elementStore = tx.objectStore(ELEMENT_STORE);
@@ -258,18 +259,18 @@ export class DatabaseService {
             tx.onabort = (event) => {
                 app.logger.log("error", "db", `Failed to delete save with id ${saveId}: ${tx.error?.message}`);
                 event.stopPropagation();
-                resolve(false);
+                reject();
             }
 
             tx.oncomplete = () => {
                 app.logger.log("info", "db",`Successfully deleted save with id ${saveId}`);
-                resolve(true);
+                resolve();
             }
         });
     }
 
-    public async createWorkspace(saveId: number, name: string = DEFAULT_WORKSPACE_NAME): Promise<Workspace | undefined> {
-        return new Promise<Workspace | undefined>(async (resolve) => {
+    public async createWorkspace(saveId: number, name: string = DEFAULT_WORKSPACE_NAME): Promise<Workspace> {
+        return new Promise<Workspace>(async (resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, WORKSPACE_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
             const workspaceStore = tx.objectStore(WORKSPACE_STORE);
@@ -321,7 +322,7 @@ export class DatabaseService {
                     app.logger.log("error", "db", `Failed to create new workspace: ${tx.error?.message}`);
                 }
                 event.stopPropagation();
-                resolve();
+                reject();
             }
 
             tx.oncomplete = () => {
@@ -331,8 +332,8 @@ export class DatabaseService {
         });
     }
 
-    public async updateWorkspace(workspaceChanges: Partial<Workspace> & { id: number }): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
+    public async updateWorkspace(workspaceChanges: Partial<Workspace> & { id: number }): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
             const store = tx.objectStore(WORKSPACE_STORE);
 
@@ -361,40 +362,40 @@ export class DatabaseService {
                     app.logger.log("error", "db", `Error updating workspace with id ${workspaceChanges.id}: ${event.target.error?.message}`);
                 }
                 event.stopPropagation();
-                resolve(false);
+                reject();
             }
 
             tx.oncomplete = () => {
                 app.logger.log("info", "db", `Workspace with id ${workspaceChanges.id} updated successfully`);
-                resolve(true);
+                resolve();
             }
         });
     }
 
-    public async moveWorkspace(workspaceId: number, newPosition: number): Promise<boolean> {}
-    public async deleteWorkspace(): Promise<boolean> {}
-    public async updateElement(): Promise<boolean> {} // hide x show
+    public async moveWorkspace(workspaceId: number, newPosition: number): Promise<void> {}
+    public async deleteWorkspace(): Promise<void> {}
+    public async updateElement(): Promise<void> {} // hide x show
     // adds element + its recipe -> call smth like addElement().then(... combineInstances)
-    public async addElement(): Promise<Element | undefined> {}
+    public async addElement(): Promise<Element> {}
     // add recipe to an already existing element
-    public async addRecipe(): Promise<boolean> {}
+    public async addRecipe(): Promise<void> {}
     // remove two instances, add one instance
-    public async combineInstances(): Promise<Instance | undefined> {}
+    public async combineInstances(): Promise<Instance> {}
     // add one instance
-    public async createInstance(): Promise<Instance | undefined> {}
+    public async createInstance(): Promise<Instance> {}
     // add multiple instances
-    public async createInstances(): Promise<Instance[] | undefined> {}
-    public async moveInstance(): Promise<boolean> {}
-    public async moveInstances(): Promise<boolean> {}
-    public async deleteInstance(): Promise<boolean> {}
-    public async deleteInstances(): Promise<boolean> {}
+    public async createInstances(): Promise<Instance[]> {}
+    public async moveInstance(): Promise<void> {}
+    public async moveInstances(): Promise<void> {}
+    public async deleteInstance(): Promise<void> {}
+    public async deleteInstances(): Promise<void> {}
 
     // todo - and other functions, that load and export whole savefiles (or workspaces in the future?)
 
 
     // loads the most recently modified / created save and its one workspace (if it has one)
     // todo - figure out exact return values / types
-    public async load(): Promise<boolean> {
+    public async load(): Promise<void> {
 
     }
 
