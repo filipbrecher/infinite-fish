@@ -1,4 +1,8 @@
 
+export interface IDBTransactionEvent extends Event {
+    target: IDBTransaction;
+}
+export type AbortReason = string | undefined;
 
 //============ SETTINGS ============//
 export type Settings = {

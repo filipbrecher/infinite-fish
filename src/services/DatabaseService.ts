@@ -7,18 +7,22 @@ import {
     SETTINGS_STORE, WORKSPACE_ID_INDEX,
     WORKSPACE_STORE
 } from "../constants/dbSchema";
-import type {Element, Instance, Save, Settings, Workspace} from "../types/dbSchema";
+import type {Element, IDBTransactionEvent, Instance, Save, Settings, Workspace} from "../types/dbSchema";
 import {
     DEFAULT_ELEMENTS, DEFAULT_SAVE,
     DEFAULT_SAVE_NAME,
     DEFAULT_SETTINGS, DEFAULT_WORKSPACE,
     DEFAULT_WORKSPACE_NAME
 } from "../constants/defaults";
+import type {AbortReason} from "../types/dbSchema";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
-// todo - write to db always in one transaction (like write new element, add new instance, delete old instances, update save metadata)
 
+
+// workspace and instance updates / creation / deletion -> does not update the save's datetimeUpdated info (so that it isn't
+// updated that much.. like really, I don't think it is necessary, if it is needed in the future, you can just easily
+// add a request to get the save, update timestamp, and put it updated again to the transaction (probably could be made into a separate method))
 export class DatabaseService {
     private _db: IDBDatabase;
 
@@ -80,13 +84,12 @@ export class DatabaseService {
             }
 
             req.onsuccess = () => {
-                const settings = DEFAULT_SETTINGS;
-                const loaded: Settings = req.result;
-                for (const property in loaded) {
-                    settings[property] = loaded[property];
-                }
+                const settings = {
+                    ...DEFAULT_SETTINGS,
+                    ...req.result,
+                };
 
-                app.logger.log("info", "db", "Settings loaded successfully")
+                app.logger.log("info", "db", "Settings loaded successfully");
                 resolve(settings);
             }
         });
@@ -137,11 +140,9 @@ export class DatabaseService {
 
         if (saves.size === 0) {
             const newSave = await this.createNewSave();
-            if ( !newSave) {
-                app.logger.log("error", "db", "Failed to create a default save (no saves in DB on page load)")
-                return;
+            if (newSave) {
+                saves.set(newSave.id, newSave);
             }
-            saves.set(newSave.id, newSave);
         }
 
         app.logger.log("info", "db", "Save info loaded successfully");
@@ -171,8 +172,8 @@ export class DatabaseService {
                 });
             }
 
-            tx.onabort = (event) => {
-                app.logger.log("error", "db", `Failed to create new save: ${tx.error?.message}`);
+            tx.onabort = (event: IDBTransactionEvent) => {
+                app.logger.log("error", "db", `Failed to create new save: ${event.target.error?.message}`);
                 event.stopPropagation();
                 resolve();
             }
@@ -189,30 +190,37 @@ export class DatabaseService {
             const tx = this._db.transaction(SAVE_STORE, "readwrite");
             const store = tx.objectStore(SAVE_STORE);
 
-            const save = await this.getSaveByIndex(store, saveId);
-            if ( !save) {
-                app.logger.log("error", "db", `Failed to rename save with id ${saveId}: save not found`);
-                return resolve(false);
+            const getReq = store.get(saveId);
+
+            let abortReason: AbortReason;
+            getReq.onsuccess = () => {
+                const save = getReq.result;
+                if ( !save) {
+                    abortReason = `Failed to rename save with ${saveId}: Save not found`;
+                    tx.abort();
+                    return;
+                }
+
+                const newSave = {
+                    ...save,
+                    name: newName,
+                    datetimeUpdated: new Date().getTime(),
+                }
+                store.put(newSave);
             }
 
-            const newSave = {
-                ...save,
-                name: newName,
-                datetimeUpdated: new Date().getTime(),
-            }
-
-            const req = this._db
-                .transaction(SAVE_STORE, "readwrite")
-                .objectStore(SAVE_STORE)
-                .put(newSave);
-
-            tx.onabort = () => {
-                app.logger.log("error", "db", `Failed to rename save with id ${saveId} to '${newSave.name}': ${tx.error?.message}`);
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db", `Failed to rename save with id ${saveId} to '${newName}': ${event.target.error?.message}`);
+                }
+                event.stopPropagation();
                 resolve(false);
             }
 
-            req.onsuccess = () => {
-                app.logger.log("info", "db", `Save with id ${saveId} renamed to '${newSave.name}' successfully`);
+            tx.oncomplete = () => {
+                app.logger.log("info", "db", `Save with id ${saveId} renamed to '${newName}' successfully`);
                 resolve(true);
             }
         });
@@ -254,7 +262,7 @@ export class DatabaseService {
             }
 
             tx.oncomplete = () => {
-                app.logger.log("info", "db",`Successfully delete save with id ${saveId}`);
+                app.logger.log("info", "db",`Successfully deleted save with id ${saveId}`);
                 resolve(true);
             }
         });
@@ -266,15 +274,15 @@ export class DatabaseService {
             const saveStore = tx.objectStore(SAVE_STORE);
             const workspaceStore = tx.objectStore(WORKSPACE_STORE);
 
-            const getReq = saveStore.get(saveId);
+            const getReq = saveStore.getKey(saveId);
 
             let workspace: Partial<Workspace>;
-            let abortReason: string | undefined;
+            let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 if ( !getReq.result) {
                     abortReason = `Failed to create workspace in save with id ${saveId}: Save not found`
                     tx.abort();
-                    return resolve();
+                    return;
                 }
 
                 workspace = {
@@ -323,12 +331,58 @@ export class DatabaseService {
         });
     }
 
-    public async updateWorkspace(): Promise<boolean> {} // like update name / x / y / scale
+    public async updateWorkspace(workspaceChanges: Partial<Workspace> & { id: number }): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
+            const store = tx.objectStore(WORKSPACE_STORE);
+
+            const getReq = store.get(workspaceChanges.id);
+
+            let abortReason: AbortReason;
+            getReq.onsuccess = () => {
+                const workspace = getReq.result;
+                if ( !workspace) {
+                    abortReason = `Error updating workspace with id ${workspace.id}: Workspace not found`;
+                    tx.abort();
+                    return;
+                }
+
+                const newWorkspace = {
+                    ...workspace,
+                    ...workspaceChanges,
+                }
+                store.put(newWorkspace);
+            }
+
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db", `Error updating workspace with id ${workspaceChanges.id}: ${event.target.error?.message}`);
+                }
+                event.stopPropagation();
+                resolve(false);
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db", `Workspace with id ${workspaceChanges.id} updated successfully`);
+                resolve(true);
+            }
+        });
+    }
+
     public async moveWorkspace(workspaceId: number, newPosition: number): Promise<boolean> {}
     public async deleteWorkspace(): Promise<boolean> {}
     public async updateElement(): Promise<boolean> {} // hide x show
-    public async createElement(): Promise<Element | undefined> {} // create new element, and also remove old instances, add the new instance to workspace
-    public async createInstance(): Promise<Instance> {}
+    // adds element + its recipe -> call smth like addElement().then(... combineInstances)
+    public async addElement(): Promise<Element | undefined> {}
+    // add recipe to an already existing element
+    public async addRecipe(): Promise<boolean> {}
+    // remove two instances, add one instance
+    public async combineInstances(): Promise<Instance | undefined> {}
+    // add one instance
+    public async createInstance(): Promise<Instance | undefined> {}
+    // add multiple instances
     public async createInstances(): Promise<Instance[] | undefined> {}
     public async moveInstance(): Promise<boolean> {}
     public async moveInstances(): Promise<boolean> {}
@@ -342,30 +396,6 @@ export class DatabaseService {
     // todo - figure out exact return values / types
     public async load(): Promise<boolean> {
 
-    }
-
-    private async doesSaveExist(store: IDBObjectStore, saveId: number): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
-            const req = store.getKey(saveId);
-            req.onerror = () => {
-                resolve(false);
-            }
-            req.onsuccess = () => {
-                resolve(<any>req.result !== undefined);
-            }
-        });
-    }
-
-    private async getSaveByIndex(store: IDBObjectStore, saveId: number): Promise<Save | undefined> {
-        return new Promise<Save | undefined>((resolve) => {
-            const req = store.get(saveId);
-            req.onerror = () => {
-                resolve();
-            }
-            req.onsuccess = () => {
-                resolve(req.result);
-            }
-        });
     }
 
     private deleteAllByIndex(store: IDBObjectStore, indexName: string, key: IDBValidKey) {
@@ -418,14 +448,14 @@ export class DatabaseService {
                 console.log("keyReq2.onsuccess", keyReq2.result, keyReq2.error?.message);
             }
 
-            tx.onerror = (event) => {
-                console.log("tx.onerror", tx.error?.message);
+            tx.onerror = (event: IDBTransactionEvent) => {
+                console.log("tx.onerror 2", tx.error?.message, event.target.error?.message);
             }
-            tx.onabort = (event) => {
-                console.log("tx.onabort", tx.error?.message);
+            tx.onabort = (event: IDBTransactionEvent) => {
+                console.log("tx.onabort", tx.error?.message, event.target.error?.message);
             }
-            tx.oncomplete = (event) => {
-                console.log("tx.oncomplete", tx.error?.message);
+            tx.oncomplete = (event: IDBTransactionEvent) => {
+                console.log("tx.oncomplete", tx.error?.message, event.target.error?.message);
             }
         });
     }
