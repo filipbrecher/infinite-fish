@@ -2,13 +2,18 @@ import {app} from "../main";
 import {
     DATABASE_NAME,
     DATABASE_VERSION,
-    ELEMENT_STORE, INSTANCE_STORE, SAVE_ID_INDEX,
+    ELEMENT_STORE, INSTANCE_STORE, MIN_WORKSPACE_POS, SAVE_ID_INDEX,
     SAVE_STORE, SETTINGS_KEY,
     SETTINGS_STORE, WORKSPACE_ID_INDEX,
     WORKSPACE_STORE
 } from "../constants/dbSchema";
 import type {Element, Instance, Save, Settings, Workspace} from "../types/dbSchema";
-import {DEFAULT_ELEMENTS, DEFAULT_SAVE_NAME, DEFAULT_SETTINGS} from "../constants/defaults";
+import {
+    DEFAULT_ELEMENTS, DEFAULT_SAVE,
+    DEFAULT_SAVE_NAME,
+    DEFAULT_SETTINGS, DEFAULT_WORKSPACE,
+    DEFAULT_WORKSPACE_NAME
+} from "../constants/defaults";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
@@ -148,12 +153,9 @@ export class DatabaseService {
             const saveStore = tx.objectStore(SAVE_STORE);
 
             const save: Partial<Save> = {
+                ...DEFAULT_SAVE,
                 name: name,
                 datetimeCreated: new Date().getTime(),
-                datetimeUpdated: 0,
-                elementCount: 4,
-                recipeCount: 0,
-                discoveryCount: 0
             };
             const saveReq = saveStore.add(save);
 
@@ -163,13 +165,13 @@ export class DatabaseService {
                 DEFAULT_ELEMENTS.forEach((element) => {
                     elementStore.add({
                         ...element,
-                        saveId: save.id
+                        saveId: save.id,
                     });
                 });
             }
 
-            tx.onabort = () => {
-                app.logger.log("error", "db", `Failed to create new save: ${saveReq.error?.message}`);
+            tx.onabort = (event) => {
+                app.logger.log("error", "db", `Failed to create new save: ${tx.error?.message}`);
                 resolve();
             }
 
@@ -258,7 +260,56 @@ export class DatabaseService {
         });
     }
 
-    public async createWorkspace(): Promise<Workspace | undefined> {}
+    public async createWorkspace(saveId: number, name: string = DEFAULT_WORKSPACE_NAME): Promise<Workspace | undefined> {
+        return new Promise<Workspace | undefined>(async (resolve) => {
+            const tx = this._db.transaction([SAVE_STORE, WORKSPACE_STORE], "readwrite");
+            const saveStore = tx.objectStore(SAVE_STORE);
+            const workspaceStore = tx.objectStore(WORKSPACE_STORE);
+
+            if ( !await this.doesSaveExist(saveStore, saveId)) {
+                app.logger.log("error", "db", `Failed to create workspace in save with id ${saveId}: Save not found`);
+            }
+
+            const workspace: Partial<Workspace> = {
+                ...DEFAULT_WORKSPACE,
+                saveId: saveId,
+                name: name,
+            }
+            const cursorReq = workspaceStore
+                .index(SAVE_ID_INDEX)
+                .openCursor(IDBKeyRange.only(saveId));
+
+            cursorReq.onsuccess = () => {
+                let maxPos = MIN_WORKSPACE_POS - 1;
+                const cursor = cursorReq.result;
+                if (cursor) {
+                    const req = cursor.value;
+                    req.onsuccess = () => {
+                        maxPos = Math.max(maxPos, req.result);
+                        cursor.continue();
+                    }
+                }
+
+                workspace.position = maxPos + 1;
+
+                const wsReq = workspaceStore.add(workspace);
+                wsReq.onsuccess = () => {
+                    workspace.id = <number>wsReq.result;
+                }
+            }
+
+            tx.onabort = () => {
+                app.logger.log("error", "db", `Failed to create new workspace: ${tx.error?.message}`);
+                resolve();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db", "New workspace created successfully");
+                resolve(workspace);
+            }
+        });
+    }
+
     public async updateWorkspace(): Promise<boolean> {} // like update name / x / y / scale
     public async moveWorkspace(workspaceId: number, newPosition: number): Promise<boolean> {}
     public async deleteWorkspace(): Promise<boolean> {}
@@ -280,7 +331,19 @@ export class DatabaseService {
 
     }
 
-    private getSaveByIndex(store: IDBObjectStore, saveId: number): Promise<Save | undefined> {
+    private async doesSaveExist(store: IDBObjectStore, saveId: number): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            const req = store.getKey(saveId);
+            req.onerror = () => {
+                resolve(false);
+            }
+            req.onsuccess = () => {
+                resolve(<any>req.result !== undefined);
+            }
+        });
+    }
+
+    private async getSaveByIndex(store: IDBObjectStore, saveId: number): Promise<Save | undefined> {
         return new Promise<Save | undefined>((resolve) => {
             const req = store.get(saveId);
             req.onerror = () => {
@@ -312,6 +375,6 @@ export class DatabaseService {
     }
 
     private handleAbort = (event) => {
-        app.logger.log("error", "db", `IndexedDB error: Transaction aborted`);
+        app.logger.log("error", "db", `IndexedDB error: Transaction aborted: ${event.target.error?.message}`);
     }
 }
