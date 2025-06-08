@@ -10,3 +10,5 @@ export const ELEMENT_STORE: string = "elements";
 export const WORKSPACE_STORE: string = "workspaces";
 export const INSTANCE_STORE: string = "instances";
 
+export const SAVE_ID_INDEX: string = "saveId";
+export const WORKSPACE_ID_INDEX: string = "workspaceId";
