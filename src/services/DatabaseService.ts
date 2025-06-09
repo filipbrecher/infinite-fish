@@ -10,7 +10,7 @@ import {
 import type {
     Element,
     IDBTransactionEvent,
-    Instance, NewElement, Recipe,
+    Instance, NewElement, NewInstance, Recipe,
     Save,
     Settings,
     Workspace,
@@ -709,31 +709,113 @@ export class DatabaseService {
         }
     }
 
-    // remove two instances, add one instance
-    public async combineInstances(): Promise<Instance> {
-        // todo
+    // delete and/or create new instances
+    // DOES NOT check that the data or type of the instances is valid
+    public async applyInstanceChanges(workspaceId: number, deleteIds?: number[], createInstances?: NewInstance[]): Promise<Instance[]> {
+        return new Promise<Instance[]>((resolve, reject) => {
+            const tx = this._db.transaction([WORKSPACE_STORE, INSTANCE_STORE], "readwrite");
+            const workspaceStore = tx.objectStore(WORKSPACE_STORE);
+            const instanceStore = tx.objectStore(INSTANCE_STORE);
+
+            const getReq = workspaceStore.getKey(workspaceId);
+
+            let abortReason: AbortReason;
+            let newInstances: Instance[] = [];
+            getReq.onsuccess = () => {
+                if ( !getReq.result) {
+                    abortReason = `Error applying instance changes: Workspace with id ${workspaceId} not found`;
+                    tx.abort();
+                    return;
+                }
+
+                // delete them
+                deleteIds?.forEach((id) => {
+                    instanceStore.delete(id);
+                });
+
+                // create them
+                createInstances?.forEach((instanceToCreate) => {
+                    let instance = {
+                        ...instanceToCreate,
+                        workspaceId: workspaceId,
+                    }
+                    const req = instanceStore.add(instance);
+                    req.onsuccess = () => {
+                        newInstances.push({
+                            ...instance,
+                            id: <number>req.result,
+                        });
+                    }
+                });
+            }
+
+            const toDelete = deleteIds ? deleteIds.length : 0;
+            const toCreate = createInstances ? createInstances.length : 0;
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db",
+                        `Error applying instance changes (${toDelete} deleted, ${toCreate} created)
+                        in workspace with id ${workspaceId}: ${event.target.error?.message}`
+                    );
+                }
+                event.stopPropagation();
+                reject();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db",
+                    `Successfully applied instance changes (${toDelete} deleted, ${toCreate} created) in workspace with id ${workspaceId}`
+                );
+                resolve(newInstances);
+            }
+        });
     }
 
-    public async createInstances(): Promise<Instance[]> {
-        // todo
-    }
+    public async moveInstances(instances: Instance[]): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const tx = this._db.transaction(INSTANCE_STORE, "readwrite");
+            const store = tx.objectStore(INSTANCE_STORE);
 
-    public async moveInstances(): Promise<void> {
-        // todo
-    }
+            let abortReason: AbortReason;
+            instances.forEach((instance: Instance) => {
+                const req = store.get(instance.id);
+                req.onsuccess = () => {
+                    const gottenInstance = req.result;
+                    if ( !gottenInstance) {
+                        if ( !abortReason) {
+                            abortReason = `Error moving ${instances.length} instances: Instance with id ${instance.id} not found`;
+                        }
+                        tx.abort();
+                        return;
+                    }
+                    gottenInstance.x = instance.x;
+                    gottenInstance.y = instance.y;
+                    store.put(gottenInstance);
+                }
+            });
 
-    public async deleteInstances(id: number): Promise<void> {
-        // todo
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db",
+                        `Error moving ${instances.length} instances: ${event.target.error?.message}`
+                    );
+                }
+                event.stopPropagation();
+                reject();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db", `Successfully moved ${instances.length} instances`);
+                resolve();
+            }
+        });
     }
 
     // todo - and other functions, that load and export whole savefiles (or workspaces in the future?)
-
-
-    // loads the most recently modified / created save and its one workspace (if it has one)
-    // todo - figure out exact return values / types
-    public async load(): Promise<void> {
-
-    }
 
     private deleteAllByIndex(store: IDBObjectStore, indexName: string, key: IDBValidKey) {
         const req = store

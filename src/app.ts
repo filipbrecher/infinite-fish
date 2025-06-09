@@ -56,6 +56,14 @@ export class App {
             await this._databaseService.updateElementVisibility(elId1, true);
             await this._databaseService.updateElementVisibility(elId1, false);
 
+            await this._databaseService.applyInstanceChanges(1, undefined, [
+                {x: 0, y: 0, data: 9},
+                {x: 1, y: 1, data: 9},
+                {x: 2, y: 2, data: 10},
+            ]);
+            await this._databaseService.applyInstanceChanges(1, [1], [{x: 3, y: 3, data: 11}]);
+            await this._databaseService.moveInstances([{id: 2, workspaceId: 1, x: 5, y: 5, data: 9}]);
+
             await Promise.all(
                 Array.from({ length: 1000 }, () =>
                     this._databaseService.addNewElement(1, {emoji: "e", text: "t", discovered: true}, [1, 1])

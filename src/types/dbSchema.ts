@@ -83,3 +83,9 @@ export type Instance = {
     data: InstanceData;
 }
 
+export type NewInstance = {
+    x: number;
+    y: number;
+    type?: InstanceType;
+    data: InstanceData;
+}
