@@ -46,6 +46,15 @@ export class App {
             await this._databaseService.createWorkspace(1, "workspace 5");
             await this._databaseService.moveWorkspace(2, 4);
             await this._databaseService.deleteWorkspace(3);
+
+            const elId1 = await this._databaseService.addNewElement(1, {emoji: "emoji 1", text: "text 1"}, [9, 9]);
+            const elId2 = await this._databaseService.addNewElement(1, {emoji: "emoji 2", text: "text 2", discovered: true}, [9, 9]);
+            const elId3 = await this._databaseService.addNewElement(1, {emoji: "emoji 3", text: "text 3"}, [9, 9]);
+            await this._databaseService.addRecipe(elId1, [elId2, elId3], true);
+            await this._databaseService.addRecipe(elId3, [elId2, elId3], false);
+            await this._databaseService.addRecipe(elId2, [elId1, elId1], true);
+            await this._databaseService.updateElementVisibility(elId1, true);
+            await this._databaseService.updateElementVisibility(elId1, false);
         } catch (e) {
             return;
         }

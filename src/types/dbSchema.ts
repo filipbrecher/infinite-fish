@@ -40,6 +40,12 @@ export type Element = {
     recipes?: Recipe[];     // [] by default
 }
 
+export type NewElement = {
+    emoji: string;
+    text: string;
+    discovered?: boolean;   // false by default;
+}
+
 
 //============ WORKSPACES ============//
 export type Workspace = {

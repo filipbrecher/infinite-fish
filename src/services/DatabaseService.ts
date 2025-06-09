@@ -10,7 +10,7 @@ import {
 import type {
     Element,
     IDBTransactionEvent,
-    Instance,
+    Instance, NewElement, Recipe,
     Save,
     Settings,
     Workspace,
@@ -496,11 +496,216 @@ export class DatabaseService {
         });
     }
 
-    public async updateElement(): Promise<void> {} // hide x show
-    // adds element + its recipe -> call smth like addElement().then(... combineInstances)
-    public async addElement(): Promise<Element> {}
-    // add recipe to an already existing element
-    public async addRecipe(): Promise<void> {}
+    // always create a new element with the specified values
+    // DOES NOT check whether the element with this text exists or doesn't exist
+    // DOES NOT check that the ids of the elements in the recipe are valid within that save
+    // returns id of the element
+    public async addNewElement(saveId: number, element: NewElement, recipe?: Recipe): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
+            const saveStore = tx.objectStore(SAVE_STORE);
+            const elementStore =tx.objectStore(ELEMENT_STORE);
+            const getReq = saveStore.get(saveId);
+
+            let addedElement: Partial<Element>;
+            let abortReason: AbortReason;
+            getReq.onsuccess = () => {
+                const save = getReq.result;
+                if ( !save) {
+                    abortReason = `Error adding element '${element.text}' with recipe [${recipe}] to save with id ${saveId}: Save not found`;
+                    tx.abort();
+                    return;
+                }
+
+                addedElement = {
+                    saveId: saveId,
+                    emoji: element.emoji,
+                    text: element.text,
+                }
+                if (element.discovered) {
+                    addedElement.discovered = true;
+                }
+                if (recipe) {
+                    addedElement.recipes = [recipe];
+                }
+
+                const req = elementStore.add(addedElement);
+                req.onsuccess = () => {
+                    addedElement.id = <number>req.result;
+
+                    this.updateSaveInfo(
+                        saveStore,
+                        saveId,
+                        addedElement.id,
+                        (save: Save) => {
+                            save.datetimeUpdated = new Date().getTime();
+                            save.elementCount++;
+                            save.recipeCount += recipe ? 1 : 0;
+                            save.discoveryCount += element.discovered ? 1 : 0;
+                        },
+                        (pastTense: boolean) => {
+                            return `add${pastTense ? "ed" : "ing"} element '${element.text}' with recipe [${recipe}] to it`;
+                        }
+                    );
+                }
+            }
+
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db",
+                        `Error adding element '${element.text}' with recipe [${recipe}] to save with id ${saveId}: ${event.target.error?.message}`
+                    );
+                }
+                event.stopPropagation();
+                reject();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db", `Element '${element.text}' successfully added to save with id ${saveId}`);
+                resolve(addedElement.id);
+            }
+        });
+    }
+
+    // this must be called after the element has been successfully added
+    // DOES NOT check that the ids of the elements in the recipe are valid within that save
+    public async addRecipe(elementId: number, recipe: Recipe, discovered: boolean): Promise<void> {
+        if (recipe[0] > recipe[1]) recipe.reverse();
+        let recipeAdded = false;
+        let newlyDiscovered = false;
+        return this.updateElement(
+            elementId,
+            (element: Element) => {
+                if (element.recipes?.some(r => r[0] === recipe[0] && r[1] === recipe[1])) {
+                    return;
+                } else if (element.recipes) {
+                    element.recipes.push(recipe);
+                } else {
+                    element.recipes = [recipe];
+                }
+                if (discovered && !element.discovered) {
+                    element.discovered = true;
+                    newlyDiscovered = true;
+                }
+            },
+            (save: Save) => {
+                if (recipeAdded) {
+                    save.datetimeUpdated = new Date().getTime();
+                    save.recipeCount++;
+                }
+                if (newlyDiscovered) {
+                    save.discoveryCount++;
+                }
+            },
+            (pastTense: boolean) => {
+                return `add${pastTense ? "ed" : "ing"} recipe [${recipe}] to element with id ${elementId}`;
+            }
+        );
+    }
+
+    public async updateElementVisibility(elementId: number, hidden: boolean): Promise<void> {
+        return this.updateElement(
+            elementId,
+            (element: Element) => {
+                element.hidden = hidden;
+                if ( !hidden) {
+                    delete element.hidden;
+                }
+            },
+            (save: Save) => {
+                save.datetimeUpdated = new Date().getTime();
+            },
+            (pastTense: boolean) => {
+                return `updat${pastTense ? "ed" : "ing"} visibility of element with id ${elementId}`;
+            }
+        );
+    }
+
+    private async updateElement(
+        elementId,
+        update: (element: Element) => void,
+        updateSave: (save: Save) => void,
+        getLogEnding: (pastTense: boolean) => string,
+    ): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
+            const saveStore = tx.objectStore(SAVE_STORE);
+            const elementStore = tx.objectStore(ELEMENT_STORE);
+
+            const getReq = elementStore.get(elementId);
+
+            let abortReason: AbortReason;
+            getReq.onsuccess = () => {
+                const element = getReq.result;
+                if ( !element) {
+                    abortReason = `Error ${getLogEnding(false)}: Element not found`;
+                    tx.abort();
+                    return;
+                }
+
+                update(element);
+                elementStore.put(element);
+
+                this.updateSaveInfo(saveStore, element.saveId, elementId, updateSave, getLogEnding);
+            }
+
+            tx.onabort = (event: IDBTransactionEvent) => {
+                if (abortReason) {
+                    app.logger.log("error", "db", abortReason);
+                } else {
+                    app.logger.log("error", "db", `Error ${getLogEnding(false)}: ${event.target.error?.message}`);
+                }
+                event.stopPropagation();
+                reject();
+            }
+
+            tx.oncomplete = () => {
+                app.logger.log("info", "db", `Successfully ${getLogEnding(true)}`);
+                resolve();
+            }
+        });
+    }
+
+    private updateSaveInfo(
+        saveStore: IDBObjectStore,
+        saveId: number,
+        elementId: number,
+        update: (save: Save) => void,
+        getLogEnding: (pastTense: boolean) => string,
+    ): void {
+        const getSaveReq = saveStore.get(saveId);
+
+        getSaveReq.onerror = (event: IDBTransactionEvent) => {
+            app.logger.log("error", "db",
+                `Error updating save info when ${getLogEnding(false)}: ${event.target.error?.message}`
+            );
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        getSaveReq.onsuccess = () => {
+            const save = getSaveReq.result;
+            if ( !save) {
+                app.logger.log("error", "db",
+                    `Error updating save info when ${getLogEnding(false)} element with id ${elementId}: Save with id ${saveId} not found`
+                );
+                return;
+            }
+
+            update(save);
+            const req = saveStore.put(save);
+            req.onerror = (event: IDBTransactionEvent) => {
+                app.logger.log("error", "db",
+                    `Error updating save info when ${getLogEnding(false)} element with id ${elementId}: ${event.target.error?.message}`
+                );
+                event.stopPropagation();
+                event.preventDefault();
+            }
+        }
+    }
+
     // remove two instances, add one instance
     public async combineInstances(): Promise<Instance> {}
     // add one instance
