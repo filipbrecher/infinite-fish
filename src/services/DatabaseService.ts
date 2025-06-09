@@ -525,8 +525,8 @@ export class DatabaseService {
                     emoji: element.emoji,
                     text: element.text,
                 }
-                if (element.discovered) {
-                    addedElement.discovered = true;
+                if (element.discovery) {
+                    addedElement.discovery = true;
                 }
                 if (recipe) {
                     addedElement.recipes = [recipe];
@@ -544,7 +544,7 @@ export class DatabaseService {
                             save.datetimeUpdated = new Date().getTime();
                             save.elementCount++;
                             save.recipeCount += recipe ? 1 : 0;
-                            save.discoveryCount += element.discovered ? 1 : 0;
+                            save.discoveryCount += element.discovery ? 1 : 0;
                         },
                         (pastTense: boolean) => {
                             return `add${pastTense ? "ed" : "ing"} element '${element.text}' with recipe [${recipe}] to it`;
@@ -574,10 +574,10 @@ export class DatabaseService {
 
     // this must be called after the element has been successfully added
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
-    public async addRecipe(elementId: number, recipe: Recipe, discovered: boolean): Promise<void> {
+    public async addRecipe(elementId: number, recipe: Recipe, discovery: boolean): Promise<void> {
         if (recipe[0] > recipe[1]) recipe.reverse();
         let recipeAdded = false;
-        let newlyDiscovered = false;
+        let isNewDiscovery = false;
         return this.updateElement(
             elementId,
             (element: Element) => {
@@ -588,9 +588,9 @@ export class DatabaseService {
                 } else {
                     element.recipes = [recipe];
                 }
-                if (discovered && !element.discovered) {
-                    element.discovered = true;
-                    newlyDiscovered = true;
+                if (discovery && !element.discovery) {
+                    element.discovery = true;
+                    isNewDiscovery = true;
                 }
             },
             (save: Save) => {
@@ -598,7 +598,7 @@ export class DatabaseService {
                     save.datetimeUpdated = new Date().getTime();
                     save.recipeCount++;
                 }
-                if (newlyDiscovered) {
+                if (isNewDiscovery) {
                     save.discoveryCount++;
                 }
             },
@@ -608,13 +608,13 @@ export class DatabaseService {
         );
     }
 
-    public async updateElementVisibility(elementId: number, hidden: boolean): Promise<void> {
+    public async updateElementVisibility(elementId: number, hide: boolean): Promise<void> {
         return this.updateElement(
             elementId,
             (element: Element) => {
-                element.hidden = hidden;
-                if ( !hidden) {
-                    delete element.hidden;
+                element.hide = hide;
+                if ( !hide) {
+                    delete element.hide;
                 }
             },
             (save: Save) => {

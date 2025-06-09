@@ -35,15 +35,15 @@ export type Element = {
     saveId: number;
     emoji: string;
     text: string;
-    discovered?: boolean;   // false by default
-    hidden?: boolean;       // false by default
+    discovery?: boolean;   // false by default
+    hide?: boolean;       // false by default
     recipes?: Recipe[];     // [] by default
 }
 
 export type NewElement = {
     emoji: string;
     text: string;
-    discovered?: boolean;   // false by default;
+    discovery?: boolean;   // false by default;
 }
 
 

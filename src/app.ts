@@ -48,7 +48,7 @@ export class App {
             await this._databaseService.deleteWorkspace(3);
 
             const elId1 = await this._databaseService.addNewElement(1, {emoji: "emoji 1", text: "text 1"}, [9, 9]);
-            const elId2 = await this._databaseService.addNewElement(1, {emoji: "emoji 2", text: "text 2", discovered: true}, [9, 9]);
+            const elId2 = await this._databaseService.addNewElement(1, {emoji: "emoji 2", text: "text 2", discovery: true}, [9, 9]);
             const elId3 = await this._databaseService.addNewElement(1, {emoji: "emoji 3", text: "text 3"}, [9, 9]);
             await this._databaseService.addRecipe(elId1, [elId2, elId3], true);
             await this._databaseService.addRecipe(elId3, [elId2, elId3], false);
@@ -66,7 +66,7 @@ export class App {
 
             await Promise.all(
                 Array.from({ length: 1000 }, () =>
-                    this._databaseService.addNewElement(1, {emoji: "e", text: "t", discovered: true}, [1, 1])
+                    this._databaseService.addNewElement(1, {emoji: "e", text: "t", discovery: true}, [1, 1])
                 )
             );
             const then = new Date().getTime();
