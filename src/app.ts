@@ -55,6 +55,17 @@ export class App {
             await this._databaseService.addRecipe(elId2, [elId1, elId1], true);
             await this._databaseService.updateElementVisibility(elId1, true);
             await this._databaseService.updateElementVisibility(elId1, false);
+
+            await Promise.all(
+                Array.from({ length: 1000 }, () =>
+                    this._databaseService.addNewElement(1, {emoji: "e", text: "t", discovered: true}, [1, 1])
+                )
+            );
+            const then = new Date().getTime();
+            await this._databaseService.deleteSave(1);
+            const now = new Date().getTime();
+
+            console.log("deletion took:", (now - then) / 1000, "seconds");
         } catch (e) {
             return;
         }

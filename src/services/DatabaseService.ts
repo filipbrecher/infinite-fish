@@ -444,10 +444,11 @@ export class DatabaseService {
 
     public async deleteWorkspace(workspaceId: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
-            const store = tx.objectStore(WORKSPACE_STORE);
+            const tx = this._db.transaction([WORKSPACE_STORE, INSTANCE_STORE], "readwrite");
+            const workspaceStore = tx.objectStore(WORKSPACE_STORE);
+            const instanceStore = tx.objectStore(INSTANCE_STORE);
 
-            const getReq = store.get(workspaceId);
+            const getReq = workspaceStore.get(workspaceId);
 
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
@@ -460,7 +461,7 @@ export class DatabaseService {
 
                 const saveId = targetWorkspace.saveId;
                 const thresholdPos = targetWorkspace.position;
-                const cursorReq = store
+                const cursorReq = workspaceStore
                     .index(SAVE_ID_INDEX)
                     .openCursor(saveId);
 
@@ -477,6 +478,8 @@ export class DatabaseService {
                     }
                     cursor.continue();
                 }
+
+                this.deleteAllByIndex(instanceStore, WORKSPACE_ID_INDEX, workspaceId);
             }
 
             tx.onabort = (event: IDBTransactionEvent) => {
@@ -707,15 +710,21 @@ export class DatabaseService {
     }
 
     // remove two instances, add one instance
-    public async combineInstances(): Promise<Instance> {}
-    // add one instance
-    public async createInstance(): Promise<Instance> {}
-    // add multiple instances
-    public async createInstances(): Promise<Instance[]> {}
-    public async moveInstance(): Promise<void> {}
-    public async moveInstances(): Promise<void> {}
-    public async deleteInstance(): Promise<void> {}
-    public async deleteInstances(): Promise<void> {}
+    public async combineInstances(): Promise<Instance> {
+        // todo
+    }
+
+    public async createInstances(): Promise<Instance[]> {
+        // todo
+    }
+
+    public async moveInstances(): Promise<void> {
+        // todo
+    }
+
+    public async deleteInstances(id: number): Promise<void> {
+        // todo
+    }
 
     // todo - and other functions, that load and export whole savefiles (or workspaces in the future?)
 
@@ -727,16 +736,13 @@ export class DatabaseService {
     }
 
     private deleteAllByIndex(store: IDBObjectStore, indexName: string, key: IDBValidKey) {
-        const cursorReq = store
+        const req = store
             .index(indexName)
-            .openCursor(IDBKeyRange.only(key));
-        cursorReq.onsuccess = () => {
-            const cursor = cursorReq.result;
-            if (cursor) {
-                const deleteReq = cursor.delete();
-                deleteReq.onsuccess = () => {
-                    cursor.continue();
-                }
+            .getAllKeys(IDBKeyRange.only(key));
+        req.onsuccess = () => {
+            const matchedKeys = req.result;
+            for (const primaryKey of matchedKeys) {
+                store.delete(primaryKey);
             }
         }
     }
