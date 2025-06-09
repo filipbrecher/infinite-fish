@@ -829,6 +829,41 @@ export class DatabaseService {
         }
     }
 
+    public async getWorkspaces(saveId: number): Promise<Workspace[]> {
+        return this.getAllByIndex<Workspace>(WORKSPACE_STORE, SAVE_ID_INDEX, saveId);
+    }
+
+    public async getElements(saveId: number): Promise<Element[]> {
+        return this.getAllByIndex<Element>(ELEMENT_STORE, SAVE_ID_INDEX, saveId);
+    }
+
+    public async getInstances(workspaceId: number): Promise<Instance[]> {
+        return this.getAllByIndex<Instance>(INSTANCE_STORE, WORKSPACE_ID_INDEX, workspaceId);
+    }
+
+    private getAllByIndex<T>(store: string, index: string, key: number): Promise<T[]> {
+        return new Promise<T[]>((resolve, reject) => {
+            const req = this._db
+                .transaction(store, "readonly")
+                .objectStore(store)
+                .index(index)
+                .getAll(IDBKeyRange.only(key));
+
+            req.onerror = (event: IDBTransactionEvent) => {
+                app.logger.log("error", "db",
+                    `Failed to load ${store} for ${index} ${key}: ${event.target.error?.message}`
+                );
+                event.stopPropagation();
+                reject();
+            }
+
+            req.onsuccess = () => {
+                app.logger.log("info", "db", `Successfully retrieved all ${store} for ${index} ${key}`);
+                resolve(req.result);
+            }
+        });
+    }
+
     // to log all unhandled aborted transactions
     private handleAbort = (event) => {
         app.logger.log("error", "db", `IndexedDB error: Transaction aborted: ${event.target.error?.message}`);

@@ -64,11 +64,17 @@ export class App {
             await this._databaseService.applyInstanceChanges(1, [1], [{x: 3, y: 3, data: 11}]);
             await this._databaseService.moveInstances([{id: 2, workspaceId: 1, x: 5, y: 5, data: 9}]);
 
+            console.log(await this._databaseService.getElements(1));
+            console.log(await this._databaseService.getElements(2));
+            console.log(await this._databaseService.getWorkspaces(1));
+            console.log(await this._databaseService.getInstances(1));
+
             await Promise.all(
                 Array.from({ length: 1000 }, () =>
                     this._databaseService.addNewElement(1, {emoji: "e", text: "t", discovery: true}, [1, 1])
                 )
             );
+
             const then = new Date().getTime();
             await this._databaseService.deleteSave(1);
             const now = new Date().getTime();
