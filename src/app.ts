@@ -1,5 +1,5 @@
 import {DatabaseService} from "./services/DatabaseService";
-import {Sidebar} from "./sidebar/Sidebar";
+import {Sidebar} from "./ui/Sidebar";
 import {Logger} from "./services/Logger";
 import {SettingsService} from "./services/SettingsService";
 
