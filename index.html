@@ -16,13 +16,23 @@
       </div>
 
       <div id="options">
-        <div id="settings-button"></div>
-        <div id="saves-button"></div>
+        <div id="settings-button" class="settings-img"></div>
+        <div id="saves-button" class="saves-img"></div>
       </div>
 
       <div id="overlay"></div>
-      <div id="settings-popup" class="popup"></div>
-      <div id="saves-popup" class="popup"></div>
+      <div id="settings-popup" class="popup" style="display: none">
+        <div class="popup-title">
+          <div class="settings-img"></div>
+          Settings
+        </div>
+      </div>
+      <div id="saves-popup" class="popup" style="display: none">
+        <div class="popup-title">
+          <div class="saves-img"></div>
+          Saves
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

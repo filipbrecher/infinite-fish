@@ -1,0 +1,12 @@
+
+#board {
+    background-color: var(--board-bg);
+    white-space: nowrap;
+    z-index: 0;
+}
+
+#drag-layer {
+    background-color: transparent;
+    white-space: nowrap;
+    z-index: 100;
+}

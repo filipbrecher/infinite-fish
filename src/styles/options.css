@@ -1,0 +1,69 @@
+
+#options {
+    position: absolute;
+    bottom: 0; left: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+    z-index: 2;
+}
+
+#options div {
+    height: 50px;
+    width: 50px;
+    background-size: contain;
+    filter: opacity(var(--options-img-opacity)) drop-shadow(0 0 0 var(--options-img-color));
+}
+#options div:hover {
+    filter: opacity(var(--options-img-opacity-hover)) drop-shadow(0 0 0 var(--options-img-color));
+}
+.saves-img {
+    background-image: url("/public/save_button.png");
+}
+.settings-img {
+    background-image: url("/public/settings_button.png");
+}
+
+#overlay {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-color: var(--overlay);
+    z-index: 1000;
+    display: none;
+}
+.popup {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 200px;
+    min-width: 200px;
+    background-color: var(--options-popup-bg);
+    border: 2px solid var(--options-popup-border);
+    border-radius: 5px;
+    z-index: 1001;
+    display: none;
+}
+
+.popup-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    font-size: large;
+    padding: 5px 10px 5px 5px;
+    border-bottom: 2px solid var(--options-popup-border);
+}
+.popup-title .saves-img, .popup .settings-img {
+    height: 30px;
+    width: 30px;
+    background-size: contain;
+}
+
+#settings-popup {
+
+}
+
+#saves-popup {
+
+}

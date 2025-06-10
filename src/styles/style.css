@@ -12,89 +12,15 @@ h1, h2, h3 {
 
 :root {
     --board-bg: dark gray;
-    --sidebar-bg: gray;
+    --sidebar-bg: #b7b7b7;
     --sidebar-border: black;
-}
 
-#board {
-    background-color: var(--board-bg);
-    white-space: nowrap;
-    z-index: 0;
-}
-
-#drag-layer {
-    background-color: transparent;
-    white-space: nowrap;
-    z-index: 100;
-}
-
-#sidebar {
-    background-color: var(--sidebar-bg);
-    border-left: 2px solid var(--sidebar-border);
-    position: absolute;
-    top: 0; right: 0; bottom: 0;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    z-index: 1;
-}
-
-#resizer {
-    background-color: transparent;
-    position: absolute;
-    top: 0; bottom: 0; left: -5px;
-    width: 10px;
-    cursor: ew-resize;
-}
-
-#options {
-    position: absolute;
-    bottom: 0; left: 0;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    padding: 10px;
-    z-index: 2;
-}
-
-#options div {
-    height: 50px;
-    width: 50px;
-    background-size: contain;
-    filter: opacity(0.4) drop-shadow(0 0 0 black);
-}
-#options div:hover {
-    filter: opacity(1) drop-shadow(0 0 0 black);
-}
-#saves-button {
-    background-image: url("/public/save_button.png");
-}
-#settings-button {
-    background-image: url("/public/settings_button.png");
-}
-
-#overlay {
-    position: fixed;
-    top: 0; right: 0; bottom: 0; left: 0;
-    background-color: #00000010;
-    z-index: 1000;
-    display: none;
-}
-.popup {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    height: 200px;
-    width: 200px;
-    background-color: magenta;
-    z-index: 1001;
-    display: none;
-}
-
-#settings-popup {
-
-}
-
-#saves-popup {
+    /* options */
+    --overlay: #00000010;
+    --options-img-opacity: 0.2;
+    --options-img-opacity-hover: 1;
+    --options-img-color: black;
+    --options-img-color-hover: black;
+    --options-popup-border: black;
+    --options-popup-bg: #b7b7b7;
 }
