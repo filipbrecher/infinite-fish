@@ -10,17 +10,23 @@ h1, h2, h3 {
     user-select: none;
 }
 
+div.button {
+    cursor: pointer;
+}
+
 :root {
     --board-bg: dark gray;
     --sidebar-bg: #b7b7b7;
     --sidebar-border: black;
 
     /* options */
-    --overlay: #00000010;
-    --options-img-opacity: 0.2;
-    --options-img-opacity-hover: 1;
-    --options-img-color: black;
-    --options-img-color-hover: black;
+    --overlay: #00000020;
+    --options-icon-opacity: 0.4;
+    --options-icon-opacity-hover: 1;
+    --options-icon-color: black;
+    --options-icon-color-hover: black;
     --options-popup-border: black;
-    --options-popup-bg: #b7b7b7;
+    --options-popup-bg: white;
+    --save-border: #8f8f8f;
+    --save-bg: white;
 }

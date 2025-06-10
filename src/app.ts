@@ -3,12 +3,14 @@ import {Sidebar} from "./ui/Sidebar";
 import {Logger} from "./services/Logger";
 import {SettingsService} from "./services/SettingsService";
 import {Options} from "./ui/Options";
+import {SavesService} from "./services/SavesService";
 
 
 export class App {
     private _logger: Logger;
     private _databaseService: DatabaseService;
     private _settingsService: SettingsService;
+    private _savesService: SavesService;
 
     private _sidebar: Sidebar;
     private _options: Options;
@@ -16,6 +18,7 @@ export class App {
     public get logger() { return this._logger; }
     public get databaseService() { return this._databaseService; }
     public get settingsService() { return this._settingsService; }
+    public get savesService() { return this._savesService; }
 
     public async init() {
         try {
@@ -34,6 +37,8 @@ export class App {
             this._settingsService = new SettingsService();
             await this._settingsService.init();
 
+            this._savesService = new SavesService();
+            await this._savesService.init();
 
         } catch (e) {
             return;

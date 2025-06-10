@@ -1,3 +1,4 @@
+import {Utils} from "./Utils";
 
 type LogLevel = "info" | "warning" | "error";
 type LogType = "db" | string;
@@ -11,7 +12,7 @@ export class Logger {
         switch (type) {
             case "db":
                 const color = Logger.getColor(level);
-                const time = new Date().toLocaleString("ja-JP");
+                const time = Utils.getFormattedDatetime();
                 const prefix = `${time} %c[${level.toUpperCase()}] ${type.toUpperCase()}:`;
                 console.log(prefix, `color: ${color}; font-weight: bold;`, message);
                 break;

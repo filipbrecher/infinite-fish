@@ -125,8 +125,8 @@ export class DatabaseService {
 
     // loads all saves' info from db, and if no save is present, then it creates a default save
     // (new one is created to ensure that when a user loads the page, there is always a save that the user's progress gets saved to)
-    public async loadSaveInfo(): Promise<Map<number, Save>> {
-        let savesArr: Save[];
+    public async loadSaveInfo(): Promise<Save[]> {
+        let saves: Save[];
 
         await new Promise<boolean>((resolve, reject) => {
             const req = this._db
@@ -140,17 +140,15 @@ export class DatabaseService {
             }
 
             req.onsuccess = () => {
-                savesArr = req.result;
+                saves = req.result;
                 resolve();
             }
         });
 
-        const saves: Map<number, Save> = new Map(savesArr.map(save => [save.id, save]));
-
-        if (saves.size === 0) {
+        if (saves.length === 0) {
             const newSave = await this.createNewSave();
             if (newSave) {
-                saves.set(newSave.id, newSave);
+                saves.push(newSave);
             }
         }
 
