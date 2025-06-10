@@ -47,3 +47,54 @@ h1, h2, h3 {
     width: 10px;
     cursor: ew-resize;
 }
+
+#options {
+    position: absolute;
+    bottom: 0; left: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+    z-index: 2;
+}
+
+#options div {
+    height: 50px;
+    width: 50px;
+    background-size: contain;
+    filter: opacity(0.4) drop-shadow(0 0 0 black);
+}
+#options div:hover {
+    filter: opacity(1) drop-shadow(0 0 0 black);
+}
+#saves-button {
+    background-image: url("/public/save_button.png");
+}
+#settings-button {
+    background-image: url("/public/settings_button.png");
+}
+
+#overlay {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-color: #00000010;
+    z-index: 1000;
+    display: none;
+}
+.popup {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    height: 200px;
+    width: 200px;
+    background-color: magenta;
+    z-index: 1001;
+    display: none;
+}
+
+#settings-popup {
+
+}
+
+#saves-popup {
+}
