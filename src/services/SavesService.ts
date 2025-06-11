@@ -93,6 +93,10 @@ export class SavesService {
         try {
             // todo only when the active save isn't this one
             await app.databaseService.deleteSave(id);
+            const index = this._saves.findIndex(s => s.id === id);
+            if (index !== -1) {
+                this._saves.splice(index, 1);
+            }
             return true;
         } catch {
             return false;
