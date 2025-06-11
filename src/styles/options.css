@@ -129,6 +129,7 @@
     box-sizing: border-box;
 }
 .name-display {
+    white-space: pre-wrap;
     overflow: hidden;
     text-overflow: ellipsis;
     border-bottom: 1px solid transparent;

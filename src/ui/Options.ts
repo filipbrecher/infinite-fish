@@ -39,7 +39,7 @@ export class Options {
         document.addEventListener("mousedown", this.closePopup);
 
         this.savesList.innerHTML = "";
-        app.savesService.getSortedSaves().forEach((save) => {
+        app.savesService.getSortedSaves().reverse().forEach((save) => {
             this.prependSave(save);
         });
         this.savesPopup.style.display = "flex";
