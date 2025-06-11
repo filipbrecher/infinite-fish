@@ -26,7 +26,7 @@ import type {AbortReason} from "../types/dbSchema";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
-
+// todo - rework datetimeUpdated, possibly add activeSave, activeWorkspace to Save info (prob a separate store or to settings)
 
 // workspace and instance updates / creation / deletion -> does not update the save's datetimeUpdated info (so that it isn't
 // updated that much.. like really, I don't think it is necessary, if it is needed in the future, you can just easily
@@ -144,13 +144,6 @@ export class DatabaseService {
                 resolve();
             }
         });
-
-        if (saves.length === 0) {
-            const newSave = await this.createNewSave();
-            if (newSave) {
-                saves.push(newSave);
-            }
-        }
 
         app.logger.log("info", "db", "Save info loaded successfully");
         return saves;

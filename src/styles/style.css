@@ -27,3 +27,22 @@ h1, h2, h3 {
     --save-border: #8f8f8f;
     --save-bg: white;
 }
+
+.overlay {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-color: var(--overlay);
+    display: none;
+}
+#options-overlay {
+    z-index: 1000;
+}
+#state-overlay {
+    z-index: 1000000;
+}
+#overlay-text {
+    font-size: 3em;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}

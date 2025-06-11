@@ -1,5 +1,6 @@
+import type {IComponent} from "../IComponent";
 
-export class Sidebar {
+export class Sidebar implements IComponent {
     private sidebar: HTMLDivElement;
     private resizer: HTMLDivElement;
 

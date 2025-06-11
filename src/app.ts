@@ -1,45 +1,47 @@
 import {DatabaseService} from "./services/DatabaseService";
-import {Sidebar} from "./ui/Sidebar";
+import {Sidebar} from "./components/sidebar/Sidebar";
 import {Logger} from "./services/Logger";
+import {Options} from "./components/options/Options";
+import {StateService} from "./services/StateService";
 import {SettingsService} from "./services/SettingsService";
-import {Options} from "./ui/Options";
-import {SavesService} from "./services/SavesService";
 
 
 export class App {
     private _logger: Logger;
-    private _databaseService: DatabaseService;
-    private _settingsService: SettingsService;
-    private _savesService: SavesService;
+    private _database: DatabaseService;
+    private _settings: SettingsService;
+    private _state: StateService;
 
     private _sidebar: Sidebar;
     private _options: Options;
 
     public get logger() { return this._logger; }
-    public get databaseService() { return this._databaseService; }
-    public get settingsService() { return this._settingsService; }
-    public get savesService() { return this._savesService; }
+    public get settings() { return this._settings; }
+    public get database() { return this._database; }
+    public get state() { return this._state; }
+
+    public get options() { return this._options; }
 
     public async init() {
         try {
             // indexedDB.deleteDatabase("infinite-fish");
 
-            // setup site structure
             this._logger = new Logger();
-            this._sidebar = new Sidebar();
-            this._options = new Options();
 
             // setup db
-            this._databaseService = new DatabaseService();
-            await this._databaseService.connect();
+            this._database = new DatabaseService();
+            await this._database.connect();
 
-            // load data from db
-            this._settingsService = new SettingsService();
-            await this._settingsService.init();
+            // setup settings
+            this._settings = new SettingsService();
+            await this._settings.init();
 
-            this._savesService = new SavesService();
-            await this._savesService.init();
+            // load state
+            this._state = new StateService();
+            await this._state.init();
 
+            this._sidebar = new Sidebar();
+            this._options = new Options();
         } catch (e) {
             return;
         }

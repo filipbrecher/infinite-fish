@@ -1,0 +1,58 @@
+import type {IComponent} from "../IComponent";
+import {SavesPopup} from "./SavesPopup";
+import {SettingsPopup} from "./SettingsPopup";
+import type {IPopup} from "./IPopup";
+
+
+export class Options implements IComponent {
+    private readonly savesPopup: SavesPopup;
+    private readonly settingsPopup: SettingsPopup;
+
+    private openedPopup: IPopup | null = null;
+
+    private readonly savesButton: HTMLDivElement;
+    private readonly settingsButton: HTMLDivElement;
+
+    private readonly overlay: HTMLDivElement;
+
+    constructor() {
+        this.savesPopup = new SavesPopup();
+        this.settingsPopup = new SettingsPopup();
+
+        this.savesButton = <HTMLDivElement>document.getElementById("saves-button");
+        this.settingsButton = <HTMLDivElement>document.getElementById("settings-button");
+        this.overlay = <HTMLDivElement>document.getElementById("options-overlay");
+
+        this.overlay.addEventListener("click", this.closePopup);
+        this.savesButton.addEventListener("click", this.onMouseDownSavesButton);
+        this.settingsButton.addEventListener("click", this.onMousedownSettingsButton);
+    }
+
+    private onMouseDownSavesButton = (event) => {
+        if (this.openedPopup) return;
+        this.openedPopup = this.savesPopup;
+
+        this.openedPopup.open();
+        this.overlay.style.display = "block";
+        event.stopPropagation();
+    }
+
+    private onMousedownSettingsButton = (event) => {
+        if (this.openedPopup) return;
+        this.openedPopup = this.settingsPopup;
+
+        this.openedPopup.open();
+        this.overlay.style.display = "block";
+        event.stopPropagation();
+    }
+
+    private closePopup = (event) => {
+        if (event.target.id !== "options-overlay") return;
+        if ( !this.openedPopup) return;
+
+        this.openedPopup.close();
+        this.openedPopup = null;
+        this.overlay.style.display = "none";
+        event.stopPropagation();
+    }
+}

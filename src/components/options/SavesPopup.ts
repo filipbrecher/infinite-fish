@@ -1,22 +1,62 @@
-import type {Save} from "../types/dbSchema";
-import {app} from "../main";
-import {Utils} from "./Utils";
-import {MAX_SAVE_NAME_LENGTH} from "../constants/defaults";
+import type {Save} from "../../types/dbSchema";
+import {app} from "../../main";
+import {MAX_SAVE_NAME_LENGTH} from "../../constants/defaults";
+import {Utils} from "../../services/Utils";
+import type {IPopup} from "./IPopup";
 
 
-export class SavesService {
-    private _saves: Save[];
+export class SavesPopup implements IPopup {
+    private readonly popup: HTMLDivElement;
+    private readonly importButton: HTMLDivElement;
+    private readonly createButton: HTMLDivElement;
+    private readonly savesList: HTMLDivElement;
 
-    public async init(): Promise<void> {
-        this._saves = await app.databaseService.loadSaveInfo();
+    constructor() {
+        this.popup = <HTMLDivElement>document.getElementById("saves-popup");
+        this.importButton = <HTMLDivElement>document.getElementById("saves-import");
+        this.createButton = <HTMLDivElement>document.getElementById("saves-create");
+        this.savesList = <HTMLDivElement>document.getElementById("saves-list");
+
+        this.importButton.addEventListener("click", this.onMouseDownImportButton);
+        this.createButton.addEventListener("click", this.onMouseDownCreateButton);
+    }
+
+    public open = () => {
+        this.savesList.innerHTML = "";
+        this.getSortedSaves().forEach((save) => {
+            this.prependSave(save);
+        });
+
+        this.popup.style.display = "flex";
+    }
+
+    public close = () => {
+        this.popup.style.display = "none";
+    }
+
+    private prependSave(save: Save) {
+        const div = this.saveToDiv(save);
+        const deleteIcon = <HTMLInputElement>div.querySelector(".delete-icon");
+        deleteIcon.addEventListener("click", this.onMouseDownDeleteButton);
+        this.savesList.prepend(div);
+    }
+
+    private onMouseDownDeleteButton = async (event) => {
+        if ( !window.confirm("Are you sure you want to delete this save? This action is irreversible.")) return;
+
+        const id = Number(event.target.parentElement.id.slice(13));
+        const saveDiv = document.getElementById(`save-${id}`);
+        if ( await app.state.deleteSave(id)) {
+            saveDiv.remove();
+        }
     }
 
     public getSortedSaves(): Save[] {
-        return [...this._saves].sort((a, b) => {
+        return [...app.state.saves].sort((a, b) => {
             if (a.datetimeUpdated != b.datetimeUpdated) {
-                return b.datetimeUpdated - a.datetimeUpdated;
+                return a.datetimeUpdated - b.datetimeUpdated;
             }
-            return b.datetimeCreated - a.datetimeCreated;
+            return a.datetimeCreated - b.datetimeCreated;
         });
     }
 
@@ -70,7 +110,7 @@ export class SavesService {
                 if (newName.length > 0 && newName != save.name) {
                     nameSpan.textContent = newName;
                     save.name = newName;
-                    app.databaseService.renameSave(save.id, newName).catch();
+                    app.database.renameSave(save.id, newName).catch();
                 }
                 nameSpan.style.display = "inline";
                 nameInput.style.display = "none";
@@ -83,23 +123,13 @@ export class SavesService {
         return wrapper;
     }
 
-    public async createNewSave(): Promise<Save> {
-        const newSave = await app.databaseService.createNewSave().catch();
-        this._saves.push(newSave);
-        return newSave;
+    private onMouseDownImportButton = (event) => {
+        console.log("clicked onMouseDownImportButton");
+        // todo
     }
 
-    public async deleteSave(id: number): Promise<boolean> {
-        try {
-            // todo only when the active save isn't this one
-            await app.databaseService.deleteSave(id);
-            const index = this._saves.findIndex(s => s.id === id);
-            if (index !== -1) {
-                this._saves.splice(index, 1);
-            }
-            return true;
-        } catch {
-            return false;
-        }
+    private onMouseDownCreateButton = async (event) => {
+        const newSave = await app.state.createNewSave();
+        this.prependSave(newSave);
     }
 }

@@ -12,6 +12,6 @@ export class SettingsService {
     }
 
     public async init(): Promise<void> {
-        this._settings = await app.databaseService.loadSettings();
+        this._settings = await app.database.loadSettings();
     }
 }

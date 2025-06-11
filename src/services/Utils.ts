@@ -14,4 +14,20 @@ export class Utils {
 
         return `${year}/${month}/${day} - ${hour}:${minute}:${second}`;
     }
+
+    public static minBy<T>(arr: T[], evaluator: (item: T) => number): T | undefined {
+        if (arr.length === 0) return undefined;
+
+        let minItem = arr[0];
+        let minValue = evaluator(minItem);
+
+        for (let i = 1; i < arr.length; i++) {
+            const value = evaluator(arr[i]);
+            if (value < minValue) {
+                minItem = arr[i];
+                minValue = value;
+            }
+        }
+        return minItem;
+    }
 }
