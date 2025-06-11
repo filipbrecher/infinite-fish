@@ -5,12 +5,12 @@ export class Utils {
         const d = datetimeNumber ? new Date(datetimeNumber) : new Date();
 
         const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
+        const month = (d.getMonth() + 1).toString().padStart(2, "0");
+        const day = d.getDate().toString().padStart(2, "0");
 
         const hour = d.getHours();
-        const minute = d.getMinutes();
-        const second = d.getSeconds();
+        const minute = d.getMinutes().toString().padStart(2, "0");
+        const second = d.getSeconds().toString().padStart(2, "0");
 
         return `${year}/${month}/${day} - ${hour}:${minute}:${second}`;
     }
