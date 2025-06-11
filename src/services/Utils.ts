@@ -30,4 +30,8 @@ export class Utils {
         }
         return minItem;
     }
+
+    public static wait(ms: number): Promise<void> {
+        return new Promise<void>((resolve) => setTimeout(resolve, ms));
+    }
 }

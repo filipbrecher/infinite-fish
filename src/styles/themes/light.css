@@ -5,6 +5,10 @@ body[data-theme="light"] {
 
     /* board */
     --board-bg: white;
+    --instance-border: black;
+    --instance-bg: var(--board-bg);
+    --instance-border-hover: #313131;
+    --instance-bg-hover: #d2d2d2;
 
     /* sidebar */
     --sidebar-bg: var(--board-bg);
@@ -19,7 +23,7 @@ body[data-theme="light"] {
     --options-icon-color-hover: black;
     --options-popup-border: black;
     --options-popup-bg: var(--board-bg);
-    --options-popup-button-hover: #d2d2d2;
+    --options-popup-button-hover: var(--instance-bg-hover);
     --save-border: #8f8f8f;
     --save-bg: var(--board-bg);
 }

@@ -45,6 +45,7 @@ export class StateService {
     public get saves() { return this._saves; }
     private _activeSaveId: number;
     private _elements: Element[];
+    public get elements() { return this._elements; }
     private _workspaces: Workspace[];   // all workspaces of the active save
     private _activeWorkspaceId: number;
     private _instances: Instance[];
@@ -53,9 +54,7 @@ export class StateService {
     private _overlay: HTMLDivElement;
     private _overlayText: HTMLDivElement;
 
-    public readonly _saveUnloaded: Subject = new Subject();
     public readonly _saveLoaded: Subject = new Subject();
-    public readonly _workspaceUnloaded: Subject = new Subject;
     public readonly _workspaceLoaded: Subject = new Subject();
 
     constructor() {
@@ -68,10 +67,11 @@ export class StateService {
     private setState(s: State) {
         if (this._state === s) return;
         this._state = s;
+        console.log("setState to", this._state);
 
         switch (s) {
             case State.WAITING:
-                this._overlayText.innerText = "Waiting to finish combining all element...";
+                this._overlayText.innerText = "Waiting to finish combining all elements...";
                 this._overlay.style.display = "block";
                 break;
             case State.LOADING_SAVE:
@@ -106,7 +106,13 @@ export class StateService {
     }
 
     public async loadSave(saveId: number) {
-        // todo
+        if (saveId === this._activeSaveId) return;
+
+        this.setState(State.WAITING);
+        // todo - wait for elements to finish combining
+        await Utils.wait(2000);
+        this.setState(State.LOADING_SAVE);
+        this._activeSaveId = saveId;
         await this.loadActiveSave();
     }
 
@@ -123,6 +129,8 @@ export class StateService {
         this._elements = await app.database.getElements(this._activeSaveId);
         this._instances = await app.database.getInstances(this._activeWorkspaceId);
 
+        this._saveLoaded.notify();
+        this._workspaceLoaded.notify();
         // todo - sidebar init (or init after reset)
         // todo - load workspaces bar
         // todo - spawn instances

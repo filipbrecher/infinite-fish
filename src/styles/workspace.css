@@ -14,3 +14,22 @@
     pointer-events: none;
     z-index: 100;
 }
+
+.instance {
+    background-color: var(--instance-bg);
+    border: 1px solid var(--instance-border);
+    padding: 4px 5px;
+    border-radius: 5px;
+}
+
+.view {
+    background-color: var(--instance-bg);
+    border: 1px solid var(--instance-border);
+    padding: 4px 5px;
+    border-radius: 5px;
+}
+
+.view:hover {
+    background-color: var(--instance-bg-hover);
+    border: 1px solid var(--instance-border-hover);
+}

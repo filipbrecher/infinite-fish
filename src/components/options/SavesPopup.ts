@@ -6,19 +6,21 @@ import type {IPopup} from "./IPopup";
 
 
 export class SavesPopup implements IPopup {
+    private readonly overlay: HTMLDivElement;
     private readonly popup: HTMLDivElement;
     private readonly importButton: HTMLDivElement;
     private readonly createButton: HTMLDivElement;
     private readonly savesList: HTMLDivElement;
 
     constructor() {
+        this.overlay = <HTMLDivElement>document.getElementById("options-overlay");
         this.popup = <HTMLDivElement>document.getElementById("saves-popup");
         this.importButton = <HTMLDivElement>document.getElementById("saves-import");
         this.createButton = <HTMLDivElement>document.getElementById("saves-create");
         this.savesList = <HTMLDivElement>document.getElementById("saves-list");
 
-        this.importButton.addEventListener("click", this.onMouseDownImportButton);
-        this.createButton.addEventListener("click", this.onMouseDownCreateButton);
+        this.importButton.addEventListener("click", this.onClickImportButton);
+        this.createButton.addEventListener("click", this.onClickCreateButton);
     }
 
     public open = () => {
@@ -34,21 +36,14 @@ export class SavesPopup implements IPopup {
         this.popup.style.display = "none";
     }
 
-    private prependSave(save: Save) {
-        const div = this.saveToDiv(save);
-        const deleteIcon = <HTMLInputElement>div.querySelector(".delete-icon");
-        deleteIcon.addEventListener("click", this.onMouseDownDeleteButton);
-        this.savesList.prepend(div);
+    private onClickImportButton = (event) => {
+        console.log("clicked onMouseDownImportButton");
+        // todo
     }
 
-    private onMouseDownDeleteButton = async (event) => {
-        if ( !window.confirm("Are you sure you want to delete this save? This action is irreversible.")) return;
-
-        const id = Number(event.target.parentElement.id.slice(13));
-        const saveDiv = document.getElementById(`save-${id}`);
-        if ( await app.state.deleteSave(id)) {
-            saveDiv.remove();
-        }
+    private onClickCreateButton = async (event) => {
+        const newSave = await app.state.createNewSave();
+        this.prependSave(newSave);
     }
 
     public getSortedSaves(): Save[] {
@@ -77,9 +72,9 @@ export class SavesPopup implements IPopup {
                 </div>
                 <div id="save-actions-${save.id}" class="save-actions">
                     <div class="name-action-icon edit-icon clickable-icon" title="Edit Name"></div>
-                    <div class="play-icon clickable-icon" title="Play"></div>
+                    <div class="load-icon clickable-icon" title="Load"></div>
                     <div class="export-icon clickable-icon" title="Export"></div>
-                    <div  class="delete-icon clickable-icon" title="Delete"></div>
+                    <div class="delete-icon clickable-icon" title="Delete"></div>
                 </div>
             </div>
             <div class="save-stats">
@@ -123,13 +118,28 @@ export class SavesPopup implements IPopup {
         return wrapper;
     }
 
-    private onMouseDownImportButton = (event) => {
-        console.log("clicked onMouseDownImportButton");
-        // todo
+    private prependSave(save: Save) {
+        const div = this.saveToDiv(save);
+        const deleteIcon = <HTMLDivElement>div.querySelector(".delete-icon");
+        const loadIcon = <HTMLDivElement>div.querySelector(".load-icon");
+        deleteIcon.addEventListener("click", this.onClickDeleteButton);
+        loadIcon.addEventListener("click", this.onClickLoadButton);
+        this.savesList.prepend(div);
     }
 
-    private onMouseDownCreateButton = async (event) => {
-        const newSave = await app.state.createNewSave();
-        this.prependSave(newSave);
+    private onClickLoadButton = (event) => {
+        const id = Number(event.target.parentElement.id.slice(13));
+        this.overlay.click();
+        app.state.loadSave(id).catch();
+    }
+
+    private onClickDeleteButton = async (event) => {
+        if ( !window.confirm("Are you sure you want to delete this save? This action is irreversible.")) return;
+
+        const id = Number(event.target.parentElement.id.slice(13));
+        const saveDiv = document.getElementById(`save-${id}`);
+        if ( await app.state.deleteSave(id)) {
+            saveDiv.remove();
+        }
     }
 }

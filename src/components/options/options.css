@@ -153,8 +153,8 @@
 .save-icon {
     background-image: url("/public/save_name_button.png");
 }
-.play-icon {
-    background-image: url("/public/play_button.png");
+.load-icon {
+    background-image: url("/public/load_save_button.png");
 }
 .export-icon {
     background-image: url("/public/export_button.png");

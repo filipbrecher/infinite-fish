@@ -23,15 +23,13 @@ export class Options implements IComponent {
         this.savesButton = <HTMLDivElement>document.getElementById("saves-button");
         this.settingsButton = <HTMLDivElement>document.getElementById("settings-button");
         this.overlay = <HTMLDivElement>document.getElementById("options-overlay");
-    }
 
-    public prepare() {
         this.overlay.addEventListener("click", this.closePopup);
-        this.savesButton.addEventListener("click", this.onMouseDownSavesButton);
-        this.settingsButton.addEventListener("click", this.onMousedownSettingsButton);
+        this.savesButton.addEventListener("click", this.onClickSavesButton);
+        this.settingsButton.addEventListener("click", this.onClickSettingsButton);
     }
 
-    private onMouseDownSavesButton = (event) => {
+    private onClickSavesButton = (event) => {
         if (this.openedPopup) return;
         this.openedPopup = this.savesPopup;
 
@@ -40,7 +38,7 @@ export class Options implements IComponent {
         event.stopPropagation();
     }
 
-    private onMousedownSettingsButton = (event) => {
+    private onClickSettingsButton = (event) => {
         if (this.openedPopup) return;
         this.openedPopup = this.settingsPopup;
 

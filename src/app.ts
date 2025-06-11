@@ -33,14 +33,14 @@ export class App {
             this._settings = new SettingsService();
             await this._settings.init();
 
+            // setup state service
+            this._state = new StateService();
+
             // prepare components
             this._sidebar = new Sidebar();
-            this._sidebar.prepare();
             this._options = new Options();
-            this._options.prepare();
 
-            // setup state, load save
-            this._state = new StateService();
+            // load save
             await this._state.init();
         } catch (e) {
             return;
