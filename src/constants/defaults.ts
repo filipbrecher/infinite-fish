@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
 }
 
 export const DEFAULT_SAVE_NAME: string = "New Save";
+export const MAX_SAVE_NAME_LENGTH: number = 30;
 export const DEFAULT_SAVE: Partial<Save> = {
     datetimeUpdated: 0,
     elementCount: 4,

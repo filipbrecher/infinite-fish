@@ -10,10 +10,6 @@ h1, h2, h3 {
     user-select: none;
 }
 
-div.button {
-    cursor: pointer;
-}
-
 :root {
     --board-bg: dark gray;
     --sidebar-bg: #b7b7b7;

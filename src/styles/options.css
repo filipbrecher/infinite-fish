@@ -1,4 +1,13 @@
 
+.clickable-icon {
+    background-size: contain;
+    filter: opacity(var(--options-icon-opacity)) drop-shadow(0 0 0 var(--options-icon-color));
+    cursor: pointer;
+}
+.clickable-icon:hover {
+    filter: opacity(var(--options-icon-opacity-hover)) drop-shadow(0 0 0 var(--options-icon-color));
+}
+
 #options {
     position: absolute;
     bottom: 0; left: 0;
@@ -9,14 +18,9 @@
     z-index: 2;
 }
 
-#options div {
+#options>div {
     height: 50px;
     width: 50px;
-    background-size: contain;
-    filter: opacity(var(--options-icon-opacity)) drop-shadow(0 0 0 var(--options-icon-color));
-}
-#options div:hover {
-    filter: opacity(var(--options-icon-opacity-hover)) drop-shadow(0 0 0 var(--options-icon-color));
 }
 .saves-icon {
     background-image: url("/public/save_button.png");
@@ -106,8 +110,30 @@
     flex-direction: column;
 }
 
-.save-name {}
-.save-date {}
+.save-name {
+    font-size: 1.5em;
+    display: inline-flex;
+    align-items: center;
+    width: 300px;
+}
+
+.name-display, .name-input {
+    all: unset;
+    flex: 1 1 auto;
+    box-sizing: border-box;
+}
+.name-display {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid transparent;
+}
+.name-input {
+    border-bottom: 1px solid black;
+}
+.save-date {
+    font-size: 0.8em;
+    color: gray;
+}
 
 .save-actions {
     display: flex;
@@ -115,17 +141,18 @@
     margin: 5px;
 }
 
-.edit-icon, .export-icon, .delete-icon {
+.save-actions>div {
     width: 20px;
     height: 20px;
-    background-size: contain;
-    filter: opacity(var(--options-icon-opacity)) drop-shadow(0 0 0 var(--options-icon-color));
-}
-.edit-icon:hover, .export-icon:hover, .delete-icon:hover {
-    filter: opacity(var(--options-icon-opacity-hover)) drop-shadow(0 0 0 var(--options-icon-color));
 }
 .edit-icon {
-    background-image: url("/public/edit_button.png");
+    background-image: url("/public/edit_name_button.png");
+}
+.save-icon {
+    background-image: url("/public/save_name_button.png");
+}
+.play-icon {
+    background-image: url("/public/play_button.png");
 }
 .export-icon {
     background-image: url("/public/export_button.png");
@@ -142,5 +169,4 @@
 }
 
 .stat-label {}
-
 .stat-value {}
