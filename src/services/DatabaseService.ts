@@ -211,7 +211,6 @@ export class DatabaseService {
                 const newSave = {
                     ...save,
                     name: newName,
-                    datetimeUpdated: new Date().getTime(),
                 }
                 store.put(newSave);
             }
