@@ -62,12 +62,15 @@
     width: 30px;
     background-size: contain;
 }
-#saves-import, #saves-create {
+.options-button {
     background-color: transparent;
     border: 2px solid var(--options-popup-border);
     border-radius: 5px;
     padding: 2px 5px;
     cursor: pointer;
+}
+.options-button:hover {
+    background-color: var(--options-popup-button-hover);
 }
 #saves-import {
     margin-left: auto;

@@ -67,7 +67,6 @@ export class StateService {
     private setState(s: State) {
         if (this._state === s) return;
         this._state = s;
-        console.log("setState to", this._state);
 
         switch (s) {
             case State.WAITING:
@@ -100,9 +99,6 @@ export class StateService {
         const mostRecentSave = <Save>Utils.minBy<Save>(this._saves, save => -save.datetimeUpdated);
         this._activeSaveId = mostRecentSave.id;
         await this.loadActiveSave();
-        console.log("loaded elements:", this._elements);
-        console.log("loaded workspaces:", this._workspaces);
-        console.log("loaded instances:", this._instances);
     }
 
     public async loadSave(saveId: number) {

@@ -8,7 +8,7 @@ body[data-theme="light"] {
     --instance-border: black;
     --instance-bg: var(--board-bg);
     --instance-border-hover: #313131;
-    --instance-bg-hover: #d2d2d2;
+    --instance-bg-hover: #e5e5e5;
 
     /* sidebar */
     --sidebar-bg: var(--board-bg);
