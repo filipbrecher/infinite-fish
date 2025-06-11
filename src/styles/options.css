@@ -38,8 +38,8 @@
 }
 .popup {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    top: 7vh; left: 50%;
+    transform: translate(-50%, 0);
     background-color: var(--options-popup-bg);
     border: 2px solid var(--options-popup-border);
     border-radius: 5px;
@@ -64,11 +64,17 @@
     width: 30px;
     background-size: contain;
 }
-#saves-import {
+#saves-import, #saves-create {
+    background-color: transparent;
     border: 2px solid var(--options-popup-border);
     border-radius: 5px;
     padding: 2px 5px;
     cursor: pointer;
+}
+#saves-import:hover, #saves-create:hover {
+    background-color: var(--options-popup-button-hover);
+}
+#saves-import {
     margin-left: auto;
 }
 
@@ -76,7 +82,7 @@
     flex: 1;
     overflow-y: auto;
     min-height: 100px;
-    max-height: 75vh;
+    max-height: 80vh;
     min-width: 200px;
     padding: 5px;
 

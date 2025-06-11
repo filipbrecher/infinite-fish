@@ -23,6 +23,7 @@ export class SavesService {
     public saveToDiv(save: Save): HTMLDivElement {
         const wrapper = document.createElement("div");
         wrapper.className = "save";
+        wrapper.id = `save-${save.id}`;
         wrapper.innerHTML = `
             <div class="save-top">
                 <div class="save-info">
@@ -34,11 +35,11 @@ export class SavesService {
                         ${Utils.getFormattedDatetime(save.datetimeUpdated === 0 ? save.datetimeCreated : save.datetimeUpdated)}
                     </div>
                 </div>
-                <div class="save-actions">
+                <div id="save-actions-${save.id}" class="save-actions">
                     <div class="name-action-icon edit-icon clickable-icon" title="Edit Name"></div>
                     <div class="play-icon clickable-icon" title="Play"></div>
                     <div class="export-icon clickable-icon" title="Export"></div>
-                    <div class="delete-icon clickable-icon" title="Delete"></div>
+                    <div  class="delete-icon clickable-icon" title="Delete"></div>
                 </div>
             </div>
             <div class="save-stats">
@@ -80,5 +81,21 @@ export class SavesService {
         });
 
         return wrapper;
+    }
+
+    public async createNewSave(): Promise<Save> {
+        const newSave = await app.databaseService.createNewSave().catch();
+        this._saves.push(newSave);
+        return newSave;
+    }
+
+    public async deleteSave(id: number): Promise<boolean> {
+        try {
+            // todo only when the active save isn't this one
+            await app.databaseService.deleteSave(id);
+            return true;
+        } catch {
+            return false;
+        }
     }
 }

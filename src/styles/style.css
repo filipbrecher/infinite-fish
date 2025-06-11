@@ -23,6 +23,7 @@ h1, h2, h3 {
     --options-icon-color-hover: black;
     --options-popup-border: black;
     --options-popup-bg: white;
+    --options-popup-button-hover: #d2d2d2;
     --save-border: #8f8f8f;
     --save-bg: white;
 }

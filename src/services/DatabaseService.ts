@@ -161,10 +161,12 @@ export class DatabaseService {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
 
+            const now = new Date().getTime();
             const save: Partial<Save> = {
                 ...DEFAULT_SAVE,
                 name: name,
-                datetimeCreated: new Date().getTime(),
+                datetimeCreated: now,
+                datetimeUpdated: now,
             };
             const saveReq = saveStore.add(save);
 
