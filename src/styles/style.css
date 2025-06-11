@@ -3,6 +3,7 @@ html, body {
     margin: 0; padding: 0;
     overflow: hidden;
     user-select: none;
+    color: var(--text-color);
 }
 
 h1, h2, h3 {
@@ -10,23 +11,6 @@ h1, h2, h3 {
     user-select: none;
 }
 
-:root {
-    --board-bg: dark gray;
-    --sidebar-bg: #b7b7b7;
-    --sidebar-border: black;
-
-    /* options */
-    --overlay: #00000020;
-    --options-icon-opacity: 0.4;
-    --options-icon-opacity-hover: 1;
-    --options-icon-color: black;
-    --options-icon-color-hover: black;
-    --options-popup-border: black;
-    --options-popup-bg: white;
-    --options-popup-button-hover: #d2d2d2;
-    --save-border: #8f8f8f;
-    --save-bg: white;
-}
 
 .overlay {
     position: fixed;

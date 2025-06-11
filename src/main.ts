@@ -1,7 +1,7 @@
 import "./styles/style.css";
 import "./styles/workspace.css";
-import "./styles/sidebar.css";
-import "./styles/options.css";
+import "./styles/themes/light.css";
+import "./styles/themes/dark.css";
 import {App} from "./app.ts"
 
 const channel = new BroadcastChannel("infinite-fish");

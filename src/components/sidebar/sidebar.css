@@ -1,7 +1,7 @@
 
 #sidebar {
     background-color: var(--sidebar-bg);
-    border-left: 2px solid var(--sidebar-border);
+    border-left: 1px solid var(--sidebar-border);
     position: absolute;
     top: 0; right: 0; bottom: 0;
     display: flex;

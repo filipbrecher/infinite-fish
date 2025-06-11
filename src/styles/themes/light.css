@@ -1,0 +1,25 @@
+
+body[data-theme="light"] {
+    --text-color: black;
+    --text-color-fainted: gray;
+
+    /* board */
+    --board-bg: white;
+
+    /* sidebar */
+    --sidebar-bg: var(--board-bg);
+    --sidebar-border: black;
+
+    /* options */
+    --overlay: #00000020;
+    --options-icon-opacity: 0.4;
+    --options-icon-opacity-hover: 1;
+    --options-icon-filter: drop-shadow(0 0 0 var(--options-icon-color));
+    --options-icon-color: black;
+    --options-icon-color-hover: black;
+    --options-popup-border: black;
+    --options-popup-bg: var(--board-bg);
+    --options-popup-button-hover: #d2d2d2;
+    --save-border: #8f8f8f;
+    --save-bg: var(--board-bg);
+}

@@ -1,3 +1,4 @@
+import "./options.css";
 import type {IComponent} from "../IComponent";
 import {SavesPopup} from "./SavesPopup";
 import {SettingsPopup} from "./SettingsPopup";

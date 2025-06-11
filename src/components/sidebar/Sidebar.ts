@@ -1,3 +1,4 @@
+import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 
 export class Sidebar implements IComponent {

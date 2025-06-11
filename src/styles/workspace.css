@@ -1,6 +1,9 @@
 
 #board {
+    position: absolute;
     background-color: var(--board-bg);
+    min-width: 100vw;
+    min-height: 100vh;
     white-space: nowrap;
     z-index: 0;
 }
@@ -8,5 +11,6 @@
 #drag-layer {
     background-color: transparent;
     white-space: nowrap;
+    pointer-events: none;
     z-index: 100;
 }
