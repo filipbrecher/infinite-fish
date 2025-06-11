@@ -26,22 +26,22 @@ export class App {
         try {
             // indexedDB.deleteDatabase("infinite-fish");
 
+            // setup logger, db and settings
             this._logger = new Logger();
-
-            // setup db
             this._database = new DatabaseService();
             await this._database.connect();
-
-            // setup settings
             this._settings = new SettingsService();
             await this._settings.init();
 
-            // load state
+            // prepare components
+            this._sidebar = new Sidebar();
+            this._sidebar.prepare();
+            this._options = new Options();
+            this._options.prepare();
+
+            // setup state, load save
             this._state = new StateService();
             await this._state.init();
-
-            this._sidebar = new Sidebar();
-            this._options = new Options();
         } catch (e) {
             return;
         }

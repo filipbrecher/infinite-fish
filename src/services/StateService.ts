@@ -7,7 +7,7 @@ import {Subject} from "./Subject";
 // 1) state := loading
 // 2) load saves info
 // 3) if no save -> create new default save
-// 4) load most recent save (start with point 5 below)
+// 4) load most recent save (start with point 3 below)
 
 // on change of played save
 // 1) state := waiting (for all elements that are still combining to combine)
@@ -66,7 +66,9 @@ export class StateService {
     }
 
     private setState(s: State) {
+        if (this._state === s) return;
         this._state = s;
+
         switch (s) {
             case State.WAITING:
                 this._overlayText.innerText = "Waiting to finish combining all element...";

@@ -14,7 +14,9 @@ export class Sidebar implements IComponent {
     constructor() {
         this.sidebar = <HTMLDivElement>document.getElementById("sidebar");
         this.resizer = <HTMLDivElement>document.getElementById("resizer");
+    }
 
+    public prepare() {
         this.sidebar.style.setProperty("width", `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onClickResizer);
     }
