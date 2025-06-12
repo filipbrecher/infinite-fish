@@ -2,6 +2,7 @@ import type {Save, Workspace, Element, Instance} from "../types/dbSchema";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "./Subject";
+import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
@@ -32,7 +33,6 @@ import {Subject} from "./Subject";
 // 7) add instances to the board
 // last) state := running
 
-// todo - possibly could make some hook or whatever that when changing saves clears data from memory (like if you have a lot of elements in both of the files)
 enum State {
     WAITING = "WAITING",
     LOADING_SAVE = "LOADING_SAVE",
@@ -40,24 +40,28 @@ enum State {
     RUNNING = "RUNNING",
 }
 
+// todo - block and debounce on block text
+// todo - unload -> register components
 export class StateService {
-    private _saves: Save[];             // all saves
+    private _saves: Save[] = [];             // all saves
+    private _activeSaveId: number | null = null;
+    private _elements: Element[] = [];
+    private _workspaces: Workspace[] = [];   // all workspaces of the active save
+    private _activeWorkspaceId: number | null = null;
+    private _instances: Instance[] = [];
     public get saves() { return this._saves; }
-    private _activeSaveId: number;
     public get activeSaveId() { return this._activeSaveId; }
-    private _elements: Element[];
     public get elements() { return this._elements; }
-    private _workspaces: Workspace[];   // all workspaces of the active save
     public get workspaces() { return this._workspaces; }
-    private _activeWorkspaceId: number;
     public get activeWorkspaceId() { return this._activeWorkspaceId; }
-    private _instances: Instance[];
 
     private _state: State;
     private _overlay: HTMLDivElement;
     private _overlayText: HTMLDivElement;
 
+    public readonly _saveUnloaded: Subject = new Subject();
     public readonly _saveLoaded: Subject = new Subject();
+    public readonly _workspaceUnloaded: Subject = new Subject();
     public readonly _workspaceLoaded: Subject = new Subject();
 
     constructor() {
@@ -65,6 +69,22 @@ export class StateService {
         this._overlayText = <HTMLDivElement>document.getElementById("overlay-text");
 
         this.setState(State.LOADING_SAVE);
+        this.updateActiveTimeLoop();
+    }
+
+    private updateActiveTimeLoop = () => {
+        setTimeout(() => {
+            this.updateActiveTime();
+            this.updateActiveTimeLoop();
+        }, SAVE_ACTIVE_AT_TIMEOUT);
+    }
+
+    private updateActiveTime = () => {
+        if ( !this._activeSaveId) return;
+        const newTime = Date.now();
+        app.database.updateActiveTimeOfSave(this._activeSaveId, newTime).catch();
+        const save = this._saves.find(s => s.id === this._activeSaveId);
+        if (save) save.datetimeActive = newTime;
     }
 
     private setState(s: State) {
@@ -99,9 +119,8 @@ export class StateService {
             this._saves.push(newSave);
         }
 
-        const mostRecentSave = <Save>Utils.minBy<Save>(this._saves, save => -save.datetimeUpdated);
-        this._activeSaveId = mostRecentSave.id;
-        await this.loadActiveSave();
+        const mostRecentSave = <Save>Utils.minBy<Save>(this._saves, save => -save.datetimeActive);
+        await this.loadActiveSave(mostRecentSave.id);
     }
 
     public async loadSave(saveId: number) {
@@ -109,22 +128,29 @@ export class StateService {
 
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_SAVE);
-        this._activeSaveId = saveId;
-        await this.loadActiveSave();
+
+        this.clearSaveFromMemory();
+        this._workspaceUnloaded.notify();
+        this._saveUnloaded.notify();
+
+        await this.loadActiveSave(saveId);
     }
 
-    private async loadActiveSave() {
-        this._workspaces = await app.database.getWorkspaces(this._activeSaveId);
+    private async loadActiveSave(activeSaveId: number) {
+        this._workspaces = await app.database.getWorkspaces(activeSaveId);
         if (this._workspaces.length === 0) {
-            const newWs = await app.database.createWorkspace(this._activeSaveId);
+            const newWs = await app.database.createWorkspace(activeSaveId);
             this._workspaces.push(newWs);
         }
 
-        const firstWs = <Workspace>Utils.minBy<Workspace>(this._workspaces, ws => ws.position);
-        this._activeWorkspaceId = firstWs.id;
+        const activeWsId = (<Workspace>Utils.minBy<Workspace>(this._workspaces, ws => ws.position)).id;
 
-        this._elements = await app.database.getElements(this._activeSaveId);
-        this._instances = await app.database.getInstances(this._activeWorkspaceId);
+        this._elements = await app.database.getElements(activeSaveId);
+        this._instances = await app.database.getInstances(activeWsId);
+
+        this._activeSaveId = activeSaveId;
+        this._activeWorkspaceId = activeWsId;
+        this.updateActiveTime();
 
         this._saveLoaded.notify();
         this._workspaceLoaded.notify();
@@ -136,12 +162,17 @@ export class StateService {
 
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_WORKSPACE);
-        this._activeWorkspaceId = workspaceId;
-        await this.loadActiveWorkspace();
+
+        await this.loadActiveWorkspace(workspaceId);
     }
 
-    private async loadActiveWorkspace() {
-        this._instances = await app.database.getInstances(this._activeWorkspaceId);
+    private async loadActiveWorkspace(activeWsId: number) {
+        this._instances = await app.database.getInstances(activeWsId);
+
+        this.clearWorkspaceFromMemory();
+        this._workspaceUnloaded.notify();
+
+        this._activeWorkspaceId = activeWsId;
         this._workspaceLoaded.notify();
         this.setState(State.RUNNING);
     }
@@ -150,6 +181,19 @@ export class StateService {
         this.setState(State.WAITING);
         // todo - wait for elements to finish combining
         await Utils.wait(500);
+    }
+
+    private clearSaveFromMemory() {
+        this._activeSaveId = null;
+        this._activeWorkspaceId = null;
+        this._elements = [];
+        this._workspaces = [];
+        this._instances = [];
+    }
+
+    private clearWorkspaceFromMemory() {
+        this._activeWorkspaceId = null;
+        this._instances = [];
     }
 
     public async createNewSave(): Promise<Save> {

@@ -27,17 +27,7 @@ import type {AbortReason} from "../types/dbSchema";
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
 // todo - pinned elements / or just folder system altogether (basically like workspaces, but with unique ordered items)
-// todo - rework datetimeUpdated, possibly add activeSave, activeWorkspace to Save info (prob a separate store or to settings)
-//      - or possibly just make instead of datetimeUpdated -> datetimeAccessed or smth like that? it would update regularly
-//        (like every couple seconds -> this would be done through like setAccessedTimeToNow(saveId) or like that from stateService
-//        and also would be called upon loading -> this would ensure, that every time a save is opened, that save would also
-//        be opened upon the next page load, and the same could be done with workspaces -> they would have datetimeAccessed
-//        this would also have a method to update that time, and would only be called upon loading that workspace (there isn't
-//        need to update it real-time, cause no point in showing when you last accessed a certain workspace))
 
-// workspace and instance updates / creation / deletion -> does not update the save's datetimeUpdated info (so that it isn't
-// updated that much.. like really, I don't think it is necessary, if it is needed in the future, you can just easily
-// add a request to get the save, update timestamp, and put it updated again to the transaction (probably could be made into a separate method))
 export class DatabaseService {
     private _db: IDBDatabase;
 
@@ -130,8 +120,6 @@ export class DatabaseService {
         });
     }
 
-    // loads all saves' info from db, and if no save is present, then it creates a default save
-    // (new one is created to ensure that when a user loads the page, there is always a save that the user's progress gets saved to)
     public async loadSaveInfo(): Promise<Save[]> {
         let saves: Save[];
 
@@ -161,12 +149,12 @@ export class DatabaseService {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
 
-            const now = new Date().getTime();
+            const now = Date.now();
             const save: Partial<Save> = {
                 ...DEFAULT_SAVE,
                 name: name,
                 datetimeCreated: now,
-                datetimeUpdated: now,
+                datetimeActive: now,
             };
             const saveReq = saveStore.add(save);
 
@@ -194,41 +182,65 @@ export class DatabaseService {
         });
     }
 
+    public async updateActiveTimeOfSave(saveId: number, datetime: number): Promise<void> {
+        return this.updateSave(
+            saveId,
+            (save: Save) => {
+                save.datetimeActive = datetime;
+            },
+            (pastTense: boolean) => {
+                return `${pastTense ? "updated" : "updating"} lastActiveAt of save with id ${saveId}`;
+            }
+        );
+    }
+
     public async renameSave(saveId: number, newName: string): Promise<void> {
+        return this.updateSave(
+            saveId,
+            (save: Save) => {
+                save.name = newName;
+            },
+            (pastTense: boolean) => {
+                return `${pastTense ? "renamed" : "renaming"} save with id ${saveId} to '${newName}'`;
+            }
+        );
+    }
+
+    private async updateSave(
+        saveId: number,
+        updateSave: (save: Save) => void,
+        getLogEnding: (pastTense: boolean) => string,
+    ): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             const tx = this._db.transaction(SAVE_STORE, "readwrite");
             const store = tx.objectStore(SAVE_STORE);
-
             const getReq = store.get(saveId);
 
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 const save = getReq.result;
                 if ( !save) {
-                    abortReason = `Failed to rename save with id ${saveId}: Save not found`;
+                    abortReason = `Error ${getLogEnding(false)}: Save not found`;
                     tx.abort();
                     return;
                 }
 
-                const newSave = {
-                    ...save,
-                    name: newName,
-                }
-                store.put(newSave);
+                updateSave(save);
+                store.put(save);
             }
 
             tx.onabort = (event: IDBTransactionEvent) => {
                 if (abortReason) {
                     app.logger.log("error", "db", abortReason);
                 } else {
-                    app.logger.log("error", "db", `Failed to rename save with id ${saveId} to '${newName}': ${event.target.error?.message}`);
+                    app.logger.log("error", "db", `Error ${getLogEnding(false)}: ${event.target.error?.message}`);
                 }
                 event.stopPropagation();
                 reject();
             }
 
             tx.oncomplete = () => {
-                app.logger.log("info", "db", `Save with id ${saveId} renamed to '${newName}' successfully`);
+                app.logger.log("info", "db", `Successfully ${getLogEnding(true)}`);
                 resolve();
             }
         });
@@ -498,7 +510,7 @@ export class DatabaseService {
         });
     }
 
-    // always create a new element with the specified values
+    // always creates a new element with the specified values
     // DOES NOT check whether the element with this text exists or doesn't exist
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
     // returns id of the element
@@ -507,13 +519,12 @@ export class DatabaseService {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
             const elementStore =tx.objectStore(ELEMENT_STORE);
-            const getReq = saveStore.get(saveId);
+            const getReq = saveStore.getKey(saveId);
 
             let addedElement: Partial<Element>;
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
-                const save = getReq.result;
-                if ( !save) {
+                if ( !getReq.result) {
                     abortReason = `Error adding element '${element.text}' with recipe [${recipe}] to save with id ${saveId}: Save not found`;
                     tx.abort();
                     return;
@@ -540,7 +551,6 @@ export class DatabaseService {
                         saveId,
                         addedElement.id,
                         (save: Save) => {
-                            save.datetimeUpdated = new Date().getTime();
                             save.elementCount++;
                             save.recipeCount += recipe ? 1 : 0;
                             save.discoveryCount += element.discovery ? 1 : 0;
@@ -594,7 +604,6 @@ export class DatabaseService {
             },
             (save: Save) => {
                 if (recipeAdded) {
-                    save.datetimeUpdated = new Date().getTime();
                     save.recipeCount++;
                 }
                 if (isNewDiscovery) {
@@ -616,9 +625,7 @@ export class DatabaseService {
                     delete element.hide;
                 }
             },
-            (save: Save) => {
-                save.datetimeUpdated = new Date().getTime();
-            },
+            () => {},
             (pastTense: boolean) => {
                 return `updat${pastTense ? "ed" : "ing"} visibility of element with id ${elementId}`;
             }

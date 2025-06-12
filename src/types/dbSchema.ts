@@ -16,7 +16,7 @@ export type Save = {
     id: number;
     name: string;
     datetimeCreated: number;
-    datetimeUpdated: number;
+    datetimeActive: number;
 
     elementCount: number;
     recipeCount: number;

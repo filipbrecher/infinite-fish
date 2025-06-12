@@ -50,10 +50,7 @@ export class SavesPopup implements IPopup {
 
     public getSortedSaves(): Save[] {
         return [...app.state.saves].sort((a, b) => {
-            if (a.datetimeUpdated != b.datetimeUpdated) {
-                return a.datetimeUpdated - b.datetimeUpdated;
-            }
-            return a.datetimeCreated - b.datetimeCreated;
+            return a.datetimeActive - b.datetimeActive;
         });
     }
 
@@ -69,7 +66,7 @@ export class SavesPopup implements IPopup {
                         <input class="name-input" type="text" style="display: none" placeholder="Input name" maxlength="${MAX_SAVE_NAME_LENGTH}" />
                     </div>
                     <div class="save-date">
-                        ${Utils.getFormattedDatetime(save.datetimeUpdated === 0 ? save.datetimeCreated : save.datetimeUpdated)}
+                        ${Utils.getFormattedDatetime(save.datetimeActive)}
                     </div>
                 </div>
                 <div id="save-actions-${save.id}" class="save-actions">

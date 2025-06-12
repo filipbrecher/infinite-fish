@@ -9,8 +9,9 @@ export const DEFAULT_SETTINGS: Settings = {
 
 export const DEFAULT_SAVE_NAME: string = "New Save";
 export const MAX_SAVE_NAME_LENGTH: number = 30;
+export const SAVE_ACTIVE_AT_TIMEOUT: number = 10000; // milliseconds
 export const DEFAULT_SAVE: Partial<Save> = {
-    datetimeUpdated: 0,
+    datetimeCreated: 0,
     elementCount: 4,
     recipeCount: 0,
     discoveryCount: 0,
