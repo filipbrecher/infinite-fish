@@ -6,27 +6,48 @@ import {app} from "../../main";
 
 export class Workspaces implements IComponent {
     private readonly list: HTMLDivElement;
+    private activeWsId: number | null = null;
 
     constructor() {
         this.list = <HTMLDivElement>document.getElementById("workspaces-list");
 
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
+        app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
     }
 
     private onSaveLoaded = () => {
         console.log("onSaveLoaded hook");
         this.list.innerHTML = "";
+        this.activeWsId = null;
         [...app.state.workspaces]
             .sort((a, b) => {
                 return a.position - b.position;
             })
             .forEach((ws) => {
                 const wsDiv = <HTMLDivElement>document.createElement("div");
-                wsDiv.id = `workspace-tab-${ws.id}`;
-                wsDiv.classList.add("workspace-tab");
+                wsDiv.id = `workspace-${ws.id}`;
+                wsDiv.classList.add("workspace");
                 wsDiv.innerText = ws.name;
-                if (app.state.activeWorkspaceId === ws.id) wsDiv.classList.add("active");
+                console.log(wsDiv.id)
+
+                wsDiv.addEventListener("click", this.onClickWorkspace);
+
                 this.list.append(wsDiv);
             });
+    }
+
+    private onClickWorkspace = (event) => {
+        const id = Number(event.target.id.slice(10));
+        if (this.activeWsId === id) return;
+        app.state.loadWorkspace(id).catch();
+        event.stopPropagation();
+    }
+
+    private onWorkspaceLoaded = () => {
+        if (this.activeWsId !== null) {
+            this.list.querySelector(`#workspace-${this.activeWsId}`).classList.remove("active");
+        }
+        this.activeWsId = app.state.activeWorkspaceId;
+        this.list.querySelector(`#workspace-${this.activeWsId}`).classList.add("active");
     }
 }

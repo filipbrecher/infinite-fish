@@ -12,7 +12,7 @@
     box-sizing: border-box;
 }
 
-.workspace-tab {
+.workspace {
     background-color: var(--workspace-bg);
     border-right: 1px solid var(--sidebar-border);
     border-bottom: 1px solid var(--sidebar-border);
@@ -24,9 +24,9 @@
     font-size: 1.2em;
     cursor: pointer;
 }
-.workspace-tab:hover {
+.workspace:hover {
     background-color: var(--workspace-bg-hover);
 }
-.workspace-tab.active {
+.workspace.active {
     background-color: var(--active-workspace-bg);
 }

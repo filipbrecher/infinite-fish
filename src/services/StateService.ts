@@ -107,9 +107,7 @@ export class StateService {
     public async loadSave(saveId: number) {
         if (saveId === this._activeSaveId) return;
 
-        this.setState(State.WAITING);
-        // todo - wait for elements to finish combining
-        await Utils.wait(2000);
+        await this.waitForElementsToCombine();
         this.setState(State.LOADING_SAVE);
         this._activeSaveId = saveId;
         await this.loadActiveSave();
@@ -130,14 +128,28 @@ export class StateService {
 
         this._saveLoaded.notify();
         this._workspaceLoaded.notify();
-        // todo - sidebar init (or init after reset)
-        // todo - load workspaces bar
-        // todo - spawn instances
         this.setState(State.RUNNING);
     }
 
     public async loadWorkspace(workspaceId: number) {
-        // todo
+        if (workspaceId === this._activeWorkspaceId) return;
+
+        await this.waitForElementsToCombine();
+        this.setState(State.LOADING_WORKSPACE);
+        this._activeWorkspaceId = workspaceId;
+        await this.loadActiveWorkspace();
+    }
+
+    private async loadActiveWorkspace() {
+        this._instances = await app.database.getInstances(this._activeWorkspaceId);
+        this._workspaceLoaded.notify();
+        this.setState(State.RUNNING);
+    }
+
+    private async waitForElementsToCombine() {
+        this.setState(State.WAITING);
+        // todo - wait for elements to finish combining
+        await Utils.wait(500);
     }
 
     public async createNewSave(): Promise<Save> {
