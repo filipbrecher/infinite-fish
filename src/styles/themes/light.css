@@ -3,12 +3,20 @@ body[data-theme="light"] {
     --text-color: black;
     --text-color-fainted: gray;
 
+    --scrollbar-track-color: white;
+    --scrollbar-thumb-color: gray;
+
     /* board */
     --board-bg: white;
     --instance-border: black;
     --instance-bg: var(--board-bg);
     --instance-border-hover: #313131;
     --instance-bg-hover: #e5e5e5;
+
+    /* workspaces */
+    --workspace-bg: var(--board-bg);
+    --workspace-bg-hover: #dcdcdc;
+    --active-workspace-bg: #b7b7b7;
 
     /* sidebar */
     --sidebar-bg: var(--board-bg);
@@ -25,5 +33,5 @@ body[data-theme="light"] {
     --options-popup-bg: var(--board-bg);
     --options-popup-button-hover: var(--instance-bg-hover);
     --save-border: #8f8f8f;
-    --save-bg: var(--board-bg);
+    --active-save-bg: var(--instance-bg-hover);
 }

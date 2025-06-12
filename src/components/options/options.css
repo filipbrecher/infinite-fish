@@ -77,7 +77,7 @@
 
 #saves-list {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: scroll;
     min-height: 100px;
     max-height: 80vh;
     min-width: 200px;
@@ -89,12 +89,15 @@
 }
 
 .save {
-    background-color: var(--save-bg);
+    background-color: transparent;
     border: 2px solid var(--save-border);
     border-radius: 5px;
 
     display: flex;
     flex-direction: column;
+}
+.save.active {
+    background-color: var(--active-save-bg);
 }
 .save>div {
     padding: 5px;

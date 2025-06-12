@@ -86,6 +86,8 @@ export class SavesPopup implements IPopup {
             </div>
         `;
 
+        if (app.state.activeSaveId === save.id) wrapper.classList.add("active");
+
         const nameSpan = <HTMLSpanElement>wrapper.querySelector(".name-display");
         const nameInput = <HTMLInputElement>wrapper.querySelector(".name-input");
         const editIcon = <HTMLDivElement>wrapper.querySelector(".name-action-icon");

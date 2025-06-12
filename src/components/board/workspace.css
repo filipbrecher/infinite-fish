@@ -13,7 +13,7 @@
 }
 
 .workspace-tab {
-    background-color: var(--overlay);
+    background-color: var(--workspace-bg);
     border-right: 1px solid var(--sidebar-border);
     border-bottom: 1px solid var(--sidebar-border);
     min-height: 20px;
@@ -22,4 +22,11 @@
     align-items: center;
     justify-content: center;
     font-size: 1.2em;
+    cursor: pointer;
+}
+.workspace-tab:hover {
+    background-color: var(--workspace-bg-hover);
+}
+.workspace-tab.active {
+    background-color: var(--active-workspace-bg);
 }

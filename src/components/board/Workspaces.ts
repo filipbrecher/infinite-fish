@@ -25,6 +25,7 @@ export class Workspaces implements IComponent {
                 wsDiv.id = `workspace-tab-${ws.id}`;
                 wsDiv.classList.add("workspace-tab");
                 wsDiv.innerText = ws.name;
+                if (app.state.activeWorkspaceId === ws.id) wsDiv.classList.add("active");
                 this.list.append(wsDiv);
             });
     }

@@ -44,11 +44,13 @@ export class StateService {
     private _saves: Save[];             // all saves
     public get saves() { return this._saves; }
     private _activeSaveId: number;
+    public get activeSaveId() { return this._activeSaveId; }
     private _elements: Element[];
     public get elements() { return this._elements; }
     private _workspaces: Workspace[];   // all workspaces of the active save
     public get workspaces() { return this._workspaces; }
     private _activeWorkspaceId: number;
+    public get activeWorkspaceId() { return this._activeWorkspaceId; }
     private _instances: Instance[];
 
     private _state: State;
