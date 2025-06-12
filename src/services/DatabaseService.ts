@@ -26,7 +26,14 @@ import type {AbortReason} from "../types/dbSchema";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
+// todo - pinned elements / or just folder system altogether (basically like workspaces, but with unique ordered items)
 // todo - rework datetimeUpdated, possibly add activeSave, activeWorkspace to Save info (prob a separate store or to settings)
+//      - or possibly just make instead of datetimeUpdated -> datetimeAccessed or smth like that? it would update regularly
+//        (like every couple seconds -> this would be done through like setAccessedTimeToNow(saveId) or like that from stateService
+//        and also would be called upon loading -> this would ensure, that every time a save is opened, that save would also
+//        be opened upon the next page load, and the same could be done with workspaces -> they would have datetimeAccessed
+//        this would also have a method to update that time, and would only be called upon loading that workspace (there isn't
+//        need to update it real-time, cause no point in showing when you last accessed a certain workspace))
 
 // workspace and instance updates / creation / deletion -> does not update the save's datetimeUpdated info (so that it isn't
 // updated that much.. like really, I don't think it is necessary, if it is needed in the future, you can just easily
