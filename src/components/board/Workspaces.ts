@@ -6,7 +6,7 @@ import {app} from "../../main";
 
 export class Workspaces implements IComponent {
     private readonly list: HTMLDivElement;
-    private activeWsId: number | null = null;
+    private activeWsId: number | undefined;
 
     constructor() {
         this.list = <HTMLDivElement>document.getElementById("workspaces-list");
@@ -17,7 +17,7 @@ export class Workspaces implements IComponent {
 
     private onSaveLoaded = () => {
         this.list.innerHTML = "";
-        this.activeWsId = null;
+        this.activeWsId = undefined;
         [...app.state.workspaces.values()]
             .sort((a, b) => {
                 return a.position - b.position;
@@ -42,10 +42,10 @@ export class Workspaces implements IComponent {
     }
 
     private onWorkspaceLoaded = () => {
-        if (this.activeWsId !== null) {
+        if (this.activeWsId) {
             this.list.querySelector(`#workspace-${this.activeWsId}`).classList.remove("active");
         }
-        this.activeWsId = app.state.activeWorkspaceId;
+        this.activeWsId = app.state.activeWorkspace?.id;
         this.list.querySelector(`#workspace-${this.activeWsId}`).classList.add("active");
     }
 }

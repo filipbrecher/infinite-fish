@@ -44,16 +44,16 @@ enum State {
 // todo - unload -> register components
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
-    private _activeSaveId: number | null = null;
+    private _activeSave: SaveProps | undefined;
     private _elements: Map<number, ElementProps> = new Map();
     private _workspaces: Map<number, WorkspaceProps> = new Map();   // all workspaces of the active save
-    private _activeWorkspaceId: number | null = null;
+    private _activeWorkspace: WorkspaceProps | undefined;
     private _instances: Map<number, InstanceProps> = new Map();
     public get saves() { return this._saves; }
-    public get activeSaveId() { return this._activeSaveId; }
+    public get activeSave() { return this._activeSave; }
     public get elements() { return this._elements; }
     public get workspaces() { return this._workspaces; }
-    public get activeWorkspaceId() { return this._activeWorkspaceId; }
+    public get activeWorkspace() { return this._activeWorkspace; }
     public get instances() { return this._instances; }
 
     private _state: State;
@@ -81,10 +81,10 @@ export class StateService {
     }
 
     private updateActiveTime = () => {
-        if ( !this._activeSaveId) return;
+        if ( !this._activeSave) return;
         const newTime = Date.now();
-        app.database.updateActiveTimeOfSave(this._activeSaveId, newTime).catch();
-        this._saves.get(this._activeSaveId)!.datetimeActive = newTime;
+        app.database.updateActiveTimeOfSave(this._activeSave.id, newTime).catch();
+        this._activeSave.datetimeActive = newTime;
     }
 
     private setState(s: State) {
@@ -125,7 +125,7 @@ export class StateService {
     }
 
     public async loadSave(saveId: number) {
-        if (saveId === this._activeSaveId) return;
+        if (saveId === this._activeSave?.id) return;
 
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_SAVE);
@@ -152,8 +152,8 @@ export class StateService {
         const instancesArr = await app.database.getInstances(activeWsId);
         this._instances = new Map(instancesArr.map(i => [i.id, i]));
 
-        this._activeSaveId = activeSaveId;
-        this._activeWorkspaceId = activeWsId;
+        this._activeSave = this._saves.get(activeSaveId);
+        this._activeWorkspace = this._workspaces.get(activeWsId);
         this.updateActiveTime();
 
         this._saveLoaded.notify();
@@ -162,7 +162,7 @@ export class StateService {
     }
 
     public async loadWorkspace(workspaceId: number) {
-        if (workspaceId === this._activeWorkspaceId) return;
+        if (workspaceId === this._activeWorkspace?.id) return;
 
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_WORKSPACE);
@@ -177,7 +177,7 @@ export class StateService {
         this.clearWorkspaceFromMemory();
         this._workspaceUnloaded.notify();
 
-        this._activeWorkspaceId = activeWsId;
+        this._activeWorkspace = this._workspaces.get(activeWsId);
         this._workspaceLoaded.notify();
         this.setState(State.RUNNING);
     }
@@ -189,15 +189,15 @@ export class StateService {
     }
 
     private clearSaveFromMemory() {
-        this._activeSaveId = null;
-        this._activeWorkspaceId = null;
+        this._activeSave = undefined;
+        this._activeWorkspace = undefined;
         this._elements = new Map();
         this._workspaces = new Map();
         this._instances = new Map();
     }
 
     private clearWorkspaceFromMemory() {
-        this._activeWorkspaceId = null;
+        this._activeWorkspace = undefined;
         this._instances = new Map();
     }
 
@@ -209,7 +209,7 @@ export class StateService {
 
     public async deleteSave(id: number): Promise<boolean> {
         try {
-            if (this.activeSaveId === id) return false;
+            if (this.activeSave?.id === id) return false;
             await app.database.deleteSave(id);
             this._saves.delete(id);
             return true;
