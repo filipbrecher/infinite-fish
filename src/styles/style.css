@@ -3,6 +3,7 @@ html, body {
     margin: 0; padding: 0;
     overflow: hidden;
     user-select: none;
+    white-space: nowrap;
     color: var(--text-color);
 }
 
@@ -11,18 +12,23 @@ h1, h2, h3 {
     user-select: none;
 }
 
+:root {
+    --sidebar-width: 200px;
+}
+
+#board { z-index: 0; }
+#workspaces-list { z-index: 1; }
+#sidebar { z-index: 2; }
+#options { z-index: 3; }
+#drag-layer { z-index: 100; }
+#options-overlay { z-index: 1000; }
+#state-overlay { z-index: 10000; }
 
 .overlay {
     position: fixed;
     top: 0; right: 0; bottom: 0; left: 0;
     background-color: var(--overlay);
     display: none;
-}
-#options-overlay {
-    z-index: 1000;
-}
-#state-overlay {
-    z-index: 1000000;
 }
 #overlay-text {
     font-size: 3em;

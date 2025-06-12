@@ -33,6 +33,8 @@ export class SavesPopup implements IPopup {
     }
 
     public close = () => {
+        this.savesList.innerHTML = "";
+
         this.popup.style.display = "none";
     }
 

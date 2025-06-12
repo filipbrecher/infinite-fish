@@ -47,6 +47,7 @@ export class StateService {
     private _elements: Element[];
     public get elements() { return this._elements; }
     private _workspaces: Workspace[];   // all workspaces of the active save
+    public get workspaces() { return this._workspaces; }
     private _activeWorkspaceId: number;
     private _instances: Instance[];
 

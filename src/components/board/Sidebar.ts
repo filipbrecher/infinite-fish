@@ -18,7 +18,7 @@ export class Sidebar implements IComponent {
         this.resizer = <HTMLDivElement>document.getElementById("resizer");
         this.sidebarItems = <HTMLDivElement>document.getElementById("sidebar-items");
 
-        this.sidebar.style.setProperty("width", `${this.width}px`);
+        document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onClickResizer);
 
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
@@ -49,7 +49,7 @@ export class Sidebar implements IComponent {
 
         const newWidth = window.innerWidth - e.clientX;
         this.width = Math.min(Sidebar.MAX_WIDTH, Math.max(Sidebar.MIN_WIDTH, newWidth));
-        this.sidebar.style.setProperty("width", `${this.width}px`);
+        document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
     };
 
     private onMouseUp = () => {

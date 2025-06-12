@@ -1,0 +1,25 @@
+
+#workspaces-list {
+    background-color: transparent;
+    position: absolute;
+    top: 0; left: 0;
+    min-height: 20px;
+    max-width: calc(100vw - var(--sidebar-width));
+    width: max-content;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+}
+
+.workspace-tab {
+    background-color: var(--overlay);
+    border-right: 1px solid var(--sidebar-border);
+    border-bottom: 1px solid var(--sidebar-border);
+    min-height: 20px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+}

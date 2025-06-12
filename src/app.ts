@@ -1,9 +1,10 @@
 import {DatabaseService} from "./services/DatabaseService";
-import {Sidebar} from "./components/sidebar/Sidebar";
+import {Sidebar} from "./components/board/Sidebar";
 import {Logger} from "./services/Logger";
 import {Options} from "./components/options/Options";
 import {StateService} from "./services/StateService";
 import {SettingsService} from "./services/SettingsService";
+import {Workspaces} from "./components/board/Workspaces";
 
 
 export class App {
@@ -12,15 +13,14 @@ export class App {
     private _settings: SettingsService;
     private _state: StateService;
 
-    private _sidebar: Sidebar;
     private _options: Options;
+    private _sidebar: Sidebar;
+    private _workspaces: Workspaces;
 
     public get logger() { return this._logger; }
     public get settings() { return this._settings; }
     public get database() { return this._database; }
     public get state() { return this._state; }
-
-    public get options() { return this._options; }
 
     public async init() {
         try {
@@ -37,8 +37,9 @@ export class App {
             this._state = new StateService();
 
             // prepare components
-            this._sidebar = new Sidebar();
             this._options = new Options();
+            this._sidebar = new Sidebar();
+            this._workspaces = new Workspaces();
 
             // load save
             await this._state.init();

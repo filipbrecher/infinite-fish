@@ -1,10 +1,10 @@
 
 #sidebar {
+    width: var(--sidebar-width);
     background-color: var(--sidebar-bg);
     border-left: 1px solid var(--sidebar-border);
     position: absolute;
     top: 0; right: 0; bottom: 0;
-    z-index: 1;
 }
 
 #resizer {

@@ -1,5 +1,4 @@
 import "./styles/style.css";
-import "./styles/workspace.css";
 import "./styles/themes/light.css";
 import "./styles/themes/dark.css";
 import {App} from "./app.ts"
