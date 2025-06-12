@@ -1,5 +1,5 @@
 import {app} from "../main";
-import type {Settings} from "../types/dbSchema";
+import type {SettingsProps} from "../types/dbSchema";
 
 
 // todo - allow to choose options for which mouse presses trigger which stuff (panning, zooming, dragging elements, deleting elemnts, ...)
@@ -7,7 +7,7 @@ import type {Settings} from "../types/dbSchema";
 //      - idea: select bg -> plain / grid (gridlines) / custom image ?? -> alghough how would panning and zooming work with that? probably fixed...
 // todo - make settings allow components to define their own settings ??? possibly -> in the future
 export class SettingsService {
-    private _settings: Settings;
+    private _settings: SettingsProps;
     public get settings() {
         return this._settings;
     }

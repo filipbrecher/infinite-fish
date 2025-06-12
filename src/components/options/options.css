@@ -63,7 +63,7 @@
 }
 .options-button {
     background-color: transparent;
-    border: 2px solid var(--options-popup-border);
+    border: 1px solid var(--options-popup-border);
     border-radius: 5px;
     padding: 2px 5px;
     cursor: pointer;

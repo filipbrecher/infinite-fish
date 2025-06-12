@@ -1,4 +1,4 @@
-import type {Save, Workspace, Element, Instance} from "../types/dbSchema";
+import type {SaveProps, WorkspaceProps, ElementProps, InstanceProps} from "../types/dbSchema";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "./Subject";
@@ -43,12 +43,12 @@ enum State {
 // todo - block and debounce on block text
 // todo - unload -> register components
 export class StateService {
-    private _saves: Save[] = [];             // all saves
+    private _saves: SaveProps[] = [];             // all saves
     private _activeSaveId: number | null = null;
-    private _elements: Element[] = [];
-    private _workspaces: Workspace[] = [];   // all workspaces of the active save
+    private _elements: Map<number, ElementProps> = new Map();
+    private _workspaces: WorkspaceProps[] = [];   // all workspaces of the active save
     private _activeWorkspaceId: number | null = null;
-    private _instances: Instance[] = [];
+    private _instances: InstanceProps[] = [];
     public get saves() { return this._saves; }
     public get activeSaveId() { return this._activeSaveId; }
     public get elements() { return this._elements; }
@@ -119,7 +119,7 @@ export class StateService {
             this._saves.push(newSave);
         }
 
-        const mostRecentSave = <Save>Utils.minBy<Save>(this._saves, save => -save.datetimeActive);
+        const mostRecentSave = <SaveProps>Utils.minBy<SaveProps>(this._saves, save => -save.datetimeActive);
         await this.loadActiveSave(mostRecentSave.id);
     }
 
@@ -143,9 +143,10 @@ export class StateService {
             this._workspaces.push(newWs);
         }
 
-        const activeWsId = (<Workspace>Utils.minBy<Workspace>(this._workspaces, ws => ws.position)).id;
+        const activeWsId = (<WorkspaceProps>Utils.minBy<WorkspaceProps>(this._workspaces, ws => ws.position)).id;
 
-        this._elements = await app.database.getElements(activeSaveId);
+        const elementsArr = await app.database.getElements(activeSaveId);
+        this._elements = new Map(elementsArr.map((e) => [e.id, e]));
         this._instances = await app.database.getInstances(activeWsId);
 
         this._activeSaveId = activeSaveId;
@@ -186,7 +187,7 @@ export class StateService {
     private clearSaveFromMemory() {
         this._activeSaveId = null;
         this._activeWorkspaceId = null;
-        this._elements = [];
+        this._elements = new Map();
         this._workspaces = [];
         this._instances = [];
     }
@@ -196,7 +197,7 @@ export class StateService {
         this._instances = [];
     }
 
-    public async createNewSave(): Promise<Save> {
+    public async createNewSave(): Promise<SaveProps> {
         const newSave = await app.database.createNewSave().catch();
         this._saves.push(newSave);
         return newSave;

@@ -1,4 +1,4 @@
-import type {Save} from "../../types/dbSchema";
+import type {SaveProps} from "../../types/dbSchema";
 import {app} from "../../main";
 import {MAX_SAVE_NAME_LENGTH} from "../../constants/defaults";
 import {Utils} from "../../services/Utils";
@@ -48,13 +48,13 @@ export class SavesPopup implements IPopup {
         this.prependSave(newSave);
     }
 
-    public getSortedSaves(): Save[] {
+    public getSortedSaves(): SaveProps[] {
         return [...app.state.saves].sort((a, b) => {
             return a.datetimeActive - b.datetimeActive;
         });
     }
 
-    public prependSave(save: Save): void {
+    public prependSave(save: SaveProps): void {
         const wrapper = document.createElement("div");
         wrapper.className = "save";
         wrapper.id = `save-${save.id}`;

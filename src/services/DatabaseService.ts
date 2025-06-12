@@ -8,13 +8,13 @@ import {
     WORKSPACE_STORE
 } from "../constants/dbSchema";
 import type {
-    Element,
+    ElementProps,
     IDBTransactionEvent,
-    Instance, NewElement, NewInstance, Recipe,
-    Save,
-    Settings,
-    Workspace,
-    WorkspaceChanges
+    InstanceProps, NewElementProps, NewInstanceProps, RecipeProps,
+    SaveProps,
+    SettingsProps,
+    WorkspaceProps,
+    WorkspaceChangesProps
 } from "../types/dbSchema";
 import {
     DEFAULT_ELEMENTS, DEFAULT_SAVE,
@@ -75,8 +75,8 @@ export class DatabaseService {
         resolve();
     }
 
-    public async loadSettings(): Promise<Settings> {
-        return new Promise<Settings>((resolve, reject) => {
+    public async loadSettings(): Promise<SettingsProps> {
+        return new Promise<SettingsProps>((resolve, reject) => {
             const req = this._db
                 .transaction([SETTINGS_STORE], "readonly")
                 .objectStore(SETTINGS_STORE)
@@ -100,7 +100,7 @@ export class DatabaseService {
         });
     }
 
-    public async updateSettings(settings: Settings): Promise<void> {
+    public async updateSettings(settings: SettingsProps): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const req = this._db
                 .transaction(SETTINGS_STORE, "readwrite")
@@ -120,8 +120,8 @@ export class DatabaseService {
         });
     }
 
-    public async loadSaveInfo(): Promise<Save[]> {
-        let saves: Save[];
+    public async loadSaveInfo(): Promise<SaveProps[]> {
+        let saves: SaveProps[];
 
         await new Promise<boolean>((resolve, reject) => {
             const req = this._db
@@ -144,13 +144,13 @@ export class DatabaseService {
         return saves;
     }
 
-    public async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<Save> {
-        return new Promise<Save>((resolve, reject) => {
+    public async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<SaveProps> {
+        return new Promise<SaveProps>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
 
             const now = Date.now();
-            const save: Partial<Save> = {
+            const save: Partial<SaveProps> = {
                 ...DEFAULT_SAVE,
                 name: name,
                 datetimeCreated: now,
@@ -185,7 +185,7 @@ export class DatabaseService {
     public async updateActiveTimeOfSave(saveId: number, datetime: number): Promise<void> {
         return this.updateSave(
             saveId,
-            (save: Save) => {
+            (save: SaveProps) => {
                 save.datetimeActive = datetime;
             },
             (pastTense: boolean) => {
@@ -197,7 +197,7 @@ export class DatabaseService {
     public async renameSave(saveId: number, newName: string): Promise<void> {
         return this.updateSave(
             saveId,
-            (save: Save) => {
+            (save: SaveProps) => {
                 save.name = newName;
             },
             (pastTense: boolean) => {
@@ -208,7 +208,7 @@ export class DatabaseService {
 
     private async updateSave(
         saveId: number,
-        updateSave: (save: Save) => void,
+        updateSave: (save: SaveProps) => void,
         getLogEnding: (pastTense: boolean) => string,
     ): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
@@ -288,15 +288,15 @@ export class DatabaseService {
         });
     }
 
-    public async createWorkspace(saveId: number, name: string = DEFAULT_WORKSPACE_NAME): Promise<Workspace> {
-        return new Promise<Workspace>(async (resolve, reject) => {
+    public async createWorkspace(saveId: number, name: string = DEFAULT_WORKSPACE_NAME): Promise<WorkspaceProps> {
+        return new Promise<WorkspaceProps>(async (resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, WORKSPACE_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
             const workspaceStore = tx.objectStore(WORKSPACE_STORE);
 
             const getReq = saveStore.getKey(saveId);
 
-            let workspace: Partial<Workspace>;
+            let workspace: Partial<WorkspaceProps>;
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 if ( !getReq.result) {
@@ -341,7 +341,7 @@ export class DatabaseService {
         });
     }
 
-    public async updateWorkspace(workspaceId: number, changes: Partial<WorkspaceChanges>): Promise<void> {
+    public async updateWorkspace(workspaceId: number, changes: Partial<WorkspaceChangesProps>): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction(WORKSPACE_STORE, "readwrite");
             const store = tx.objectStore(WORKSPACE_STORE);
@@ -514,14 +514,14 @@ export class DatabaseService {
     // DOES NOT check whether the element with this text exists or doesn't exist
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
     // returns id of the element
-    public async addNewElement(saveId: number, element: NewElement, recipe?: Recipe): Promise<number> {
+    public async addNewElement(saveId: number, element: NewElementProps, recipe?: RecipeProps): Promise<number> {
         return new Promise<number>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
             const elementStore =tx.objectStore(ELEMENT_STORE);
             const getReq = saveStore.getKey(saveId);
 
-            let addedElement: Partial<Element>;
+            let addedElement: Partial<ElementProps>;
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 if ( !getReq.result) {
@@ -550,7 +550,7 @@ export class DatabaseService {
                         saveStore,
                         saveId,
                         addedElement.id,
-                        (save: Save) => {
+                        (save: SaveProps) => {
                             save.elementCount++;
                             save.recipeCount += recipe ? 1 : 0;
                             save.discoveryCount += element.discovery ? 1 : 0;
@@ -583,13 +583,13 @@ export class DatabaseService {
 
     // this must be called after the element has been successfully added
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
-    public async addRecipe(elementId: number, recipe: Recipe, discovery: boolean): Promise<void> {
+    public async addRecipe(elementId: number, recipe: RecipeProps, discovery: boolean): Promise<void> {
         if (recipe[0] > recipe[1]) recipe.reverse();
         let recipeAdded = false;
         let isNewDiscovery = false;
         return this.updateElement(
             elementId,
-            (element: Element) => {
+            (element: ElementProps) => {
                 if (element.recipes?.some(r => r[0] === recipe[0] && r[1] === recipe[1])) {
                     return;
                 } else if (element.recipes) {
@@ -602,7 +602,7 @@ export class DatabaseService {
                     isNewDiscovery = true;
                 }
             },
-            (save: Save) => {
+            (save: SaveProps) => {
                 if (recipeAdded) {
                     save.recipeCount++;
                 }
@@ -619,7 +619,7 @@ export class DatabaseService {
     public async updateElementVisibility(elementId: number, hide: boolean): Promise<void> {
         return this.updateElement(
             elementId,
-            (element: Element) => {
+            (element: ElementProps) => {
                 element.hide = hide;
                 if ( !hide) {
                     delete element.hide;
@@ -634,8 +634,8 @@ export class DatabaseService {
 
     private async updateElement(
         elementId,
-        update: (element: Element) => void,
-        updateSave: (save: Save) => void,
+        update: (element: ElementProps) => void,
+        updateSave: (save: SaveProps) => void,
         getLogEnding: (pastTense: boolean) => string,
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
@@ -681,7 +681,7 @@ export class DatabaseService {
         saveStore: IDBObjectStore,
         saveId: number,
         elementId: number,
-        update: (save: Save) => void,
+        update: (save: SaveProps) => void,
         getLogEnding: (pastTense: boolean) => string,
     ): void {
         const getSaveReq = saveStore.get(saveId);
@@ -717,8 +717,8 @@ export class DatabaseService {
 
     // delete and/or create new instances
     // DOES NOT check that the data or type of the instances is valid
-    public async applyInstanceChanges(workspaceId: number, deleteIds?: number[], createInstances?: NewInstance[]): Promise<Instance[]> {
-        return new Promise<Instance[]>((resolve, reject) => {
+    public async applyInstanceChanges(workspaceId: number, deleteIds?: number[], createInstances?: NewInstanceProps[]): Promise<InstanceProps[]> {
+        return new Promise<InstanceProps[]>((resolve, reject) => {
             const tx = this._db.transaction([WORKSPACE_STORE, INSTANCE_STORE], "readwrite");
             const workspaceStore = tx.objectStore(WORKSPACE_STORE);
             const instanceStore = tx.objectStore(INSTANCE_STORE);
@@ -726,7 +726,7 @@ export class DatabaseService {
             const getReq = workspaceStore.getKey(workspaceId);
 
             let abortReason: AbortReason;
-            let newInstances: Instance[] = [];
+            let newInstances: InstanceProps[] = [];
             getReq.onsuccess = () => {
                 if ( !getReq.result) {
                     abortReason = `Error applying instance changes: Workspace with id ${workspaceId} not found`;
@@ -779,13 +779,13 @@ export class DatabaseService {
         });
     }
 
-    public async moveInstances(instances: Instance[]): Promise<void> {
+    public async moveInstances(instances: InstanceProps[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction(INSTANCE_STORE, "readwrite");
             const store = tx.objectStore(INSTANCE_STORE);
 
             let abortReason: AbortReason;
-            instances.forEach((instance: Instance) => {
+            instances.forEach((instance: InstanceProps) => {
                 const req = store.get(instance.id);
                 req.onsuccess = () => {
                     const gottenInstance = req.result;
@@ -835,16 +835,16 @@ export class DatabaseService {
         }
     }
 
-    public async getWorkspaces(saveId: number): Promise<Workspace[]> {
-        return this.getAllByIndex<Workspace>(WORKSPACE_STORE, SAVE_ID_INDEX, saveId);
+    public async getWorkspaces(saveId: number): Promise<WorkspaceProps[]> {
+        return this.getAllByIndex<WorkspaceProps>(WORKSPACE_STORE, SAVE_ID_INDEX, saveId);
     }
 
-    public async getElements(saveId: number): Promise<Element[]> {
-        return this.getAllByIndex<Element>(ELEMENT_STORE, SAVE_ID_INDEX, saveId);
+    public async getElements(saveId: number): Promise<ElementProps[]> {
+        return this.getAllByIndex<ElementProps>(ELEMENT_STORE, SAVE_ID_INDEX, saveId);
     }
 
-    public async getInstances(workspaceId: number): Promise<Instance[]> {
-        return this.getAllByIndex<Instance>(INSTANCE_STORE, WORKSPACE_ID_INDEX, workspaceId);
+    public async getInstances(workspaceId: number): Promise<InstanceProps[]> {
+        return this.getAllByIndex<InstanceProps>(INSTANCE_STORE, WORKSPACE_ID_INDEX, workspaceId);
     }
 
     private getAllByIndex<T>(store: string, index: string, key: number): Promise<T[]> {

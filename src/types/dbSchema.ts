@@ -5,14 +5,14 @@ export interface IDBTransactionEvent extends Event {
 export type AbortReason = string | undefined;
 
 //============ SETTINGS ============//
-export type Settings = {
+export type SettingsProps = {
     id: number;
     theme: "light" | "dark";
 }
 
 
 //============ SAVES ============//
-export type Save = {
+export type SaveProps = {
     id: number;
     name: string;
     datetimeCreated: number;
@@ -25,22 +25,22 @@ export type Save = {
 
 
 //============ ELEMENTS ============//
-export type Recipe = [  // sorted in ascending order
+export type RecipeProps = [  // sorted in ascending order
     number,             // id of the first element
     number,             // id of the second element
 ];
 
-export type Element = {
+export type ElementProps = {
     id: number;
     saveId: number;
     emoji: string;
     text: string;
     discovery?: boolean;   // false by default
     hide?: boolean;       // false by default
-    recipes?: Recipe[];     // [] by default
+    recipes?: RecipeProps[];     // [] by default
 }
 
-export type NewElement = {
+export type NewElementProps = {
     emoji: string;
     text: string;
     discovery?: boolean;   // false by default;
@@ -48,7 +48,7 @@ export type NewElement = {
 
 
 //============ WORKSPACES ============//
-export type Workspace = {
+export type WorkspaceProps = {
     id: number;
     saveId: number;
     position: number;   // positions go always from 1 ... n (number of workspaces in a given save)
@@ -58,7 +58,7 @@ export type Workspace = {
     scale: number;
 }
 
-export type WorkspaceChanges = {
+export type WorkspaceChangesProps = {
     name: string;
     x: number;
     y: number;
@@ -67,25 +67,25 @@ export type WorkspaceChanges = {
 
 
 //============ INSTANCES ============//
-export enum InstanceType {
+export enum InstanceTypeProps {
     Element = 0,
 }
 
 export type ElementInstanceData = number;   // id of the element
-export type InstanceData = ElementInstanceData;
+export type InstanceDataProps = ElementInstanceData;
 
-export type Instance = {
+export type InstanceProps = {
     id: number;
     workspaceId: number;
     x: number;
     y: number;
-    type?: InstanceType;    // ElementInstanceData type by default
-    data: InstanceData;
+    type?: InstanceTypeProps;    // ElementInstanceData type by default
+    data: InstanceDataProps;
 }
 
-export type NewInstance = {
+export type NewInstanceProps = {
     x: number;
     y: number;
-    type?: InstanceType;
-    data: InstanceData;
+    type?: InstanceTypeProps;
+    data: InstanceDataProps;
 }
