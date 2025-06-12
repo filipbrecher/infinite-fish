@@ -160,7 +160,7 @@ export class StateService {
 
     public async deleteSave(id: number): Promise<boolean> {
         try {
-            // todo only when the active save isn't this one
+            if (this.activeSaveId === id) return false;
             await app.database.deleteSave(id);
             const index = this._saves.findIndex(s => s.id === id);
             if (index !== -1) {

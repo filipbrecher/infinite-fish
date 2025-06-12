@@ -16,7 +16,6 @@ export class Workspaces implements IComponent {
     }
 
     private onSaveLoaded = () => {
-        console.log("onSaveLoaded hook");
         this.list.innerHTML = "";
         this.activeWsId = null;
         [...app.state.workspaces]
@@ -28,7 +27,6 @@ export class Workspaces implements IComponent {
                 wsDiv.id = `workspace-${ws.id}`;
                 wsDiv.classList.add("workspace");
                 wsDiv.innerText = ws.name;
-                console.log(wsDiv.id)
 
                 wsDiv.addEventListener("click", this.onClickWorkspace);
 

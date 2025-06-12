@@ -57,7 +57,7 @@ export class SavesPopup implements IPopup {
         });
     }
 
-    public saveToDiv(save: Save): HTMLDivElement {
+    public prependSave(save: Save): void {
         const wrapper = document.createElement("div");
         wrapper.className = "save";
         wrapper.id = `save-${save.id}`;
@@ -86,11 +86,14 @@ export class SavesPopup implements IPopup {
             </div>
         `;
 
-        if (app.state.activeSaveId === save.id) wrapper.classList.add("active");
+        const isActive = app.state.activeSaveId === save.id;
+        if (isActive) wrapper.classList.add("active");
 
         const nameSpan = <HTMLSpanElement>wrapper.querySelector(".name-display");
         const nameInput = <HTMLInputElement>wrapper.querySelector(".name-input");
         const editIcon = <HTMLDivElement>wrapper.querySelector(".name-action-icon");
+        const loadIcon = <HTMLDivElement>wrapper.querySelector(".load-icon");
+        const deleteIcon = <HTMLDivElement>wrapper.querySelector(".delete-icon");
 
         nameSpan.textContent = save.name;
 
@@ -118,17 +121,12 @@ export class SavesPopup implements IPopup {
                 editIcon.title = "Edit Name";
             }
         });
-
-        return wrapper;
-    }
-
-    private prependSave(save: Save) {
-        const div = this.saveToDiv(save);
-        const deleteIcon = <HTMLDivElement>div.querySelector(".delete-icon");
-        const loadIcon = <HTMLDivElement>div.querySelector(".load-icon");
-        deleteIcon.addEventListener("click", this.onClickDeleteButton);
         loadIcon.addEventListener("click", this.onClickLoadButton);
-        this.savesList.prepend(div);
+        if ( !isActive) {
+            deleteIcon.addEventListener("click", this.onClickDeleteButton);
+        }
+
+        this.savesList.prepend(wrapper);
     }
 
     private onClickLoadButton = (event) => {

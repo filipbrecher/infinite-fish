@@ -167,6 +167,10 @@
 .delete-icon {
     background-image: url("/public/delete_button.png");
 }
+.save.active .delete-icon {
+    background-image: none;
+    cursor: unset;
+}
 
 .save-stats {
     display: flex;
