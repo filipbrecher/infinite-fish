@@ -26,14 +26,14 @@ export class Sidebar implements IComponent {
 
     private onSaveLoaded = () => {
         this.sidebarItems.innerHTML = "";
-        for (const e of app.state.elements) {
+        app.state.elements.forEach((e) => {
             const instance = <HTMLDivElement>document.createElement("div");
             instance.id = `view-${e.id}`;
             instance.classList.add("view");
             instance.classList.add("element-view");
             instance.innerText = `${e.emoji} ${e.text}`;
             this.sidebarItems.appendChild(instance);
-        }
+        });
     }
 
     private onClickResizer = (e: MouseEvent) => {

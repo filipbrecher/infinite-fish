@@ -18,7 +18,7 @@ export class Workspaces implements IComponent {
     private onSaveLoaded = () => {
         this.list.innerHTML = "";
         this.activeWsId = null;
-        [...app.state.workspaces]
+        [...app.state.workspaces.values()]
             .sort((a, b) => {
                 return a.position - b.position;
             })

@@ -5,7 +5,6 @@ import {Options} from "./components/options/Options";
 import {StateService} from "./services/StateService";
 import {SettingsService} from "./services/SettingsService";
 import {Workspaces} from "./components/board/Workspaces";
-import {Board} from "./components/board/Board";
 
 
 export class App {
@@ -17,7 +16,6 @@ export class App {
     private _options: Options;
     private _sidebar: Sidebar;
     private _workspaces: Workspaces;
-    private _board: Board;
 
     public get logger() { return this._logger; }
     public get settings() { return this._settings; }
@@ -42,7 +40,6 @@ export class App {
             this._options = new Options();
             this._sidebar = new Sidebar();
             this._workspaces = new Workspaces();
-            this._board = new Board();
 
             // load save
             await this._state.init();

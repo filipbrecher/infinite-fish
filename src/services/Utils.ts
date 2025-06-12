@@ -15,19 +15,20 @@ export class Utils {
         return `${year}/${month}/${day} - ${hour}:${minute}:${second}`;
     }
 
-    public static minBy<T>(arr: T[], evaluator: (item: T) => number): T | undefined {
-        if (arr.length === 0) return undefined;
+    public static minBy<T>(map: Map<number, T>, evaluator: (item: T) => number): T | undefined {
+        if (map.size === 0) return undefined;
 
-        let minItem = arr[0];
-        let minValue = evaluator(minItem);
+        let minItem: T;
+        let minValue: number;
 
-        for (let i = 1; i < arr.length; i++) {
-            const value = evaluator(arr[i]);
-            if (value < minValue) {
-                minItem = arr[i];
+        map.forEach((item) => {
+            const value = evaluator(item);
+            if ( !minValue || value < minValue) {
+                minItem = item;
                 minValue = value;
             }
-        }
+        });
+
         return minItem;
     }
 

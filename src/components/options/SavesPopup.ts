@@ -49,7 +49,7 @@ export class SavesPopup implements IPopup {
     }
 
     public getSortedSaves(): SaveProps[] {
-        return [...app.state.saves].sort((a, b) => {
+        return [...app.state.saves.values()].sort((a, b) => {
             return a.datetimeActive - b.datetimeActive;
         });
     }
