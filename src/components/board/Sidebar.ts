@@ -21,11 +21,15 @@ export class Sidebar implements IComponent {
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onClickResizer);
 
+        app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
     }
 
-    private onSaveLoaded = () => {
+    private onSaveUnloaded = () => {
         this.sidebarItems.innerHTML = "";
+    }
+
+    private onSaveLoaded = () => {
         app.state.elements.forEach((e) => {
             const instance = <HTMLDivElement>document.createElement("div");
             instance.id = `view-${e.id}`;

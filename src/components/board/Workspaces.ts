@@ -11,13 +11,19 @@ export class Workspaces implements IComponent {
     constructor() {
         this.list = <HTMLDivElement>document.getElementById("workspaces-list");
 
+        app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
+        app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
+
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
     }
 
-    private onSaveLoaded = () => {
+    private onSaveUnloaded = () => {
         this.list.innerHTML = "";
         this.activeWsId = undefined;
+    }
+
+    private onSaveLoaded = () => {
         [...app.state.workspaces.values()]
             .sort((a, b) => {
                 return a.position - b.position;
@@ -34,6 +40,12 @@ export class Workspaces implements IComponent {
             });
     }
 
+    private onWorkspaceUnloaded = () => {
+        if (this.activeWsId) {
+            this.list.querySelector(`#workspace-${this.activeWsId}`).classList.remove("active");
+        }
+    }
+
     private onClickWorkspace = (event) => {
         const id = Number(event.target.id.slice(10));
         if (this.activeWsId === id) return;
@@ -42,9 +54,6 @@ export class Workspaces implements IComponent {
     }
 
     private onWorkspaceLoaded = () => {
-        if (this.activeWsId) {
-            this.list.querySelector(`#workspace-${this.activeWsId}`).classList.remove("active");
-        }
         this.activeWsId = app.state.activeWorkspace?.id;
         this.list.querySelector(`#workspace-${this.activeWsId}`).classList.add("active");
     }

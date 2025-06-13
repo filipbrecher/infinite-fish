@@ -41,7 +41,6 @@ enum State {
 }
 
 // todo - block and debounce on block text
-// todo - unload -> register components
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
     private _activeSave: SaveProps | undefined;
@@ -167,15 +166,15 @@ export class StateService {
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_WORKSPACE);
 
+        this.clearWorkspaceFromMemory();
+        this._workspaceUnloaded.notify();
+
         await this.loadActiveWorkspace(workspaceId);
     }
 
     private async loadActiveWorkspace(activeWsId: number) {
         const instancesArr = await app.database.getInstances(activeWsId);
         this._instances = new Map(instancesArr.map(i => [i.id, i]));
-
-        this.clearWorkspaceFromMemory();
-        this._workspaceUnloaded.notify();
 
         this._activeWorkspace = this._workspaces.get(activeWsId);
         this._workspaceLoaded.notify();
