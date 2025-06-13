@@ -1,11 +1,78 @@
-import type {ElementProps, SaveProps, SettingsProps, WorkspaceProps} from "../types/dbSchema";
+import type {ElementProps, KeyPropsRecord, SaveProps, SettingsProps, WorkspaceProps} from "../types/dbSchema";
+import {ButtonProps, KeyProps, KeyState} from "../types/dbSchema";
 import {SETTINGS_KEY} from "./dbSchema";
 
+const DEFAULT_KEY_PROPS: KeyPropsRecord = {
+    [KeyProps.CTRL]: KeyState.ANY,
+    [KeyProps.SHIFT]: KeyState.ANY,
+    [KeyProps.ALT]: KeyState.ANY,
+    [KeyProps.META]: KeyState.ANY,
+};
 
 export const DEFAULT_SETTINGS: SettingsProps = {
     id: SETTINGS_KEY,
     theme: "dark",
-}
+
+    workspacePanning: {
+        keys: {
+            ...DEFAULT_KEY_PROPS,
+            [KeyProps.CTRL]: KeyState.YES,
+        },
+        buttons: new Set([ButtonProps.LEFT]),
+    },
+    workspaceZooming: {
+        ...DEFAULT_KEY_PROPS,
+        [KeyProps.CTRL]: KeyState.YES,
+    },
+    instanceSelecting: {
+        keys: {
+            ...DEFAULT_KEY_PROPS,
+            [KeyProps.CTRL]: KeyState.NO,
+        },
+        buttons: new Set([ButtonProps.LEFT]),
+    },
+
+    instanceDragging: {
+        keys: {
+            ...DEFAULT_KEY_PROPS,
+            [KeyProps.SHIFT]: KeyState.NO,
+            [KeyProps.CTRL]: KeyState.NO,
+        },
+        buttons: new Set([ButtonProps.LEFT]),
+    },
+    instanceCopying: {
+        keys: {
+            ...DEFAULT_KEY_PROPS,
+            [KeyProps.SHIFT]: KeyState.NO,
+        },
+        buttons: new Set([ButtonProps.MIDDLE]),
+    },
+    instanceDeleting: {
+        keys: DEFAULT_KEY_PROPS,
+        buttons: new Set([ButtonProps.RIGHT]),
+    },
+    elementToggleVisibility: {
+        keys: DEFAULT_KEY_PROPS,
+        buttons: new Set([ButtonProps.RIGHT]),
+    },
+
+    viewInfo: {
+        keys: {
+            ...DEFAULT_KEY_PROPS,
+            [KeyProps.SHIFT]: KeyState.YES,
+            [KeyProps.CTRL]: KeyState.NO,
+        },
+        buttons: new Set([ButtonProps.LEFT]),
+    },
+    viewCopyEmojiText: {
+        keys: {
+            ...DEFAULT_KEY_PROPS,
+            [KeyProps.SHIFT]: KeyState.YES,
+        },
+        buttons: new Set([ButtonProps.MIDDLE]),
+    },
+};
+
 
 export const DEFAULT_SAVE_NAME: string = "New Save";
 export const MAX_SAVE_NAME_LENGTH: number = 30;
