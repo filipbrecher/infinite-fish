@@ -3,6 +3,7 @@ import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {Instance} from "./objects/Instance";
 import type {WorkspaceChangesProps} from "../../types/dbSchema";
+import {MAX_ZOOM, MIN_ZOOM, ZOOM_AMOUNT} from "../../constants/defaults";
 
 
 export class Board implements IComponent {
@@ -55,8 +56,8 @@ export class Board implements IComponent {
         if (changes.y) this.offsetY = changes.y;
         if (changes.scale) this.scale = changes.scale;
 
-        this.board.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale}`;
-        this.dragLayer.style.transform = `translate(${this.offsetX + this.dragOffsetX}px, ${this.offsetY + this.dragOffsetY}px) scale(${this.scale}`;
+        this.board.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
+        this.dragLayer.style.transform = `translate(${this.offsetX + this.dragOffsetX}px, ${this.offsetY + this.dragOffsetY}px) scale(${this.scale})`;
     }
 
     private onWorkspaceUnloaded = () => {
@@ -110,10 +111,26 @@ export class Board implements IComponent {
     }
 
     private onWheel = (e: WheelEvent) => {
-        console.log("board.onWheel");
         e.stopPropagation();
 
-        // todo
+        const newValues: Partial<WorkspaceChangesProps> = {};
+        const scaleFactor = 1 - e.deltaY * ZOOM_AMOUNT / 100;
+        newValues.scale = Math.min(Math.max(MIN_ZOOM, this.scale * scaleFactor), MAX_ZOOM);
+
+        const rect = this.board.getBoundingClientRect();
+        if ( !rect) return;
+
+        const mouseX = e.clientX + this.offsetX - rect.left;
+        const mouseY = e.clientY + this.offsetY - rect.top;
+
+        const dx = mouseX - this.offsetX;
+        const dy = mouseY - this.offsetY;
+
+        newValues.x = mouseX - dx * (newValues.scale / this.scale);
+        newValues.y = mouseY - dy * (newValues.scale / this.scale);
+
+        this.setOffsetAndScale(newValues);
+        app.state.updateWorkspace(newValues);
     }
 
     private static preventDefaultEvent = (e: Event) => {
