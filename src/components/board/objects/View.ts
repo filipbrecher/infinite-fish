@@ -3,14 +3,16 @@ import {InstanceTypeProps} from "../../../types/dbSchema";
 import {ElementView} from "./ElementView";
 
 
-export class View {
+export abstract class View {
 
-    public static getDiv(type: InstanceTypeProps, props: InstanceDataProps): HTMLDivElement | undefined {
+    public static getView(type: InstanceTypeProps, props: InstanceDataProps): View {
         switch (type) {
             case InstanceTypeProps.Element:
-                return ElementView.getDiv(props);
+                return new ElementView(props);
             default:
                 throw new Error("Couldn't create view: Unknown type " + type);
         }
     }
+
+    abstract getDiv(): HTMLDivElement | undefined;
 }
