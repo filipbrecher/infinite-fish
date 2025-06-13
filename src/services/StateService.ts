@@ -1,4 +1,4 @@
-import type {SaveProps, WorkspaceProps, ElementProps, InstanceProps} from "../types/dbSchema";
+import type {SaveProps, WorkspaceProps, ElementProps, InstanceProps, WorkspaceChangesProps} from "../types/dbSchema";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "./Subject";
@@ -215,5 +215,13 @@ export class StateService {
         } catch {
             return false;
         }
+    }
+
+    // todo - debounce
+    public updateWorkspace(changes: Partial<WorkspaceChangesProps>): void {
+        if (changes.x) this.activeWorkspace!.x = changes.x;
+        if (changes.y) this.activeWorkspace!.y = changes.y;
+        if (changes.scale) this.activeWorkspace!.scale = changes.scale;
+        app.database.updateWorkspace(this._activeWorkspace!.id, changes).catch();
     }
 }

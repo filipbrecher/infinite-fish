@@ -11,10 +11,12 @@
     pointer-events: none;
 }
 
-div.instance-wrapper {
+.instance-wrapper {
     position: absolute;
 }
-
+.instance-wrapper.selected {
+    /* TODO */
+}
 
 .instance {
     background-color: var(--instance-bg);
