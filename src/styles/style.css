@@ -30,7 +30,7 @@ h1, h2, h3 {
     min-width: 100vw;
     min-height: 100vh;
 }
-#state-overlay { z-index: 1; }
+#state-overlay { z-index: 10000; }
 
 .overlay {
     position: fixed;
