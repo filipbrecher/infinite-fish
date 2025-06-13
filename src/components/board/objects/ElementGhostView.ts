@@ -3,6 +3,7 @@
 abstract class View {}
 
 export class ElementGhostView extends View {
+    private emoji?: string;
     private text: string;
 
     private div: HTMLDivElement | undefined;
