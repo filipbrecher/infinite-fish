@@ -23,13 +23,14 @@ h1, h2, h3 {
 #options { z-index: 3; }
 #drag-layer { z-index: 100; }
 #options-overlay { z-index: 1000; }
-#state-overlay { z-index: 10000; }
 
 #app {
+    z-index: 0;
     background-color: var(--board-bg);
     min-width: 100vw;
     min-height: 100vh;
 }
+#state-overlay { z-index: 1; }
 
 .overlay {
     position: fixed;
