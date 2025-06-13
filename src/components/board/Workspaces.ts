@@ -1,4 +1,3 @@
-import "./board.css";
 import "./workspace.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";

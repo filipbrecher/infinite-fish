@@ -25,6 +25,12 @@ h1, h2, h3 {
 #options-overlay { z-index: 1000; }
 #state-overlay { z-index: 10000; }
 
+#app {
+    background-color: var(--board-bg);
+    min-width: 100vw;
+    min-height: 100vh;
+}
+
 .overlay {
     position: fixed;
     top: 0; right: 0; bottom: 0; left: 0;

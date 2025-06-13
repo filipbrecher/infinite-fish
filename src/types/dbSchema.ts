@@ -68,7 +68,7 @@ export type WorkspaceChangesProps = {
 
 //============ INSTANCES ============//
 export enum InstanceTypeProps {
-    Element = 0,
+    Element,
 }
 
 export type ElementInstanceData = number;   // id of the element

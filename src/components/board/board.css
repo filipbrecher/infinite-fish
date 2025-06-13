@@ -1,17 +1,20 @@
 
-#board {
-    position: absolute;
-    background-color: var(--board-bg);
-    min-width: 100vw;
-    min-height: 100vh;
-    white-space: nowrap;
-}
-
-#drag-layer {
+#board, #drag-layer {
     background-color: transparent;
+    display: inline-block;
     white-space: nowrap;
+    margin: 0;
+    position: absolute;
+    overflow: visible;
+}
+#drag-layer {
     pointer-events: none;
 }
+
+div.instance-wrapper {
+    position: absolute;
+}
+
 
 .instance {
     background-color: var(--instance-bg);
