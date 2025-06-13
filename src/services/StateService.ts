@@ -62,6 +62,7 @@ export class StateService {
     public readonly _saveUnloaded: Subject = new Subject();
     public readonly _saveLoaded: Subject = new Subject();
     public readonly _workspaceUnloaded: Subject = new Subject();
+    public readonly _workspaceTransformed: Subject = new Subject();
     public readonly _workspaceLoaded: Subject = new Subject();
 
     constructor() {
@@ -222,6 +223,7 @@ export class StateService {
         if (changes.x) this.activeWorkspace!.x = changes.x;
         if (changes.y) this.activeWorkspace!.y = changes.y;
         if (changes.scale) this.activeWorkspace!.scale = changes.scale;
+        this._workspaceTransformed.notify();
         app.database.updateWorkspace(this._activeWorkspace!.id, changes).catch();
     }
 }

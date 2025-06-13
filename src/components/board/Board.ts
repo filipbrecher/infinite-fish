@@ -25,8 +25,6 @@ export class Board implements IComponent {
     private dragOffsetX: number = 0;
     private dragOffsetY: number = 0;
 
-
-
     constructor() {
         this.board = <HTMLDivElement>document.getElementById("board");
         this.dragLayer = <HTMLDivElement>document.getElementById("drag-layer");
@@ -47,8 +45,9 @@ export class Board implements IComponent {
             { kind: "wheel", settingsKey: "workspaceZooming", handler: this.onWheel },
         ]);
 
-        app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
+        app.state._workspaceTransformed.subscribe(this.onWorkspaceTransformed);
+        app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
     }
 
     private setOffsetAndScale = (changes: Partial<WorkspaceChangesProps>) => {
@@ -58,11 +57,6 @@ export class Board implements IComponent {
 
         this.board.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
         this.dragLayer.style.transform = `translate(${this.offsetX + this.dragOffsetX}px, ${this.offsetY + this.dragOffsetY}px) scale(${this.scale})`;
-    }
-
-    private onWorkspaceUnloaded = () => {
-        this.instances.forEach(i => i.removeDiv());
-        this.instances = new Map();
     }
 
     private onWorkspaceLoaded = () => {
@@ -79,6 +73,15 @@ export class Board implements IComponent {
         this.instances.forEach((i) => {
             i.calculateSize();
         })
+    }
+
+    private onWorkspaceTransformed = () => {
+        this.setOffsetAndScale(app.state.activeWorkspace);
+    }
+
+    private onWorkspaceUnloaded = () => {
+        this.instances.forEach(i => i.removeDiv());
+        this.instances = new Map();
     }
 
     private onStartPanning = (e: MouseEvent) => {
@@ -129,7 +132,6 @@ export class Board implements IComponent {
         newValues.x = mouseX - dx * (newValues.scale / this.scale);
         newValues.y = mouseY - dy * (newValues.scale / this.scale);
 
-        this.setOffsetAndScale(newValues);
         app.state.updateWorkspace(newValues);
     }
 
