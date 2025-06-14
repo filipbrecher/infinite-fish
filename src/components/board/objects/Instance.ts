@@ -23,7 +23,7 @@ export class Instance {
         this.y = props.y;
     }
 
-    public getDiv(): HTMLDivElement | undefined {
+    public getDiv(): HTMLDivElement {
         this.div = document.createElement("div");
 
         this.div.id = `instance-${this.instanceId}`;

@@ -14,5 +14,5 @@ export abstract class View {
         }
     }
 
-    abstract getDiv(): HTMLDivElement | undefined;
+    abstract getDiv(): HTMLDivElement;
 }

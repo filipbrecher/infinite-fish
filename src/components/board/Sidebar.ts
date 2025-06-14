@@ -1,6 +1,9 @@
 import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
+import {View} from "./objects/View";
+import {InstanceTypeProps} from "../../types/dbSchema";
+import {ElementView} from "./objects/ElementView";
 
 // todo - use item and view for element rendering - add input captures:
 //      (drag + copy element are the same capture (put in workspace), onViewCopyEmojiText, onViewInfo, elementToggleVisibility
@@ -33,12 +36,13 @@ export class Sidebar implements IComponent {
 
     private onSaveLoaded = () => {
         app.state.elements.forEach((e) => {
-            const instance = <HTMLDivElement>document.createElement("div");
-            instance.id = `view-${e.id}`;
-            instance.classList.add("view");
-            instance.classList.add("element-view");
-            instance.innerText = `${e.emoji} ${e.text}`;
-            this.sidebarItems.appendChild(instance);
+            const view = new ElementView(e);
+            const viewDiv = view.getDiv();
+
+            // todo - add captures
+            // todo - wrap in item (possibly)
+
+            this.sidebarItems.appendChild(viewDiv);
         });
     }
 

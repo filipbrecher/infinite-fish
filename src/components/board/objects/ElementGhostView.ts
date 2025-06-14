@@ -13,7 +13,7 @@ export class ElementGhostView extends View {
         // todo - make a hook or something
     }
 
-    public getDiv(): HTMLDivElement | undefined {
+    public getDiv(): HTMLDivElement {
         // todo
         return;
     }
