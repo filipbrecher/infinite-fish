@@ -2,6 +2,8 @@ import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
 
+// todo - use item and view for element rendering - add input captures:
+//      (drag + copy element are the same capture (put in workspace), onViewCopyEmojiText, onViewInfo, elementToggleVisibility
 export class Sidebar implements IComponent {
     private sidebar: HTMLDivElement;
     private resizer: HTMLDivElement;

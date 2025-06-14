@@ -3,7 +3,9 @@ import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {Instance} from "./objects/Instance";
 import type {WorkspaceChangesProps} from "../../types/dbSchema";
+import {InstanceTypeProps} from "../../types/dbSchema";
 import {MAX_ZOOM, MIN_ZOOM, ZOOM_AMOUNT} from "../../constants/defaults";
+import {View} from "./objects/View";
 
 
 export class Board implements IComponent {
@@ -42,7 +44,17 @@ export class Board implements IComponent {
         app.inputCapture.set("board", [
             { kind: "mousedown", settingsKey: "workspacePanning", handler: this.onStartPanning },
             { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.onStartSelecting },
+            { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onStartDeleting },
             { kind: "wheel", settingsKey: "workspaceZooming", handler: this.onWheel },
+        ]);
+        app.inputCapture.set("instance", [
+            { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onStartDragging },
+            { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onStartCopying },
+            { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onStartDeleting },
+        ]);
+        app.inputCapture.set("view", [
+            { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
+            { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
         ]);
 
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
@@ -63,12 +75,26 @@ export class Board implements IComponent {
         this.setOffsetAndScale(app.state.activeWorkspace);
 
         app.state.instances.forEach((props) => {
+            const view = View.getView(props.type || InstanceTypeProps.Element, props.data);
             const instance = new Instance(props);
-            const div = instance.getDiv();
-            if ( !div) return;
+
+            const viewDiv = view.getDiv();
+            const instanceDiv = instance.getDiv();
+            if ( !viewDiv || !instanceDiv) {
+                app.logger.log("warning", "board", `Failed to load instance ${props}: ViewDiv or InstanceDiv not generated`);
+                return;
+            }
+            instanceDiv.appendChild(viewDiv);
+
+            instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
+                app.inputCapture.matchMouseDown("instance", e)(e);
+            });
+            viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
+                app.inputCapture.matchMouseDown("view", e)(e);
+            });
 
             this.instances.set(props.id, instance);
-            this.board.appendChild(div);
+            this.board.appendChild(instanceDiv);
         });
         this.instances.forEach((i) => {
             i.calculateSize();
@@ -133,6 +159,41 @@ export class Board implements IComponent {
         newValues.y = mouseY - dy * (newValues.scale / this.scale);
 
         app.state.updateWorkspace(newValues);
+    }
+
+    private onStartDeleting = (e: MouseEvent) => {
+        console.log("board/instance.onStartDeleting");
+        e.stopPropagation();
+
+        // todo
+    }
+
+    private onStartDragging = (e: MouseEvent) => {
+        console.log("instance.onStartDragging");
+        e.stopPropagation();
+
+        // todo
+    }
+
+    private onStartCopying = (e: MouseEvent) => {
+        console.log("instance.onStartCopying");
+        e.stopPropagation();
+
+        // todo
+    }
+
+    private onViewInfo = (e: MouseEvent) => {
+        console.log("view.onViewInfo");
+        e.stopPropagation();
+
+        // todo
+    }
+
+    private onViewCopyEmojiText = (e: MouseEvent) => {
+        console.log("view.onViewCopyEmojiText");
+        e.stopPropagation();
+
+        // todo
     }
 
     private static preventDefaultEvent = (e: Event) => {

@@ -9,7 +9,6 @@ export class Instance {
     private readonly instanceId: number;
     private x: number;
     private y: number;
-    private view: View;
 
     private height: number;
     private width: number;
@@ -22,21 +21,16 @@ export class Instance {
         this.instanceId = props.id;
         this.x = props.x;
         this.y = props.y;
-        this.view = View.getView(props.type || InstanceTypeProps.Element, props.data);
     }
 
     public getDiv(): HTMLDivElement | undefined {
-        const viewDiv = this.view.getDiv();
-        if ( !viewDiv) return undefined;
+        this.div = document.createElement("div");
 
-        const div = document.createElement("div");
-        div.id = `instance-${this.instanceId}`;
-        div.classList.add("instance-wrapper");
-        div.style.transform = `translate(${this.x}px, ${this.y}px)`;
-        div.appendChild(viewDiv);
+        this.div.id = `instance-${this.instanceId}`;
+        this.div.classList.add("instance-wrapper");
+        this.div.style.transform = `translate(${this.x}px, ${this.y}px)`;
 
-        this.div = div;
-        return div;
+        return this.div;
     }
 
     public calculateSize() {
@@ -46,5 +40,14 @@ export class Instance {
 
     public removeDiv() {
         this.div?.remove();
+    }
+
+    public setSelected(selected: boolean) {
+        this.selected = selected;
+        this.div?.classList.toggle("selected", selected);
+    }
+
+    public moveDivTo(dest: HTMLDivElement) {
+        dest.appendChild(this.div);
     }
 }
