@@ -13,6 +13,10 @@ body[data-theme="light"] {
     --instance-border-hover: #313131;
     --instance-bg-hover: #e5e5e5;
 
+    /* selection */
+    --selection-box-bg: #0078ff33;
+    --selection-box-border: #0078ff80;
+
     /* workspaces */
     --workspace-bg: var(--board-bg);
     --workspace-bg-hover: #dcdcdc;

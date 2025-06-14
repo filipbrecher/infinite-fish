@@ -11,6 +11,16 @@
     pointer-events: none;
 }
 
+#selection-box {
+    position: absolute;
+    box-sizing: border-box;
+    display: none;
+    background-color: var(--selection-box-bg);
+    border: 2px solid var(--selection-box-border);
+    pointer-events: none;
+    z-index: 1000000000;
+}
+
 .instance-wrapper {
     position: absolute;
 }

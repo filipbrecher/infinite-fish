@@ -19,6 +19,10 @@ export class Board implements IComponent {
     private panning: boolean = false;
 
     // selection
+    private readonly selectionBox: HTMLDivElement;
+    private selectionStartX: number;
+    private selectionStartY: number;
+    private selecting: boolean = false;
     private selected: Set<number> = new Set();
 
     // instance dragging
@@ -30,6 +34,7 @@ export class Board implements IComponent {
     constructor() {
         this.board = <HTMLDivElement>document.getElementById("board");
         this.dragLayer = <HTMLDivElement>document.getElementById("drag-layer");
+        this.selectionBox = <HTMLDivElement>document.getElementById("selection-box");
 
         const appDiv = document.getElementById("app");
         appDiv.addEventListener("contextmenu", Board.preventDefaultEvent);
@@ -121,6 +126,7 @@ export class Board implements IComponent {
     private onUpdatePanning = (e: MouseEvent) => {
         if ( !this.panning) return;
 
+        console.log("onStartPanning");
         this.setOffsetAndScale({ x: this.offsetX + e.movementX, y: this.offsetY + e.movementY });
     }
 
@@ -132,33 +138,77 @@ export class Board implements IComponent {
         window.removeEventListener("mouseup", this.onEndPanning);
     }
 
+    private getBoardCoordinates(e: MouseEvent): [number, number] {
+        const rect = this.board.getBoundingClientRect();
+        const scaledX = e.clientX - rect.left;
+        const scaledY = e.clientY - rect.top;
+
+        const unscaledX = scaledX / this.scale;
+        const unscaledY = scaledY / this.scale;
+
+        return [ unscaledX, unscaledY ];
+    }
+
     private onStartSelecting = (e: MouseEvent) => {
-        console.log("board.onStartSelecting");
         e.stopPropagation();
 
-        // todo
+        this.selecting = true;
+        [ this.selectionStartX, this.selectionStartY ] = this.getBoardCoordinates(e);
+        window.addEventListener("mousemove", this.onUpdateSelecting);
+        window.addEventListener("mouseup", this.onEndSelecting);
+    }
+
+    // todo - fix when moving board (with middle scroll button) and having a selection box, then upon releasing middle scroll button
+    //        the selection box doesn't disappear (onEndSelecting either recognizes or in some other way)
+    //      - basically just add a method to InputCaptureService that for a handler function checks that
+    //        the settings requirements (for buttons pressed -> not for keys) hold (at least one of the buttons is still pressed)
+    //        maybe something like actionEnded(this.onStartDeleting) -> goes through all layers and ActionEntries and at least
+    //        one ActionEntry must still match a button for the action not ending yet
+    private onUpdateSelecting = (e: MouseEvent) => {
+        if ( !this.selecting) return;
+        this.selectionBox.style.display = "block";
+
+        const [ boardX, boardY ] = this.getBoardCoordinates(e);
+        const left = Math.min(boardX, this.selectionStartX);
+        const top = Math.min(boardY, this.selectionStartY);
+        const width = Math.abs(boardX - this.selectionStartX);
+        const height = Math.abs(boardY - this.selectionStartY);
+
+        this.selectionBox.style.left = `${left}px`;
+        this.selectionBox.style.top = `${top}px`;
+        this.selectionBox.style.width = `${width}px`;
+        this.selectionBox.style.height = `${height}px`;
+
+        // todo - find all instances in the selection box
+    }
+
+    private onEndSelecting = () => {
+        this.selecting = false;
+        this.selectionBox.style.display = "none";
+        window.removeEventListener("mousemove", this.onUpdateSelecting);
+        window.removeEventListener("mouseup", this.onEndSelecting);
     }
 
     private onWheel = (e: WheelEvent) => {
         e.stopPropagation();
 
-        const newValues: Partial<WorkspaceChangesProps> = {};
         const scaleFactor = 1 - e.deltaY * ZOOM_AMOUNT / 100;
-        newValues.scale = Math.min(Math.max(MIN_ZOOM, this.scale * scaleFactor), MAX_ZOOM);
+        const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, this.scale * scaleFactor));
 
         const rect = this.board.getBoundingClientRect();
-        if ( !rect) return;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-        const mouseX = e.clientX + this.offsetX - rect.left;
-        const mouseY = e.clientY + this.offsetY - rect.top;
+        const zoomRatio = newScale / this.scale;
 
-        const dx = mouseX - this.offsetX;
-        const dy = mouseY - this.offsetY;
+        const newX = this.offsetX - (mouseX * (zoomRatio - 1));
+        const newY = this.offsetY - (mouseY * (zoomRatio - 1));
 
-        newValues.x = mouseX - dx * (newValues.scale / this.scale);
-        newValues.y = mouseY - dy * (newValues.scale / this.scale);
-
-        app.state.updateWorkspace(newValues);
+        app.state.updateWorkspace({
+            scale: newScale,
+            x: newX,
+            y: newY,
+        });
     }
 
     private onStartDeleting = (e: MouseEvent) => {
