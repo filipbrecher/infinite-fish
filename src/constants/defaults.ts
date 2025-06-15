@@ -22,7 +22,7 @@ export const DEFAULT_SETTINGS: SettingsProps = {
             ...DEFAULT_KEY_PROPS,
             [KeyProps.CTRL]: KeyState.YES,
         },
-        buttons: new Set([ButtonProps.LEFT]),
+        buttons: ButtonProps.MIDDLE,
     },
     workspaceZooming: {
         ...DEFAULT_KEY_PROPS,
@@ -33,7 +33,7 @@ export const DEFAULT_SETTINGS: SettingsProps = {
             ...DEFAULT_KEY_PROPS,
             [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: new Set([ButtonProps.LEFT]),
+        buttons: ButtonProps.LEFT,
     },
 
     instanceDragging: {
@@ -42,22 +42,23 @@ export const DEFAULT_SETTINGS: SettingsProps = {
             [KeyProps.SHIFT]: KeyState.NO,
             [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: new Set([ButtonProps.LEFT]),
+        buttons: ButtonProps.LEFT,
     },
     instanceCopying: {
         keys: {
             ...DEFAULT_KEY_PROPS,
             [KeyProps.SHIFT]: KeyState.NO,
+            [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: new Set([ButtonProps.MIDDLE]),
+        buttons: ButtonProps.MIDDLE,
     },
     instanceDeleting: {
         keys: DEFAULT_KEY_PROPS,
-        buttons: new Set([ButtonProps.RIGHT]),
+        buttons: ButtonProps.RIGHT,
     },
     elementToggleVisibility: {
         keys: DEFAULT_KEY_PROPS,
-        buttons: new Set([ButtonProps.RIGHT]),
+        buttons: ButtonProps.RIGHT,
     },
 
     viewInfo: {
@@ -66,14 +67,15 @@ export const DEFAULT_SETTINGS: SettingsProps = {
             [KeyProps.SHIFT]: KeyState.YES,
             [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: new Set([ButtonProps.LEFT]),
+        buttons: ButtonProps.LEFT,
     },
     viewCopyEmojiText: {
         keys: {
             ...DEFAULT_KEY_PROPS,
             [KeyProps.SHIFT]: KeyState.YES,
+            [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: new Set([ButtonProps.MIDDLE]),
+        buttons: ButtonProps.MIDDLE,
     },
 };
 

@@ -34,7 +34,7 @@ export class Options implements IComponent {
         this.openedPopup = this.savesPopup;
 
         this.openedPopup.open();
-        this.overlay.style.display = "block";
+        this.overlay.classList.add("visible");
         event.stopPropagation();
     }
 
@@ -43,7 +43,7 @@ export class Options implements IComponent {
         this.openedPopup = this.settingsPopup;
 
         this.openedPopup.open();
-        this.overlay.style.display = "block";
+        this.overlay.classList.add("visible");
         event.stopPropagation();
     }
 
@@ -53,7 +53,7 @@ export class Options implements IComponent {
 
         this.openedPopup.close();
         this.openedPopup = null;
-        this.overlay.style.display = "none";
+        this.overlay.classList.remove("visible");
         event.stopPropagation();
     }
 }

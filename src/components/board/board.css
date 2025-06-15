@@ -1,4 +1,10 @@
 
+#board-wrapper {
+    background-color: var(--board-bg);
+    min-width: 100vw;
+    min-height: 100vh;
+}
+
 #board, #drag-layer {
     background-color: transparent;
     display: inline-block;

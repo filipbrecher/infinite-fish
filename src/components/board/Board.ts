@@ -36,13 +36,13 @@ export class Board implements IComponent {
         this.dragLayer = <HTMLDivElement>document.getElementById("drag-layer");
         this.selectionBox = <HTMLDivElement>document.getElementById("selection-box");
 
-        const appDiv = document.getElementById("app");
-        appDiv.addEventListener("contextmenu", Board.preventDefaultEvent);
-        appDiv.addEventListener("wheel", Board.preventDefaultEvent);
-        appDiv.addEventListener("mousedown", (e: MouseEvent) => {
+        const boardWrapper = document.getElementById("board-wrapper");
+        boardWrapper.addEventListener("contextmenu", Board.preventDefaultEvent);
+        boardWrapper.addEventListener("wheel", Board.preventDefaultEvent);
+        boardWrapper.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("board", e)(e);
         });
-        appDiv.addEventListener("wheel", (e: WheelEvent) => {
+        boardWrapper.addEventListener("wheel", (e: WheelEvent) => {
             app.inputCapture.matchWheel("board", e)(e);
         });
 
@@ -126,11 +126,11 @@ export class Board implements IComponent {
     private onUpdatePanning = (e: MouseEvent) => {
         if ( !this.panning) return;
 
-        console.log("onStartPanning");
         this.setOffsetAndScale({ x: this.offsetX + e.movementX, y: this.offsetY + e.movementY });
     }
 
-    private onEndPanning = () => {
+    private onEndPanning = (e: MouseEvent) => {
+        if ( !app.inputCapture.matchMouseUp(e, this.onStartPanning)) return;
         this.panning = false;
 
         app.state.updateWorkspace({ x: this.offsetX, y: this.offsetY });
@@ -158,12 +158,6 @@ export class Board implements IComponent {
         window.addEventListener("mouseup", this.onEndSelecting);
     }
 
-    // todo - fix when moving board (with middle scroll button) and having a selection box, then upon releasing middle scroll button
-    //        the selection box doesn't disappear (onEndSelecting either recognizes or in some other way)
-    //      - basically just add a method to InputCaptureService that for a handler function checks that
-    //        the settings requirements (for buttons pressed -> not for keys) hold (at least one of the buttons is still pressed)
-    //        maybe something like actionEnded(this.onStartDeleting) -> goes through all layers and ActionEntries and at least
-    //        one ActionEntry must still match a button for the action not ending yet
     private onUpdateSelecting = (e: MouseEvent) => {
         if ( !this.selecting) return;
         this.selectionBox.style.display = "block";
@@ -182,8 +176,10 @@ export class Board implements IComponent {
         // todo - find all instances in the selection box
     }
 
-    private onEndSelecting = () => {
+    private onEndSelecting = (e: MouseEvent) => {
+        if ( !app.inputCapture.matchMouseUp(e, this.onStartSelecting)) return;
         this.selecting = false;
+
         this.selectionBox.style.display = "none";
         window.removeEventListener("mousemove", this.onUpdateSelecting);
         window.removeEventListener("mouseup", this.onEndSelecting);

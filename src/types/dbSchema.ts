@@ -17,18 +17,18 @@ export enum KeyProps {
     META = "metaKey",
 }
 export enum ButtonProps {
-    LEFT = 0,
-    MIDDLE = 1,
+    LEFT = 1,
+    MIDDLE = 4,
     RIGHT = 2,
-    BROWSER_BACK = 3,
-    BROWSER_FORWARD = 4,
+    BROWSER_BACK = 8,
+    BROWSER_FORWARD = 16,
 }
 
 export type KeyPropsRecord = Record<KeyProps, KeyState>;
 export type WheelProps = KeyPropsRecord;
 export type MouseProps = {
     keys: KeyPropsRecord;
-    buttons: Set<ButtonProps>;
+    buttons: number;
 }
 
 export type SettingsProps = {

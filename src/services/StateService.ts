@@ -94,18 +94,18 @@ export class StateService {
         switch (s) {
             case State.WAITING:
                 this._overlayText.innerText = "Waiting to finish combining all elements...";
-                this._overlay.style.display = "block";
+                this._overlay.classList.add("visible");
                 break;
             case State.LOADING_SAVE:
                 this._overlayText.innerText = "Loading save...";
-                this._overlay.style.display = "block";
+                this._overlay.classList.add("visible");
                 break;
             case State.LOADING_WORKSPACE:
                 this._overlayText.innerText = "Loading workspace...";
-                this._overlay.style.display = "block";
+                this._overlay.classList.add("visible");
                 break;
             case State.RUNNING:
-                this._overlay.style.display = "none";
+                this._overlay.classList.remove("visible");
                 break;
         }
     }

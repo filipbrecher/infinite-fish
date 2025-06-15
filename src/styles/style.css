@@ -20,16 +20,13 @@ h1, h2, h3 {
 #board { z-index: 0; }
 #workspaces-list { z-index: 1; }
 #sidebar { z-index: 2; }
+
+#board-wrapper { z-index: 0; }
 #options { z-index: 3; }
 #drag-layer { z-index: 100; }
 #options-overlay { z-index: 1000; }
 
-#app {
-    z-index: 0;
-    background-color: var(--board-bg);
-    min-width: 100vw;
-    min-height: 100vh;
-}
+#app { z-index: 0; }
 #state-overlay { z-index: 10000; }
 
 .overlay {
@@ -37,6 +34,10 @@ h1, h2, h3 {
     top: 0; right: 0; bottom: 0; left: 0;
     background-color: var(--overlay);
     display: none;
+    pointer-events: none;
+}
+.overlay.visible {
+    display: block;
 }
 #overlay-text {
     font-size: 3em;
