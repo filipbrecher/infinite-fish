@@ -1,8 +1,10 @@
-import type {InstanceProps} from "../../../types/dbSchema";
+import type {InstanceProps, NewInstanceProps} from "../../../types/dbSchema";
+import {View} from "./View";
 
 
 // todo - if id not found, do not render
 //      - if ghost, create a hook
+//      - todo - move view here
 export class Instance {
     private readonly instanceId: number;
     private x: number;
@@ -13,12 +15,14 @@ export class Instance {
 
     private selected: boolean;
 
+    private view: View;
     private div: HTMLDivElement | undefined;
 
-    constructor(props: InstanceProps) {
+    constructor(props: InstanceProps, view: View) {
         this.instanceId = props.id;
         this.x = props.x;
         this.y = props.y;
+        this.view = view;
     }
 
     public getDiv(): HTMLDivElement {
@@ -61,5 +65,14 @@ export class Instance {
 
     public moveDivTo(dest: HTMLDivElement) {
         dest.appendChild(this.div);
+    }
+
+    public getDuplicate(dragOffsetX: number, dragOffsetY: number): NewInstanceProps {
+        return {
+            x: this.x + dragOffsetX,
+            y: this.y + dragOffsetY,
+            type: this.view.type(),
+            data: this.view.data(),
+        }
     }
 }

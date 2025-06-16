@@ -1,4 +1,6 @@
 import type {ElementInstanceData, ElementProps} from "../../../types/dbSchema";
+import type {InstanceDataProps} from "../../../types/dbSchema";
+import {InstanceTypeProps} from "../../../types/dbSchema";
 import {app} from "../../../main";
 
 
@@ -41,5 +43,13 @@ export class ElementView extends View {
         div.classList.add("element-view");
         div.innerText = `${this.emoji} ${this.text} ${this.discovery ? "discovery" : ""}`;
         return div;
+    }
+
+    public type(): InstanceTypeProps {
+        return InstanceTypeProps.Element;
+    }
+
+    public data(): InstanceDataProps {
+        return this.elementId;
     }
 }

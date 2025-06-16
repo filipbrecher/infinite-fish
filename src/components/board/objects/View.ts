@@ -15,4 +15,6 @@ export abstract class View {
     }
 
     abstract getDiv(): HTMLDivElement;
+    abstract type(): InstanceTypeProps;
+    abstract data(): InstanceDataProps;
 }

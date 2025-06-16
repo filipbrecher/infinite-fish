@@ -1,4 +1,11 @@
-import type {SaveProps, WorkspaceProps, ElementProps, InstanceProps, WorkspaceChangesProps} from "../types/dbSchema";
+import type {
+    SaveProps,
+    WorkspaceProps,
+    ElementProps,
+    InstanceProps,
+    WorkspaceChangesProps,
+    NewInstanceProps
+} from "../types/dbSchema";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "./Subject";
@@ -41,6 +48,7 @@ enum State {
 }
 
 
+// todo - make sure everywhere is accounted for possible instances not found by their id
 // todo - block and debounce on block text
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
@@ -66,6 +74,7 @@ export class StateService {
     public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
     public readonly _workspaceTransformed: Subject<Partial<WorkspaceChangesProps>> = new Subject();
     public readonly _instancesMoved: Subject<InstanceProps[]> = new Subject();
+    public readonly _instancesCreated: Subject<InstanceProps[]> = new Subject();
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
     constructor() {
@@ -241,5 +250,18 @@ export class StateService {
         });
         this._instancesMoved.notify(moved);
         app.database.moveInstances(moved).catch();
+    }
+
+    public async createInstances(instances: NewInstanceProps[]): Promise<boolean> {
+        try {
+            const newInstances = await app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, instances);
+            newInstances.forEach((i) => {
+                this._instances.set(i.id, i);
+            });
+            this._instancesCreated.notify(newInstances);
+            return true;
+        } catch {
+            return false;
+        }
     }
 }

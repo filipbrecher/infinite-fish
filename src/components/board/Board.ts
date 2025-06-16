@@ -2,12 +2,13 @@ import "./board.css"
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {Instance} from "./objects/Instance";
-import type {WorkspaceChangesProps} from "../../types/dbSchema";
+import type {InstanceProps, NewInstanceProps, WorkspaceChangesProps} from "../../types/dbSchema";
 import {InstanceTypeProps} from "../../types/dbSchema";
 import {MAX_ZOOM, MIN_ZOOM, ZOOM_SENSITIVITY} from "../../constants/defaults";
 import {View} from "./objects/View";
 
 
+// todo - add zindex to db to instances
 // todo - change instance to instance wrapper class and make it hold the view div?? (possibly?)
 export class Board implements IComponent {
     private readonly board: HTMLDivElement;
@@ -65,6 +66,7 @@ export class Board implements IComponent {
 
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
         app.state._workspaceTransformed.subscribe(this.onWorkspaceTransformed);
+        app.state._instancesCreated.subscribe(this.onInstancesCreated);
         app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
         app.state._stateWaiting.subscribe(this.onStateWaiting);
     }
@@ -82,35 +84,41 @@ export class Board implements IComponent {
         this.updateTransform();
     };
 
-    private onWorkspaceLoaded = () => {
-        this.setOffsetAndScale(app.state.activeWorkspace);
-
-        app.state.instances.forEach((props) => {
+    private addInstancesToBoard = (instances: Iterable<InstanceProps>) => {
+        for (const props of instances) {
             const view = View.getView(props.type || InstanceTypeProps.Element, props.data);
-            const instance = new Instance(props);
-
             const viewDiv = view.getDiv();
-            const instanceDiv = instance.getDiv();
-            if ( !viewDiv || !instanceDiv) {
-                app.logger.log("warning", "board", `Failed to load instance ${props}: ViewDiv or InstanceDiv not generated`);
+            if ( !viewDiv) {
+                app.logger.log("warning", "board", `Failed to load instance ${props}: ViewDiv not generated`);
                 return;
             }
-            instanceDiv.appendChild(viewDiv);
-
-            instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("instance", e)(e, props.id);
-            });
             viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
                 app.inputCapture.matchMouseDown("view", e)(e);
             });
 
+            const instance = new Instance(props, view);
+            const instanceDiv = instance.getDiv();
+            instanceDiv.appendChild(viewDiv);
+            instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
+                app.inputCapture.matchMouseDown("instance", e)(e, props.id);
+            });
+
             this.instances.set(props.id, instance);
             this.board.appendChild(instanceDiv);
-        });
+        }
+    }
+
+    private onWorkspaceLoaded = () => {
+        this.setOffsetAndScale(app.state.activeWorkspace);
+        this.addInstancesToBoard(app.state.instances.values());
     }
 
     private onWorkspaceTransformed = (changes: Partial<WorkspaceChangesProps>) => {
         this.setOffsetAndScale(changes);
+    }
+
+    private onInstancesCreated = (instances: InstanceProps[]) => {
+        this.addInstancesToBoard(instances);
     }
 
     private onWorkspaceUnloaded = () => {
@@ -288,11 +296,23 @@ export class Board implements IComponent {
         window.removeEventListener("mouseup", this.onEndDragging);
     }
 
-    private onStartCopying = (e: MouseEvent) => {
-        console.log("instance.onStartCopying");
+    private onStartCopying = (e: MouseEvent, id: number) => {
         e.stopPropagation();
 
-        // todo
+        if ( !this.dragging) {
+            this.onStartDragging(e, id);
+        }
+
+        const newInstances: NewInstanceProps[] = [];
+        this.dragged.forEach((id) => {
+            const i = this.instances.get(id);
+            if ( !i) {
+                app.logger.log("error", "board", `Failed to get duplicate of instance with id ${id}: Instance not found`);
+                return;
+            }
+            newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY));
+        });
+        app.state.createInstances(newInstances).catch();
     }
 
     private onViewInfo = (e: MouseEvent) => {

@@ -33,7 +33,7 @@ export const DEFAULT_SETTINGS: SettingsProps = {
             ...DEFAULT_KEY_PROPS,
             [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: ButtonProps.LEFT,
+        buttons: ButtonProps.LEFT | ButtonProps.MIDDLE,
     },
 
     instanceDragging: {

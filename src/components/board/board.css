@@ -16,7 +16,6 @@
 }
 #drag-layer {
     cursor: pointer;
-    pointer-events: none;
 }
 
 #selection-box {
