@@ -1,8 +1,6 @@
 import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
-import {View} from "./objects/View";
-import {InstanceTypeProps} from "../../types/dbSchema";
 import {ElementView} from "./objects/ElementView";
 
 // todo - use item and view for element rendering - add input captures:

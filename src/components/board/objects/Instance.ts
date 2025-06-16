@@ -1,6 +1,4 @@
 import type {InstanceProps} from "../../../types/dbSchema";
-import {InstanceTypeProps} from "../../../types/dbSchema";
-import {View} from "./View";
 
 
 // todo - if id not found, do not render

@@ -40,6 +40,8 @@ enum State {
     RUNNING = "RUNNING",
 }
 
+// todo - subject is with a type, change notify to send the stuff that changed / is relevant
+//      - add state changed to waiting subject -> board receives and stops all dragging / selections / etc.
 // todo - block and debounce on block text
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
@@ -59,12 +61,12 @@ export class StateService {
     private _overlay: HTMLDivElement;
     private _overlayText: HTMLDivElement;
 
-    public readonly _saveUnloaded: Subject = new Subject();
-    public readonly _saveLoaded: Subject = new Subject();
-    public readonly _workspaceUnloaded: Subject = new Subject();
-    public readonly _workspaceTransformed: Subject = new Subject();
-    public readonly _instancesMoved: Subject = new Subject();
-    public readonly _workspaceLoaded: Subject = new Subject();
+    public readonly _saveUnloaded: Subject<SaveProps> = new Subject();
+    public readonly _saveLoaded: Subject<SaveProps> = new Subject();
+    public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
+    public readonly _workspaceTransformed: Subject<Partial<WorkspaceChangesProps>> = new Subject();
+    public readonly _instancesMoved: Subject<InstanceProps[]> = new Subject();
+    public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
     constructor() {
         this._overlay = <HTMLDivElement>document.getElementById("state-overlay");
@@ -131,9 +133,9 @@ export class StateService {
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_SAVE);
 
+        this._workspaceUnloaded.notify(this._activeWorkspace!);
+        this._saveUnloaded.notify(this._activeSave!);
         this.clearSaveFromMemory();
-        this._workspaceUnloaded.notify();
-        this._saveUnloaded.notify();
 
         await this.loadActiveSave(saveId);
     }
@@ -152,13 +154,12 @@ export class StateService {
         this._elements = new Map(elementsArr.map(e => [e.id, e]));
         const instancesArr = await app.database.getInstances(activeWsId);
         this._instances = new Map(instancesArr.map(i => [i.id, i]));
-
         this._activeSave = this._saves.get(activeSaveId);
         this._activeWorkspace = this._workspaces.get(activeWsId);
         this.updateActiveTime();
 
-        this._saveLoaded.notify();
-        this._workspaceLoaded.notify();
+        this._saveLoaded.notify(this._activeSave!);
+        this._workspaceLoaded.notify(this._activeWorkspace!);
         this.setState(State.RUNNING);
     }
 
@@ -168,8 +169,8 @@ export class StateService {
         await this.waitForElementsToCombine();
         this.setState(State.LOADING_WORKSPACE);
 
+        this._workspaceUnloaded.notify(this._activeWorkspace!);
         this.clearWorkspaceFromMemory();
-        this._workspaceUnloaded.notify();
 
         await this.loadActiveWorkspace(workspaceId);
     }
@@ -179,7 +180,7 @@ export class StateService {
         this._instances = new Map(instancesArr.map(i => [i.id, i]));
 
         this._activeWorkspace = this._workspaces.get(activeWsId);
-        this._workspaceLoaded.notify();
+        this._workspaceLoaded.notify(this._activeWorkspace!);
         this.setState(State.RUNNING);
     }
 
@@ -219,16 +220,16 @@ export class StateService {
         }
     }
 
-    // todo - debounce
+    // todo - debounce db
     public updateWorkspace(changes: Partial<WorkspaceChangesProps>): void {
         if (changes.x !== undefined) this.activeWorkspace!.x = changes.x;
         if (changes.y !== undefined) this.activeWorkspace!.y = changes.y;
         if (changes.scale !== undefined) this.activeWorkspace!.scale = changes.scale;
-        this._workspaceTransformed.notify();
+        this._workspaceTransformed.notify(changes);
         app.database.updateWorkspace(this._activeWorkspace!.id, changes).catch();
     }
 
-    // todo - debounce
+    // todo - debounce db
     public moveInstances(ids: Set<number>, offsetX: number, offsetY: number): void {
         const moved: InstanceProps[] = [];
         ids.forEach((id) => {
@@ -237,7 +238,7 @@ export class StateService {
             instance.y += offsetY;
             moved.push(instance);
         });
-        this._instancesMoved.notify();
+        this._instancesMoved.notify(moved);
         app.database.moveInstances(moved).catch();
     }
 }

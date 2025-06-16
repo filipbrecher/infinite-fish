@@ -8,6 +8,7 @@ import {MAX_ZOOM, MIN_ZOOM, ZOOM_SENSITIVITY} from "../../constants/defaults";
 import {View} from "./objects/View";
 
 
+// todo - change instance to instance wrapper class and make it hold the view div?? (possibly?)
 export class Board implements IComponent {
     private readonly board: HTMLDivElement;
     private readonly dragLayer: HTMLDivElement;
@@ -107,8 +108,8 @@ export class Board implements IComponent {
         });
     }
 
-    private onWorkspaceTransformed = () => {
-        this.setOffsetAndScale(app.state.activeWorkspace);
+    private onWorkspaceTransformed = (changes: Partial<WorkspaceChangesProps>) => {
+        this.setOffsetAndScale(changes);
     }
 
     private onWorkspaceUnloaded = () => {

@@ -1,18 +1,18 @@
 
-export type Listener = () => void;
+export type Listener<T> = (value: T) => void;
 
-export class Subject {
-    private listeners: Listener[] = [];
+export class Subject<T> {
+    private listeners: Listener<T>[] = [];
 
-    public notify() {
-        for (const fun of this.listeners) fun();
+    public notify(value: T) {
+        for (const fun of this.listeners) fun(value);
     }
 
-    public subscribe(fun: Listener) {
+    public subscribe(fun: Listener<T>) {
         this.listeners.push(fun);
     }
 
-    public unsubscribe(fun: Listener) {
+    public unsubscribe(fun: Listener<T>) {
         this.listeners = this.listeners.filter(f => f !== fun);
     }
 }
