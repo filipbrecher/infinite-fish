@@ -10,8 +10,8 @@ export class Instance {
     private x: number;
     private y: number;
 
-    private height: number;
-    private width: number;
+    private height: number | undefined;
+    private width: number | undefined;
 
     private selected: boolean;
 
@@ -33,9 +33,17 @@ export class Instance {
         return this.div;
     }
 
-    public calculateSize() {
-        this.height = this.div!.offsetHeight;
-        this.width = this.div!.offsetWidth;
+    public isInBox(x1: number, y1: number, x2: number, y2: number): boolean {
+        if ( !this.height || !this.width) {
+            this.height = this.div!.offsetHeight;
+            this.width = this.div!.offsetWidth;
+        }
+        return (
+            this.x < x2 &&
+            this.x + this.width > x1 &&
+            this.y < y2 &&
+            this.y + this.height > y1
+        );
     }
 
     public removeDiv() {
@@ -45,6 +53,12 @@ export class Instance {
     public setSelected(selected: boolean) {
         this.selected = selected;
         this.div?.classList.toggle("selected", selected);
+    }
+
+    public updateCoordinates(offsetX: number, offsetY: number) {
+        this.x += offsetX;
+        this.y += offsetY;
+        this.div!.style.transform = `translate(${this.x}px, ${this.y}px)`;
     }
 
     public moveDivTo(dest: HTMLDivElement) {

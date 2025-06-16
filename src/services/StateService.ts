@@ -63,6 +63,7 @@ export class StateService {
     public readonly _saveLoaded: Subject = new Subject();
     public readonly _workspaceUnloaded: Subject = new Subject();
     public readonly _workspaceTransformed: Subject = new Subject();
+    public readonly _instancesMoved: Subject = new Subject();
     public readonly _workspaceLoaded: Subject = new Subject();
 
     constructor() {
@@ -220,10 +221,23 @@ export class StateService {
 
     // todo - debounce
     public updateWorkspace(changes: Partial<WorkspaceChangesProps>): void {
-        if (changes.x) this.activeWorkspace!.x = changes.x;
-        if (changes.y) this.activeWorkspace!.y = changes.y;
-        if (changes.scale) this.activeWorkspace!.scale = changes.scale;
+        if (changes.x !== undefined) this.activeWorkspace!.x = changes.x;
+        if (changes.y !== undefined) this.activeWorkspace!.y = changes.y;
+        if (changes.scale !== undefined) this.activeWorkspace!.scale = changes.scale;
         this._workspaceTransformed.notify();
         app.database.updateWorkspace(this._activeWorkspace!.id, changes).catch();
+    }
+
+    // todo - debounce
+    public moveInstances(ids: Set<number>, offsetX: number, offsetY: number): void {
+        const moved: InstanceProps[] = [];
+        ids.forEach((id) => {
+            const instance = this.instances.get(id);
+            instance.x += offsetX;
+            instance.y += offsetY;
+            moved.push(instance);
+        });
+        this._instancesMoved.notify();
+        app.database.moveInstances(moved).catch();
     }
 }

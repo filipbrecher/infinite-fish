@@ -16,6 +16,10 @@ body[data-theme="light"] {
     /* selection */
     --selection-box-bg: #0078ff33;
     --selection-box-border: #0078ff80;
+    --instance-selected-bg: #b9deff;
+    --instance-selected-bg-hover: #94cdff;
+    --instance-selected-border: #0078ff;
+    --instance-selected-border-hover: #0053b3;
 
     /* workspaces */
     --workspace-bg: var(--board-bg);

@@ -4,7 +4,7 @@ import type {IComponent} from "../IComponent";
 import {Instance} from "./objects/Instance";
 import type {WorkspaceChangesProps} from "../../types/dbSchema";
 import {InstanceTypeProps} from "../../types/dbSchema";
-import {MAX_ZOOM, MIN_ZOOM, ZOOM_AMOUNT} from "../../constants/defaults";
+import {MAX_ZOOM, MIN_ZOOM, ZOOM_SENSITIVITY} from "../../constants/defaults";
 import {View} from "./objects/View";
 
 
@@ -13,8 +13,8 @@ export class Board implements IComponent {
     private readonly dragLayer: HTMLDivElement;
     private instances: Map<number, Instance> = new Map();
 
-    private offsetX: number;
-    private offsetY: number;
+    private offsetX: number; // px in scale 1
+    private offsetY: number; // px in scale 1
     private scale: number;
     private panning: boolean = false;
 
@@ -27,7 +27,7 @@ export class Board implements IComponent {
 
     // instance dragging
     private dragged: Set<number> = new Set();
-    private isDragging: boolean = false;
+    private dragging: boolean = false;
     private dragOffsetX: number = 0;
     private dragOffsetY: number = 0;
 
@@ -67,14 +67,18 @@ export class Board implements IComponent {
         app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
     }
 
-    private setOffsetAndScale = (changes: Partial<WorkspaceChangesProps>) => {
-        if (changes.x) this.offsetX = changes.x;
-        if (changes.y) this.offsetY = changes.y;
-        if (changes.scale) this.scale = changes.scale;
+    private updateTransform = () => {
+        this.board.style.transform = `scale(${this.scale}) translate(${this.offsetX}px, ${this.offsetY}px)`;
+        this.dragLayer.style.transform = `scale(${this.scale}) translate(${this.offsetX + this.dragOffsetX}px, ${this.offsetY + this.dragOffsetY}px)`;
+    };
 
-        this.board.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
-        this.dragLayer.style.transform = `translate(${this.offsetX + this.dragOffsetX}px, ${this.offsetY + this.dragOffsetY}px) scale(${this.scale})`;
-    }
+    private setOffsetAndScale = (changes: Partial<WorkspaceChangesProps>) => {
+        if (changes.x !== undefined) this.offsetX = changes.x;
+        if (changes.y !== undefined) this.offsetY = changes.y;
+        if (changes.scale !== undefined) this.scale = changes.scale;
+
+        this.updateTransform();
+    };
 
     private onWorkspaceLoaded = () => {
         this.setOffsetAndScale(app.state.activeWorkspace);
@@ -92,7 +96,7 @@ export class Board implements IComponent {
             instanceDiv.appendChild(viewDiv);
 
             instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("instance", e)(e);
+                app.inputCapture.matchMouseDown("instance", e)(e, props.id);
             });
             viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
                 app.inputCapture.matchMouseDown("view", e)(e);
@@ -101,9 +105,6 @@ export class Board implements IComponent {
             this.instances.set(props.id, instance);
             this.board.appendChild(instanceDiv);
         });
-        this.instances.forEach((i) => {
-            i.calculateSize();
-        })
     }
 
     private onWorkspaceTransformed = () => {
@@ -116,6 +117,7 @@ export class Board implements IComponent {
     }
 
     private onStartPanning = (e: MouseEvent) => {
+        if (this.panning) return;
         e.stopPropagation();
 
         this.panning = true;
@@ -126,7 +128,7 @@ export class Board implements IComponent {
     private onUpdatePanning = (e: MouseEvent) => {
         if ( !this.panning) return;
 
-        this.setOffsetAndScale({ x: this.offsetX + e.movementX, y: this.offsetY + e.movementY });
+        this.setOffsetAndScale({ x: this.offsetX + e.movementX / this.scale, y: this.offsetY + e.movementY / this.scale });
     }
 
     private onEndPanning = (e: MouseEvent) => {
@@ -150,9 +152,15 @@ export class Board implements IComponent {
     }
 
     private onStartSelecting = (e: MouseEvent) => {
+        if (this.selecting || this.dragging) return;
         e.stopPropagation();
 
         this.selecting = true;
+        for (const id of this.selected) {
+            this.instances.get(id).setSelected(false);
+        }
+        this.selected = new Set();
+
         [ this.selectionStartX, this.selectionStartY ] = this.getBoardCoordinates(e);
         window.addEventListener("mousemove", this.onUpdateSelecting);
         window.addEventListener("mouseup", this.onEndSelecting);
@@ -173,7 +181,15 @@ export class Board implements IComponent {
         this.selectionBox.style.width = `${width}px`;
         this.selectionBox.style.height = `${height}px`;
 
-        // todo - find all instances in the selection box
+        this.selected = new Set();
+        this.instances.forEach((instance, id) => {
+            if (instance.isInBox(left, top, left + width, top + height)) {
+                instance.setSelected(true);
+                this.selected.add(id);
+            } else {
+                instance.setSelected(false);
+            }
+        });
     }
 
     private onEndSelecting = (e: MouseEvent) => {
@@ -188,17 +204,16 @@ export class Board implements IComponent {
     private onWheel = (e: WheelEvent) => {
         e.stopPropagation();
 
-        const scaleFactor = 1 - e.deltaY * ZOOM_AMOUNT / 100;
+        const scaleFactor = Math.exp(-e.deltaY * ZOOM_SENSITIVITY);
         const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, this.scale * scaleFactor));
 
-        const rect = this.board.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
 
-        const zoomRatio = newScale / this.scale;
+        const offsetChangeRatio = 1 / this.scale - 1 / newScale;
 
-        const newX = this.offsetX - (mouseX * (zoomRatio - 1));
-        const newY = this.offsetY - (mouseY * (zoomRatio - 1));
+        const newX = this.offsetX - offsetChangeRatio * mouseX;
+        const newY = this.offsetY - offsetChangeRatio * mouseY;
 
         app.state.updateWorkspace({
             scale: newScale,
@@ -214,11 +229,49 @@ export class Board implements IComponent {
         // todo
     }
 
-    private onStartDragging = (e: MouseEvent) => {
-        console.log("instance.onStartDragging");
+    private onStartDragging = (e: MouseEvent, id: number) => {
+        if (this.dragging || this.selecting) return;
         e.stopPropagation();
 
-        // todo
+        this.dragging = true;
+
+        this.dragged = this.selected.has(id) ? this.selected : new Set([id]);
+        this.dragged.forEach((id) => {
+            this.instances.get(id).moveDivTo(this.dragLayer);
+        });
+
+        this.dragOffsetX = 0;
+        this.dragOffsetY = 0;
+        window.addEventListener("mousemove", this.onUpdateDragging);
+        window.addEventListener("mouseup", this.onEndDragging);
+    }
+
+    private onUpdateDragging = (e: MouseEvent) => {
+        if ( !this.dragging || this.panning) return;
+
+        this.dragOffsetX += e.movementX / this.scale;
+        this.dragOffsetY += e.movementY / this.scale;
+        this.updateTransform();
+    }
+
+    private onEndDragging = (e: MouseEvent) => {
+        if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
+        this.dragging = false;
+
+        this.dragged.forEach((id) => {
+            const i = this.instances.get(id);
+            i.moveDivTo(this.board);
+            i.updateCoordinates(this.dragOffsetX, this.dragOffsetY);
+        });
+        app.state.moveInstances(this.dragged, this.dragOffsetX, this.dragOffsetY);
+
+        this.dragged = new Set();
+        this.dragOffsetX = 0;
+        this.dragOffsetY = 0;
+        this.updateTransform();
+
+        window.removeEventListener("mousemove", this.onUpdateDragging);
+        window.removeEventListener("mouseup", this.onEndDragging);
     }
 
     private onStartCopying = (e: MouseEvent) => {

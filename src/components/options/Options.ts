@@ -5,6 +5,7 @@ import {SettingsPopup} from "./SettingsPopup";
 import type {IPopup} from "./IPopup";
 
 
+// todo - button to clear all instances
 export class Options implements IComponent {
     private readonly savesPopup: SavesPopup;
     private readonly settingsPopup: SettingsPopup;

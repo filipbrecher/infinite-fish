@@ -5,7 +5,7 @@ import {ButtonProps, KeyState} from "../types/dbSchema";
 
 type EventKind = "mousedown" | "wheel";
 type CaptureLevel = string;
-type InputHandler = (e: MouseEvent | WheelEvent) => void;
+type InputHandler = (e: MouseEvent | WheelEvent, ...args: any[]) => void;
 
 type ActionEntry = {
     kind: EventKind;

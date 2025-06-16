@@ -14,7 +14,7 @@
     overflow: visible;
 }
 #drag-layer {
-    pointer-events: none;
+    cursor: pointer;
 }
 
 #selection-box {
@@ -29,16 +29,15 @@
 
 .instance-wrapper {
     position: absolute;
+    cursor: pointer;
 }
-.instance-wrapper.selected {
-    /* TODO */
+.instance-wrapper.selected .view {
+    background-color: var(--instance-selected-bg);
+    border: 1px solid var(--instance-selected-border);
 }
-
-.instance {
-    background-color: var(--instance-bg);
-    border: 1px solid var(--instance-border);
-    padding: 4px 5px;
-    border-radius: 5px;
+.instance-wrapper.selected .view:hover {
+    background-color: var(--instance-selected-bg-hover);
+    border: 1px solid var(--instance-selected-border-hover);
 }
 
 .view {
