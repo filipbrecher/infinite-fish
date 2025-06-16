@@ -17,24 +17,28 @@ h1, h2, h3 {
     --sidebar-width: 200px;
 }
 
-#board { z-index: 0; }
-#workspaces-list { z-index: 1; }
-#sidebar { z-index: 2; }
+#board { z-index: 0; position: absolute; }
+#drag-layer { z-index: 3; position: absolute; }
+#workspaces-list { z-index: 1; position: absolute; }
+#sidebar { z-index: 2; position: absolute; }
 
-#board-wrapper { z-index: 0; }
-#options { z-index: 3; }
-#drag-layer { z-index: 100; }
-#options-overlay { z-index: 1000; }
+#board-wrapper { z-index: 0; position: absolute; }
+#options { z-index: 1; position: absolute; }
+#options-overlay { z-index: 10; position: fixed; }
+.popup { z-index: 11; position: absolute; }
 
-#app { z-index: 0; }
-#state-overlay { z-index: 10000; }
+#app { z-index: 0; position: absolute; }
+#state-overlay { z-index: 1; position: fixed; }
+
+#app {
+    top: 0; right: 0; bottom: 0; left: 0;
+}
 
 .overlay {
     position: fixed;
     top: 0; right: 0; bottom: 0; left: 0;
     background-color: var(--overlay);
     display: none;
-    pointer-events: none;
 }
 .overlay.visible {
     display: block;

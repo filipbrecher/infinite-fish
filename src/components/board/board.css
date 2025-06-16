@@ -1,5 +1,6 @@
 
 #board-wrapper {
+    position: absolute;
     background-color: var(--board-bg);
     min-width: 100vw;
     min-height: 100vh;
@@ -15,6 +16,7 @@
 }
 #drag-layer {
     cursor: pointer;
+    pointer-events: none;
 }
 
 #selection-box {
@@ -24,7 +26,6 @@
     background-color: var(--selection-box-bg);
     border: 2px solid var(--selection-box-border);
     pointer-events: none;
-    z-index: 1000000000;
 }
 
 .instance-wrapper {
