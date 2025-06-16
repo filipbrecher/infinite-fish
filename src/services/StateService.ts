@@ -49,6 +49,7 @@ enum State {
 
 
 // todo - make sure everywhere is accounted for possible instances not found by their id
+//        add app logger logs for edge cases / errors
 // todo - block and debounce on block text
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
@@ -151,21 +152,16 @@ export class StateService {
     }
 
     private async loadActiveSave(activeSaveId: number) {
+        this._activeSave = this._saves.get(activeSaveId);
+
         const workspacesArr = await app.database.getWorkspaces(activeSaveId);
         this._workspaces = new Map(workspacesArr.map(ws => [ws.id, ws]));
-        if (this._workspaces.size === 0) {
-            const newWs = await app.database.createWorkspace(activeSaveId);
-            this._workspaces.set(newWs.id, newWs);
-        }
-
-        const activeWsId = (<WorkspaceProps>Utils.minBy<WorkspaceProps>(this._workspaces, ws => ws.position)).id;
+        this._activeWorkspace = this._workspaces.get(this._activeSave!.lastActiveWorkspaceId);
 
         const elementsArr = await app.database.getElements(activeSaveId);
         this._elements = new Map(elementsArr.map(e => [e.id, e]));
-        const instancesArr = await app.database.getInstances(activeWsId);
+        const instancesArr = await app.database.getInstances(this._activeWorkspace!.id);
         this._instances = new Map(instancesArr.map(i => [i.id, i]));
-        this._activeSave = this._saves.get(activeSaveId);
-        this._activeWorkspace = this._workspaces.get(activeWsId);
         this.updateActiveTime();
 
         this._saveLoaded.notify(this._activeSave!);
@@ -192,6 +188,7 @@ export class StateService {
         this._activeWorkspace = this._workspaces.get(activeWsId);
         this._workspaceLoaded.notify(this._activeWorkspace!);
         this.setState(State.RUNNING);
+        app.database.updateLastActiveWsOfSave(this._activeSave!.id, activeWsId).catch();
     }
 
     private async waitForElementsToCombine() {

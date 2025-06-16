@@ -146,8 +146,10 @@ export class DatabaseService {
 
     public async createNewSave(name: string = DEFAULT_SAVE_NAME): Promise<SaveProps> {
         return new Promise<SaveProps>((resolve, reject) => {
-            const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
+            const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE, WORKSPACE_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
+            const elementStore = tx.objectStore(ELEMENT_STORE);
+            const workspaceStore = tx.objectStore(WORKSPACE_STORE);
 
             const now = Date.now();
             const save: Partial<SaveProps> = {
@@ -160,13 +162,25 @@ export class DatabaseService {
 
             saveReq.onsuccess = () => {
                 save.id = <number>saveReq.result;
-                const elementStore = tx.objectStore(ELEMENT_STORE);
+
                 DEFAULT_ELEMENTS.forEach((element) => {
                     elementStore.add({
                         ...element,
                         saveId: save.id,
                     });
                 });
+
+                const workspace = {
+                    ...DEFAULT_WORKSPACE,
+                    saveId: save.id,
+                    name: DEFAULT_WORKSPACE_NAME,
+                    position: 1,
+                }
+                const wsReq = workspaceStore.add(workspace);
+                wsReq.onsuccess = () => {
+                    save.lastActiveWorkspaceId = <number>wsReq.result;
+                    saveStore.put(save);
+                }
             }
 
             tx.onabort = (event: IDBTransactionEvent) => {
@@ -190,6 +204,18 @@ export class DatabaseService {
             },
             (pastTense: boolean) => {
                 return `${pastTense ? "updated" : "updating"} lastActiveAt of save with id ${saveId}`;
+            }
+        );
+    }
+
+    public async updateLastActiveWsOfSave(saveId: number, workspaceId: number): Promise<void> {
+        return this.updateSave(
+            saveId,
+            (save: SaveProps) => {
+                save.lastActiveWorkspaceId = workspaceId;
+            },
+            (pastTense: boolean) => {
+                return `${pastTense ? "updated" : "updating"} lastActiveWorkspaceId of save with id ${saveId} to ${workspaceId}`;
             }
         );
     }

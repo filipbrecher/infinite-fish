@@ -55,6 +55,7 @@ export type SaveProps = {
     name: string;
     datetimeCreated: number;
     datetimeActive: number;
+    lastActiveWorkspaceId: number;
 
     elementCount: number;
     recipeCount: number;
