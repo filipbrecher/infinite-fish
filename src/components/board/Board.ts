@@ -66,6 +66,7 @@ export class Board implements IComponent {
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
         app.state._workspaceTransformed.subscribe(this.onWorkspaceTransformed);
         app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
+        app.state._stateWaiting.subscribe(this.onStateWaiting);
     }
 
     private updateTransform = () => {
@@ -115,6 +116,18 @@ export class Board implements IComponent {
     private onWorkspaceUnloaded = () => {
         this.instances.forEach(i => i.removeDiv());
         this.instances = new Map();
+    }
+
+    private onStateWaiting = () => {
+        this.panning = false;
+        this.selecting = false;
+        this.selected = new Set();
+        this.selectionBox.style.display = "none";
+        this.dragging = false;
+        this.dragOffsetX = 0;
+        this.dragOffsetY = 0;
+        this.dragged = new Set();
+        this.updateTransform();
     }
 
     private onStartPanning = (e: MouseEvent) => {

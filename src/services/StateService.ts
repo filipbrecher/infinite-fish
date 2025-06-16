@@ -40,8 +40,7 @@ enum State {
     RUNNING = "RUNNING",
 }
 
-// todo - subject is with a type, change notify to send the stuff that changed / is relevant
-//      - add state changed to waiting subject -> board receives and stops all dragging / selections / etc.
+
 // todo - block and debounce on block text
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
@@ -61,6 +60,7 @@ export class StateService {
     private _overlay: HTMLDivElement;
     private _overlayText: HTMLDivElement;
 
+    public readonly _stateWaiting: Subject<void> = new Subject();
     public readonly _saveUnloaded: Subject<SaveProps> = new Subject();
     public readonly _saveLoaded: Subject<SaveProps> = new Subject();
     public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
@@ -98,6 +98,7 @@ export class StateService {
             case State.WAITING:
                 this._overlayText.innerText = "Waiting to finish combining all elements...";
                 this._overlay.classList.add("visible");
+                this._stateWaiting.notify();
                 break;
             case State.LOADING_SAVE:
                 this._overlayText.innerText = "Loading save...";
