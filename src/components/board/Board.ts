@@ -4,11 +4,11 @@ import type {IComponent} from "../IComponent";
 import {Instance} from "./objects/Instance";
 import type {InstanceProps, NewInstanceProps, WorkspaceChangesProps} from "../../types/dbSchema";
 import {InstanceTypeProps} from "../../types/dbSchema";
-import {MAX_ZOOM, MIN_ZOOM, ZOOM_SENSITIVITY} from "../../constants/defaults";
+import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/defaults";
 import {View} from "./objects/View";
 
 
-// todo - add zindex to db to instances
+// todo - delete instance when not selected and dropped over sidebar
 // todo - change instance to instance wrapper class and make it hold the view div?? (possibly?)
 export class Board implements IComponent {
     private readonly board: HTMLDivElement;
@@ -18,6 +18,7 @@ export class Board implements IComponent {
     private offsetX: number; // px in scale 1
     private offsetY: number; // px in scale 1
     private scale: number;
+    private maxZIndex: number;
     private panning: boolean = false;
 
     // selection
@@ -32,6 +33,9 @@ export class Board implements IComponent {
     private dragging: boolean = false;
     private dragOffsetX: number = 0;
     private dragOffsetY: number = 0;
+
+    // deletion
+    private deleting: boolean = false;
 
     constructor() {
         this.board = <HTMLDivElement>document.getElementById("board");
@@ -103,6 +107,8 @@ export class Board implements IComponent {
                 app.inputCapture.matchMouseDown("instance", e)(e, props.id);
             });
 
+            this.maxZIndex = Math.max(this.maxZIndex, props.zIndex);
+
             this.instances.set(props.id, instance);
             this.board.appendChild(instanceDiv);
         }
@@ -110,6 +116,7 @@ export class Board implements IComponent {
 
     private onWorkspaceLoaded = () => {
         this.setOffsetAndScale(app.state.activeWorkspace);
+        this.maxZIndex = Z_INDEX_START;
         this.addInstancesToBoard(app.state.instances.values());
     }
 
@@ -135,6 +142,7 @@ export class Board implements IComponent {
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         this.dragged = new Set();
+        this.deleting = false;
         this.updateTransform();
     }
 
@@ -280,12 +288,16 @@ export class Board implements IComponent {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
         this.dragging = false;
 
-        this.dragged.forEach((id) => {
-            const i = this.instances.get(id);
+        const toMove: Instance[] = Array.from(this.dragged)
+            .map(id => this.instances.get(id))
+            .filter(instance => instance !== undefined)
+            .sort((a, b) => (a.getZIndex() - b.getZIndex()));
+
+        toMove.forEach(i => {
             i.moveDivTo(this.board);
-            i.updateCoordinates(this.dragOffsetX, this.dragOffsetY);
+            i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
         });
-        app.state.moveInstances(this.dragged, this.dragOffsetX, this.dragOffsetY);
+        app.state.moveInstances(toMove);
 
         this.dragged = new Set();
         this.dragOffsetX = 0;
@@ -299,19 +311,31 @@ export class Board implements IComponent {
     private onStartCopying = (e: MouseEvent, id: number) => {
         e.stopPropagation();
 
-        if ( !this.dragging) {
+        const newInstances: NewInstanceProps[] = [];
+
+        if (this.dragging) { // copy instances on top of the board
+            const toMove: Instance[] = Array.from(this.dragged)
+                .map(id => this.instances.get(id))
+                .filter(instance => instance !== undefined)
+                .sort((a, b) => (a.getZIndex() - b.getZIndex()));
+
+            toMove.forEach(i => {
+                newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex));
+            });
+
+        } else { // copy instances in place of the previous ones
             this.onStartDragging(e, id);
+
+            this.dragged.forEach((id) => {
+                const i = this.instances.get(id);
+                if ( !i) {
+                    app.logger.log("error", "board", `Failed to get duplicate of instance with id ${id}: Instance not found`);
+                    return;
+                }
+                newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY));
+            });
         }
 
-        const newInstances: NewInstanceProps[] = [];
-        this.dragged.forEach((id) => {
-            const i = this.instances.get(id);
-            if ( !i) {
-                app.logger.log("error", "board", `Failed to get duplicate of instance with id ${id}: Instance not found`);
-                return;
-            }
-            newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY));
-        });
         app.state.createInstances(newInstances).catch();
     }
 

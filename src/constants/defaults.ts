@@ -5,6 +5,7 @@ import {SETTINGS_KEY} from "./dbSchema";
 export const ZOOM_SENSITIVITY = 0.001;
 export const MAX_ZOOM: number = 10;
 export const MIN_ZOOM: number = 0.1;
+export const Z_INDEX_START: number = 0;
 
 const DEFAULT_KEY_PROPS: KeyPropsRecord = {
     [KeyProps.CTRL]: KeyState.ANY,

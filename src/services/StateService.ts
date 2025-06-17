@@ -4,12 +4,13 @@ import type {
     ElementProps,
     InstanceProps,
     WorkspaceChangesProps,
-    NewInstanceProps
+    NewInstanceProps, InstanceMoveProps
 } from "../types/dbSchema";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "./Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
+import {Instance} from "../components/board/objects/Instance";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
@@ -74,7 +75,7 @@ export class StateService {
     public readonly _saveLoaded: Subject<SaveProps> = new Subject();
     public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
     public readonly _workspaceTransformed: Subject<Partial<WorkspaceChangesProps>> = new Subject();
-    public readonly _instancesMoved: Subject<InstanceProps[]> = new Subject();
+    public readonly _instancesMoved: Subject<InstanceMoveProps[]> = new Subject();
     public readonly _instancesCreated: Subject<InstanceProps[]> = new Subject();
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
@@ -237,13 +238,13 @@ export class StateService {
     }
 
     // todo - debounce db
-    public moveInstances(ids: Set<number>, offsetX: number, offsetY: number): void {
-        const moved: InstanceProps[] = [];
-        ids.forEach((id) => {
-            const instance = this.instances.get(id);
-            instance.x += offsetX;
-            instance.y += offsetY;
-            moved.push(instance);
+    public moveInstances(toMove: Instance[]): void {
+        const moved: InstanceMoveProps[] = [];
+        toMove.forEach(i => {
+            const moveProps = i.getMoveProps();
+            if (this.instances.get(moveProps.id)) {
+                moved.push(moveProps);
+            }
         });
         this._instancesMoved.notify(moved);
         app.database.moveInstances(moved).catch();

@@ -118,13 +118,22 @@ export type InstanceProps = {
     workspaceId: number;
     x: number;
     y: number;
+    zIndex: number;
     type?: InstanceTypeProps;    // ElementInstanceData type by default
     data: InstanceDataProps;
+}
+
+export type InstanceMoveProps = {
+    id: number,
+    x: number,
+    y: number,
+    zIndex: number,
 }
 
 export type NewInstanceProps = {
     x: number;
     y: number;
+    zIndex: number;
     type?: InstanceTypeProps;
     data: InstanceDataProps;
 }

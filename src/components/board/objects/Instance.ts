@@ -1,4 +1,4 @@
-import type {InstanceProps, NewInstanceProps} from "../../../types/dbSchema";
+import type {InstanceMoveProps, InstanceProps, NewInstanceProps} from "../../../types/dbSchema";
 import {View} from "./View";
 
 
@@ -9,6 +9,7 @@ export class Instance {
     private readonly instanceId: number;
     private x: number;
     private y: number;
+    private zIndex: number;
 
     private height: number | undefined;
     private width: number | undefined;
@@ -22,7 +23,12 @@ export class Instance {
         this.instanceId = props.id;
         this.x = props.x;
         this.y = props.y;
+        this.zIndex = props.zIndex;
         this.view = view;
+    }
+
+    public getZIndex(): number {
+        return this.zIndex;
     }
 
     public getDiv(): HTMLDivElement {
@@ -30,9 +36,19 @@ export class Instance {
 
         this.div.id = `instance-${this.instanceId}`;
         this.div.classList.add("instance-wrapper");
+        this.div.style.zIndex = `${this.zIndex}`;
         this.div.style.transform = `translate(${this.x}px, ${this.y}px)`;
 
         return this.div;
+    }
+
+    public getMoveProps(): InstanceMoveProps {
+        return {
+            id: this.instanceId,
+            x: this.x,
+            y: this.y,
+            zIndex: this.zIndex,
+        };
     }
 
     public isInBox(x1: number, y1: number, x2: number, y2: number): boolean {
@@ -57,9 +73,11 @@ export class Instance {
         this.div?.classList.toggle("selected", selected);
     }
 
-    public updateCoordinates(offsetX: number, offsetY: number) {
+    public updatePosition(offsetX: number, offsetY: number, zIndex: number) {
         this.x += offsetX;
         this.y += offsetY;
+        this.zIndex = zIndex;
+        this.div!.style.zIndex = `${this.zIndex}`;
         this.div!.style.transform = `translate(${this.x}px, ${this.y}px)`;
     }
 
@@ -67,10 +85,11 @@ export class Instance {
         dest.appendChild(this.div);
     }
 
-    public getDuplicate(dragOffsetX: number, dragOffsetY: number): NewInstanceProps {
+    public getDuplicate(dragOffsetX: number, dragOffsetY: number, zIndex?: number): NewInstanceProps {
         return {
             x: this.x + dragOffsetX,
             y: this.y + dragOffsetY,
+            zIndex: zIndex ? zIndex : this.zIndex,
             type: this.view.type(),
             data: this.view.data(),
         }

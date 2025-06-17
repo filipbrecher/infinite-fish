@@ -10,7 +10,7 @@ import {
 import type {
     ElementProps,
     IDBTransactionEvent,
-    InstanceProps, NewElementProps, NewInstanceProps, RecipeProps,
+    InstanceProps, InstanceMoveProps, NewElementProps, NewInstanceProps, RecipeProps,
     SaveProps,
     SettingsProps,
     WorkspaceProps,
@@ -805,13 +805,13 @@ export class DatabaseService {
         });
     }
 
-    public async moveInstances(instances: InstanceProps[]): Promise<void> {
+    public async moveInstances(instances: InstanceMoveProps[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction(INSTANCE_STORE, "readwrite");
             const store = tx.objectStore(INSTANCE_STORE);
 
             let abortReason: AbortReason;
-            instances.forEach((instance: InstanceProps) => {
+            instances.forEach(instance => {
                 const req = store.get(instance.id);
                 req.onsuccess = () => {
                     const gottenInstance = req.result;
@@ -824,6 +824,7 @@ export class DatabaseService {
                     }
                     gottenInstance.x = instance.x;
                     gottenInstance.y = instance.y;
+                    gottenInstance.zIndex = instance.zIndex;
                     store.put(gottenInstance);
                 }
             });
