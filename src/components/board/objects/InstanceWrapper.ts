@@ -5,7 +5,7 @@ import {View} from "./View";
 // todo - if id not found, do not render
 //      - if ghost, create a hook
 //      - todo - move view here
-export class Instance {
+export class InstanceWrapper {
     private readonly instanceId: number;
     private x: number;
     private y: number;

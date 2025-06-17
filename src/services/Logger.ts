@@ -11,7 +11,7 @@ export class Logger {
         ["db", "🛢️"],
         ["setting", "⚙️"],
         ["state_service", "🧠"],
-        ["workspace_service", "🧭"],
+        ["board", "🧭"],
         ["sidebar", "🧾"],
         ["workspace", "🗂️"],
         ["instance", "📦"],

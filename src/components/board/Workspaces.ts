@@ -29,8 +29,8 @@ export class Workspaces implements IComponent {
             })
             .forEach((ws) => {
                 const wsDiv = <HTMLDivElement>document.createElement("div");
-                wsDiv.id = `workspace-${ws.id}`;
-                wsDiv.classList.add("workspace");
+                wsDiv.id = `workspace-tab-${ws.id}`;
+                wsDiv.classList.add("workspace-tab");
                 wsDiv.innerText = ws.name;
 
                 wsDiv.addEventListener("click", this.onClickWorkspace);
@@ -41,12 +41,12 @@ export class Workspaces implements IComponent {
 
     private onWorkspaceUnloaded = () => {
         if (this.activeWsId) {
-            this.list.querySelector(`#workspace-${this.activeWsId}`).classList.remove("active");
+            this.list.querySelector(`#workspace-tab-${this.activeWsId}`).classList.remove("active");
         }
     }
 
     private onClickWorkspace = (event) => {
-        const id = Number(event.target.id.slice(10));
+        const id = Number(event.target.id.slice(14));
         if (this.activeWsId === id) return;
         app.state.loadWorkspace(id).catch();
         event.stopPropagation();
@@ -54,6 +54,6 @@ export class Workspaces implements IComponent {
 
     private onWorkspaceLoaded = () => {
         this.activeWsId = app.state.activeWorkspace?.id;
-        this.list.querySelector(`#workspace-${this.activeWsId}`).classList.add("active");
+        this.list.querySelector(`#workspace-tab-${this.activeWsId}`).classList.add("active");
     }
 }

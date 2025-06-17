@@ -1,7 +1,7 @@
 import "./board.css"
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
-import {Instance} from "./objects/Instance";
+import {InstanceWrapper} from "./objects/InstanceWrapper";
 import type {InstanceProps, NewInstanceProps, WorkspaceChangesProps} from "../../types/dbSchema";
 import {InstanceTypeProps} from "../../types/dbSchema";
 import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/defaults";
@@ -13,7 +13,7 @@ import {View} from "./objects/View";
 export class Board implements IComponent {
     private readonly board: HTMLDivElement;
     private readonly dragLayer: HTMLDivElement;
-    private instances: Map<number, Instance> = new Map();
+    private instances: Map<number, InstanceWrapper> = new Map();
 
     private offsetX: number; // px in scale 1
     private offsetY: number; // px in scale 1
@@ -100,7 +100,7 @@ export class Board implements IComponent {
                 app.inputCapture.matchMouseDown("view", e)(e);
             });
 
-            const instance = new Instance(props, view);
+            const instance = new InstanceWrapper(props, view);
             const instanceDiv = instance.getDiv();
             instanceDiv.appendChild(viewDiv);
             instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
@@ -288,7 +288,7 @@ export class Board implements IComponent {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
         this.dragging = false;
 
-        const toMove: Instance[] = Array.from(this.dragged)
+        const toMove: InstanceWrapper[] = Array.from(this.dragged)
             .map(id => this.instances.get(id))
             .filter(instance => instance !== undefined)
             .sort((a, b) => (a.getZIndex() - b.getZIndex()));
@@ -314,7 +314,7 @@ export class Board implements IComponent {
         const newInstances: NewInstanceProps[] = [];
 
         if (this.dragging) { // copy instances on top of the board
-            const toMove: Instance[] = Array.from(this.dragged)
+            const toMove: InstanceWrapper[] = Array.from(this.dragged)
                 .map(id => this.instances.get(id))
                 .filter(instance => instance !== undefined)
                 .sort((a, b) => (a.getZIndex() - b.getZIndex()));

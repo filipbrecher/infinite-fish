@@ -10,7 +10,7 @@ import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "./Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
-import {Instance} from "../components/board/objects/Instance";
+import {InstanceWrapper} from "../components/board/objects/InstanceWrapper";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
@@ -238,7 +238,7 @@ export class StateService {
     }
 
     // todo - debounce db
-    public moveInstances(toMove: Instance[]): void {
+    public moveInstances(toMove: InstanceWrapper[]): void {
         const moved: InstanceMoveProps[] = [];
         toMove.forEach(i => {
             const moveProps = i.getMoveProps();

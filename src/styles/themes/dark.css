@@ -22,8 +22,8 @@ body[data-theme="dark"] {
     --instance-selected-border-hover: #4babff;
 
     /* workspaces */
-    --workspace-bg: var(--board-bg);
-    --workspace-bg-hover: #464646;
+    --workspace-tab-bg: var(--board-bg);
+    --workspace-tab-bg-hover: #464646;
     --active-workspace-bg: #626262;
 
     /* sidebar */
