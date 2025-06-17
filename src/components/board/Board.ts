@@ -133,16 +133,24 @@ export class Board implements IComponent {
         this.instances = new Map();
     }
 
-    private onStateWaiting = () => {
-        this.panning = false;
-        this.selecting = false;
-        this.selected = new Set();
-        this.selectionBox.style.display = "none";
+    private clearDragging = () => {
         this.dragging = false;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         this.dragged = new Set();
+    }
+
+    private clearSelection = () => {
+        this.selecting = false;
+        this.selected = new Set();
+        this.selectionBox.style.display = "none";
+    }
+
+    private onStateWaiting = () => {
+        this.panning = false;
         this.deleting = false;
+        this.clearSelection();
+        this.clearDragging();
         this.updateTransform();
     }
 
@@ -252,11 +260,93 @@ export class Board implements IComponent {
         });
     }
 
-    private onStartDeleting = (e: MouseEvent) => {
-        console.log("board/instance.onStartDeleting");
+    // accounts for deleting the whole selection
+    private removeInstanceById = (removeId: number): Set<number> => {
+        let toDelete: Set<number> = new Set([removeId]);
+        if (this.selected.has(removeId)) {
+            this.selected.forEach(id => {
+                if (this.instances.has(id)) {
+                    toDelete.add(id);
+                }
+            })
+            this.clearSelection();
+        }
+        this.clearDragging();
+
+        toDelete.forEach(id => {
+            const i = this.instances.get(id);
+            i.removeDiv();
+            this.instances.delete(id);
+        })
+
+        return toDelete;
+    }
+
+    private removeAllInstancesByPosition = (x: number, y: number): Set<number> => {
+        const toDelete: Set<number> = new Set();
+        let deleteSelected = false;
+        this.instances.forEach((instance, id) => {
+            if (instance.isInBox(x, y, x, y)) {
+                toDelete.add(id);
+                if (this.selected.has(id)) {
+                    deleteSelected = true;
+                }
+            }
+        });
+        if (deleteSelected) {
+            this.selected.forEach(id => {
+                if (this.instances.has(id)) {
+                    toDelete.add(id);
+                }
+            })
+            this.clearSelection();
+        }
+        this.clearDragging();
+
+        toDelete.forEach(id => {
+            const i = this.instances.get(id);
+            i.removeDiv();
+            this.instances.delete(id);
+        })
+
+        return toDelete;
+    }
+
+    private onStartDeleting = (e: MouseEvent, id?: number) => {
+        if (this.deleting) return;
         e.stopPropagation();
 
-        // todo
+        this.deleting = true;
+
+        let deleted: Set<number>;
+        if (id === undefined) {
+            deleted = this.removeAllInstancesByPosition(...this.getBoardCoordinates(e));
+        } else {
+            deleted = this.removeInstanceById(id);
+        }
+        if (deleted.size !== 0) {
+            app.state.deleteInstances(deleted);
+        }
+
+        window.addEventListener("mousemove", this.onUpdateDeleting);
+        window.addEventListener("mouseup", this.onEndDeleting);
+    }
+
+    private onUpdateDeleting = (e: MouseEvent) => {
+        if ( !this.deleting) return;
+
+        const deleted = this.removeAllInstancesByPosition(...this.getBoardCoordinates(e));
+        if (deleted.size !== 0) {
+            app.state.deleteInstances(deleted);
+        }
+    }
+
+    private onEndDeleting = (e: MouseEvent) => {
+        if ( !app.inputCapture.matchMouseUp(e, this.onStartDeleting)) return;
+        this.deleting = false;
+
+        window.removeEventListener("mousemove", this.onUpdateDeleting);
+        window.removeEventListener("mouseup", this.onEndDeleting);
     }
 
     private onStartDragging = (e: MouseEvent, id: number) => {

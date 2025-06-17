@@ -76,6 +76,7 @@ export class StateService {
     public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
     public readonly _workspaceTransformed: Subject<Partial<WorkspaceChangesProps>> = new Subject();
     public readonly _instancesMoved: Subject<InstanceMoveProps[]> = new Subject();
+    public readonly _instancesDeleted: Subject<number[]> = new Subject();
     public readonly _instancesCreated: Subject<InstanceProps[]> = new Subject();
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
@@ -248,6 +249,17 @@ export class StateService {
         });
         this._instancesMoved.notify(moved);
         app.database.moveInstances(moved).catch();
+    }
+
+    public deleteInstances(ids: Set<number>): void {
+        const deleted: number[] = [];
+        ids.forEach(id => {
+            if (this.instances.delete(id)) {
+                deleted.push(id);
+            }
+        });
+        this._instancesDeleted.notify(deleted);
+        app.database.applyInstanceChanges(this._activeWorkspace!.id, deleted).catch();
     }
 
     public async createInstances(instances: NewInstanceProps[]): Promise<boolean> {
