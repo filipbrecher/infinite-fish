@@ -6,6 +6,8 @@ import type {InstanceProps, NewInstanceProps, WorkspaceChangesProps} from "../..
 import {InstanceTypeProps} from "../../types/dbSchema";
 import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/defaults";
 import {View} from "./objects/View";
+import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
+import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 
 
 // todo - delete instance when not selected and dropped over sidebar
@@ -48,6 +50,7 @@ export class Board implements IComponent {
         boardWrapper.addEventListener("wheel", (e: WheelEvent) => {
             app.inputCapture.matchWheel("board", e)(e);
         });
+        boardWrapper.addEventListener(WORKSPACE_SPAWN_INSTANCE, this.onSpawnInstance);
 
         app.inputCapture.set("board", [
             { kind: "mousedown", settingsKey: "workspacePanning", handler: this.onStartPanning },
@@ -151,6 +154,19 @@ export class Board implements IComponent {
         this.updateTransform();
     }
 
+    private onSpawnInstance = (e: WorkspaceSpawnEvent) => {
+        const view = View.getView(e.detail.type || InstanceTypeProps.Element, e.detail.data);
+        const [ unscaledWidth, unscaledHeight ] = View.measureUnscaledSize(view);
+        const [ boardX, boardY ] = this.getBoardCoordinates(e.detail.originalEvent);
+        const x = boardX - unscaledWidth / 2;
+        const y = boardY - unscaledHeight / 2;
+
+        app.state.createInstance({ x: x, y: y, zIndex: ++this.maxZIndex, type: e.detail.type || InstanceTypeProps.Element, data: e.detail.data })
+            .then(instance => {
+                this.onStartDragging(e.detail.originalEvent, instance.id);
+            });
+    }
+
     private onStartPanning = (e: MouseEvent) => {
         if (this.panning) return;
         e.stopPropagation();
@@ -175,15 +191,15 @@ export class Board implements IComponent {
         window.removeEventListener("mouseup", this.onEndPanning);
     }
 
-    private getBoardCoordinates(e: MouseEvent): [number, number] {
+    private getBoardCoordinates(e: { clientX: number, clientY: number }): [number, number] {
         const rect = this.board.getBoundingClientRect();
-        const scaledX = e.clientX - rect.left;
-        const scaledY = e.clientY - rect.top;
+        const unscaledX = e.clientX - rect.left;
+        const unscaledY = e.clientY - rect.top;
 
-        const unscaledX = scaledX / this.scale;
-        const unscaledY = scaledY / this.scale;
+        const scaledX = unscaledX / this.scale;
+        const scaledY = unscaledY / this.scale;
 
-        return [ unscaledX, unscaledY ];
+        return [ scaledX, scaledY ];
     }
 
     private onStartSelecting = (e: MouseEvent) => {

@@ -2,9 +2,13 @@ import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
 import {ElementView} from "./objects/ElementView";
+import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
+import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
+import {InstanceTypeProps} from "../../types/dbSchema";
+import {ItemWrapper} from "./objects/ItemWrapper";
 
-// todo - use item and view for element rendering - add input captures:
-//      (drag + copy element are the same capture (put in workspace), onViewCopyEmojiText, onViewInfo, elementToggleVisibility
+// todo - add input captures:
+//      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
     private sidebar: HTMLDivElement;
     private resizer: HTMLDivElement;
@@ -22,7 +26,16 @@ export class Sidebar implements IComponent {
         this.sidebarItems = <HTMLDivElement>document.getElementById("sidebar-items");
 
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
-        this.resizer.addEventListener("mousedown", this.onClickResizer);
+        this.resizer.addEventListener("mousedown", this.onStartResizing);
+
+        app.inputCapture.set("item", [
+            { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
+            { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onSpawnInstance },
+        ]);
+        // app.inputCapture.set("view", [
+        //     { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
+        //     { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
+        // ]);
 
         app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
@@ -33,26 +46,31 @@ export class Sidebar implements IComponent {
     }
 
     private onSaveLoaded = () => {
-        app.state.elements.forEach((e) => {
-            const view = new ElementView(e);
+        app.state.elements.forEach((props) => {
+            const view = new ElementView(props);
             const viewDiv = view.getDiv();
+            if ( !viewDiv) return;
 
-            // todo - add captures
-            // todo - wrap in item (possibly)
+            const item = new ItemWrapper(view);
+            const itemDiv = item.getDiv();
+            itemDiv.appendChild(viewDiv);
+            itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
+                app.inputCapture.matchMouseDown("item", e)(e, props.id);
+            });
 
-            this.sidebarItems.appendChild(viewDiv);
+            this.sidebarItems.appendChild(itemDiv);
         });
     }
 
-    private onClickResizer = (e: MouseEvent) => {
+    private onStartResizing = (e: MouseEvent) => {
+        e.stopPropagation();
         this.isResizing = true;
 
-        document.addEventListener("mousemove", this.onMouseMove);
-        document.addEventListener("mouseup", this.onMouseUp);
-        e.stopPropagation();
+        document.addEventListener("mousemove", this.onUpdateResizing);
+        document.addEventListener("mouseup", this.onEndResizing);
     }
 
-    private onMouseMove = (e: MouseEvent) => {
+    private onUpdateResizing = (e: MouseEvent) => {
         if ( !this.isResizing) return;
 
         const newWidth = window.innerWidth - e.clientX;
@@ -60,10 +78,23 @@ export class Sidebar implements IComponent {
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
     };
 
-    private onMouseUp = () => {
+    private onEndResizing = () => {
         this.isResizing = false;
 
-        document.removeEventListener("mousemove", this.onMouseMove);
-        document.removeEventListener("mouseup", this.onMouseUp);
+        document.removeEventListener("mousemove", this.onUpdateResizing);
+        document.removeEventListener("mouseup", this.onEndResizing);
+    }
+
+    private onSpawnInstance = (e: MouseEvent, id: number) => {
+        e.stopPropagation();
+        const event: WorkspaceSpawnEvent = new CustomEvent(WORKSPACE_SPAWN_INSTANCE, {
+            detail: {
+                originalEvent: e,
+                type: InstanceTypeProps.Element,
+                data: id,
+            },
+            bubbles: true,
+        });
+        this.sidebar.dispatchEvent(event);
     }
 }

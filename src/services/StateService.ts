@@ -8,7 +8,7 @@ import type {
 } from "../types/dbSchema";
 import {app} from "../main";
 import {Utils} from "./Utils";
-import {Subject} from "./Subject";
+import {Subject} from "../signals/Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
 import {InstanceWrapper} from "../components/board/objects/InstanceWrapper";
 
@@ -277,5 +277,12 @@ export class StateService {
         } catch {
             return false;
         }
+    }
+
+    public async createInstance(instance: NewInstanceProps): Promise<InstanceProps> {
+        const [ newInstance ] = await app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, [instance]);
+        this._instances.set(newInstance.id, newInstance);
+        this._instancesCreated.notify([newInstance]);
+        return newInstance;
     }
 }
