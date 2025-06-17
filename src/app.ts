@@ -93,19 +93,5 @@ export class App {
         await db.createWorkspace(3, "ws8");
         await db.createWorkspace(3, "ws9");
         await db.createWorkspace(3, "ws10");
-        await db.applyInstanceChanges(3, undefined, [
-            { x: 0, y: 0, data: 9, zIndex: 1 },
-            { x: -30, y: 40, data: 10, zIndex: 3 },
-            { x: 100, y: 310, data: 15, zIndex: 2 },
-            { x: 60, y: 150, data: 80, zIndex: 10 },
-            { x: 230, y: 200, data: 56, zIndex: 15 },
-        ]);
-        await db.applyInstanceChanges(6, undefined, [
-            { x: 0, y: 0, data: 11, zIndex: 25 },
-            { x: -30, y: 40, data: 12, zIndex: 2 },
-            { x: 100, y: 310, data: 23, zIndex: 42 },
-            { x: 60, y: 150, data: 64, zIndex: 3 },
-            { x: 230, y: 200, data: 102, zIndex: 5 },
-        ]);
     }
 }
