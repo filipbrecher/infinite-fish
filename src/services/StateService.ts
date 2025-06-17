@@ -190,6 +190,7 @@ export class StateService {
         this._activeWorkspace = this._workspaces.get(activeWsId);
         this._workspaceLoaded.notify(this._activeWorkspace!);
         this.setState(State.RUNNING);
+        this._activeSave!.lastActiveWorkspaceId = activeWsId;
         app.database.updateLastActiveWsOfSave(this._activeSave!.id, activeWsId).catch();
     }
 
@@ -243,9 +244,12 @@ export class StateService {
         const moved: InstanceMoveProps[] = [];
         toMove.forEach(i => {
             const moveProps = i.getMoveProps();
-            if (this.instances.get(moveProps.id)) {
-                moved.push(moveProps);
-            }
+            const j = this.instances.get(moveProps.id);
+            if ( !j) return;
+            moved.push(moveProps);
+            j.x = moveProps.x;
+            j.y = moveProps.y;
+            j.zIndex = moveProps.zIndex;
         });
         this._instancesMoved.notify(moved);
         app.database.moveInstances(moved).catch();
