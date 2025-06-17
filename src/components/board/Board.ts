@@ -9,7 +9,6 @@ import {View} from "./objects/View";
 
 
 // todo - delete instance when not selected and dropped over sidebar
-// todo - change instance to instance wrapper class and make it hold the view div?? (possibly?)
 export class Board implements IComponent {
     private readonly board: HTMLDivElement;
     private readonly dragLayer: HTMLDivElement;
@@ -43,8 +42,6 @@ export class Board implements IComponent {
         this.selectionBox = <HTMLDivElement>document.getElementById("selection-box");
 
         const boardWrapper = document.getElementById("board-wrapper");
-        boardWrapper.addEventListener("contextmenu", Board.preventDefaultEvent);
-        boardWrapper.addEventListener("wheel", Board.preventDefaultEvent);
         boardWrapper.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("board", e)(e);
         });
@@ -442,8 +439,4 @@ export class Board implements IComponent {
 
         // todo
     }
-
-    private static preventDefaultEvent = (e: Event) => {
-        e.preventDefault();
-    };
 }

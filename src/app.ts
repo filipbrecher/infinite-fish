@@ -30,6 +30,9 @@ export class App {
 
     public async init() {
         try {
+            document.addEventListener("contextmenu", App.preventContextMenu, { capture: true });
+            document.addEventListener("wheel", App.preventDefaultZoom, { capture: true, passive: false });
+
             // setup logger, db and settings
             this._logger = new Logger();
 
@@ -57,6 +60,16 @@ export class App {
             return;
         }
     }
+
+    private static preventContextMenu = (e: Event) => {
+        e.preventDefault();
+    }
+
+    private static preventDefaultZoom = (e: WheelEvent) => {
+        if (e.ctrlKey) {
+            e.preventDefault();
+        }
+    };
 
     public async resetDb() {
         indexedDB.deleteDatabase("infinite-fish");
