@@ -14,9 +14,9 @@ export class Sidebar implements IComponent {
     private resizer: HTMLDivElement;
     private sidebarItems: HTMLDivElement;
 
-    private static readonly MIN_WIDTH: number = 15;
-    private static readonly MAX_WIDTH: number = 1000;
-    private width: number = 200;
+    private static readonly MIN_WIDTH: number = 16;
+    private static readonly MAX_WIDTH: number = 2000;
+    private width: number = 400;
 
     private isResizing = false;
 
