@@ -10,7 +10,7 @@ import {
 import type {
     ElementProps,
     IDBTransactionEvent,
-    InstanceProps, InstanceMoveProps, NewElementProps, NewInstanceProps, RecipeProps,
+    InstanceProps, InstanceMoveProps,
     SaveProps,
     SettingsProps,
     WorkspaceProps,
@@ -22,7 +22,7 @@ import {
     DEFAULT_SETTINGS, DEFAULT_WORKSPACE,
     DEFAULT_WORKSPACE_NAME
 } from "../constants/defaults";
-import type {AbortReason} from "../types/dbSchema";
+import type {AbortReason, UpsertElementProps} from "../types/dbSchema";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
@@ -54,13 +54,13 @@ export class DatabaseService {
 
         this._db.createObjectStore(SAVE_STORE, { keyPath: "id", autoIncrement: true });
 
-        const elementStore = this._db.createObjectStore(ELEMENT_STORE, { keyPath: "id", autoIncrement: true });
+        const elementStore = this._db.createObjectStore(ELEMENT_STORE, { keyPath: ["saveId", "id"], autoIncrement: false });
         elementStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
 
         const workspaceStore = this._db.createObjectStore(WORKSPACE_STORE, { keyPath: "id", autoIncrement: true });
         workspaceStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
 
-        const instanceStore = this._db.createObjectStore(INSTANCE_STORE, { keyPath: "id", autoIncrement: true });
+        const instanceStore = this._db.createObjectStore(INSTANCE_STORE, { keyPath: ["workspaceId", "id"], autoIncrement: false });
         instanceStore.createIndex(WORKSPACE_ID_INDEX, "workspaceId", { unique: false });
 
         app.logger.log("info", "db", "IndexedDB upgrade completed successfully");
@@ -163,9 +163,10 @@ export class DatabaseService {
             saveReq.onsuccess = () => {
                 save.id = <number>saveReq.result;
 
-                DEFAULT_ELEMENTS.forEach((element) => {
+                DEFAULT_ELEMENTS.forEach((element, id) => {
                     elementStore.add({
                         ...element,
+                        id: id,
                         saveId: save.id,
                     });
                 });
@@ -536,55 +537,64 @@ export class DatabaseService {
         });
     }
 
-    // always creates a new element with the specified values
-    // DOES NOT check whether the element with this text exists or doesn't exist
+    // create a new element if it doesn't exist, otherwise updates recipes and/or discovery
+    // DOES NOT check whether the element with this text exists or doesn't exist (just the id, saveId combo)
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
-    // returns id of the element
-    public async addNewElement(saveId: number, element: NewElementProps, recipe?: RecipeProps): Promise<number> {
-        return new Promise<number>((resolve, reject) => {
+    public async upsertElement(props: UpsertElementProps): Promise<void> {
+        if (props.recipe[0] > props.recipe[1]) props.recipe.reverse();
+        return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
-            const elementStore =tx.objectStore(ELEMENT_STORE);
-            const getReq = saveStore.getKey(saveId);
+            const elementStore = tx.objectStore(ELEMENT_STORE);
+            const getSaveReq = saveStore.get(props.saveId);
 
-            let addedElement: Partial<ElementProps>;
             let abortReason: AbortReason;
-            getReq.onsuccess = () => {
-                if ( !getReq.result) {
-                    abortReason = `Error adding element '${element.text}' with recipe [${recipe}] to save with id ${saveId}: Save not found`;
+            getSaveReq.onsuccess = () => {
+                const save: SaveProps = getSaveReq.result;
+                if ( !save) {
+                    abortReason = `Error adding element/recipe ${props}: Save not found`;
                     tx.abort();
                     return;
                 }
 
-                addedElement = {
-                    saveId: saveId,
-                    emoji: element.emoji,
-                    text: element.text,
-                }
-                if (element.discovery) {
-                    addedElement.discovery = true;
-                }
-                if (recipe) {
-                    addedElement.recipes = [recipe];
-                }
+                const getElReq = elementStore.get([props.saveId, props.id]);
+                getElReq.onsuccess = () => {
+                    let element: ElementProps = getElReq.result;
 
-                const req = elementStore.add(addedElement);
-                req.onsuccess = () => {
-                    addedElement.id = <number>req.result;
+                    let newElement = false;
+                    let newDiscovery = false;
+                    let newRecipe = true;
 
-                    this.updateSaveInfo(
-                        saveStore,
-                        saveId,
-                        addedElement.id,
-                        (save: SaveProps) => {
-                            save.elementCount++;
-                            save.recipeCount += recipe ? 1 : 0;
-                            save.discoveryCount += element.discovery ? 1 : 0;
-                        },
-                        (pastTense: boolean) => {
-                            return `add${pastTense ? "ed" : "ing"} element '${element.text}' with recipe [${recipe}] to it`;
+                    if (element) { // add recipe
+                        if (element.recipes?.some(r => r[0] === props.recipe[0] && r[1] === props.recipe[1])) {
+                            newRecipe = false;
+                        } else if (element.recipes) {
+                            element.recipes.push(props.recipe);
+                        } else {
+                            element.recipes = [props.recipe];
                         }
-                    );
+                    } else {
+                        newElement = true;
+                        element = {
+                            saveId: props.saveId,
+                            id: props.id,
+                            emoji: props.emoji,
+                            text: props.text,
+                            recipes: [props.recipe],
+                        }
+                    }
+                    if (props.discovery && !element.discovery) {
+                        newDiscovery = true;
+                        element.discovery = true;
+                    }
+                    elementStore.put(element);
+
+                    if (newElement) save.elementCount++;
+                    if (newDiscovery) save.discoveryCount++;
+                    if (newRecipe) save.recipeCount++;
+                    if (newElement || newDiscovery || newRecipe) {
+                        saveStore.put(save);
+                    }
                 }
             }
 
@@ -593,7 +603,7 @@ export class DatabaseService {
                     app.logger.log("error", "db", abortReason);
                 } else {
                     app.logger.log("error", "db",
-                        `Error adding element '${element.text}' with recipe [${recipe}] to save with id ${saveId}: ${event.target.error?.message}`
+                        `Error adding element/recipe ${props}: ${event.target.error?.message}`
                     );
                 }
                 event.stopPropagation();
@@ -601,150 +611,56 @@ export class DatabaseService {
             }
 
             tx.oncomplete = () => {
-                app.logger.log("info", "db", `Element '${element.text}' successfully added to save with id ${saveId}`);
-                resolve(addedElement.id);
+                app.logger.log("info", "db", `Element/recipe ${props} successfully added to save`);
+                resolve();
             }
         });
     }
 
-    // this must be called after the element has been successfully added
-    // DOES NOT check that the ids of the elements in the recipe are valid within that save
-    public async addRecipe(elementId: number, recipe: RecipeProps, discovery: boolean): Promise<void> {
-        if (recipe[0] > recipe[1]) recipe.reverse();
-        let recipeAdded = false;
-        let isNewDiscovery = false;
-        return this.updateElement(
-            elementId,
-            (element: ElementProps) => {
-                if (element.recipes?.some(r => r[0] === recipe[0] && r[1] === recipe[1])) {
-                    return;
-                } else if (element.recipes) {
-                    element.recipes.push(recipe);
-                } else {
-                    element.recipes = [recipe];
-                }
-                if (discovery && !element.discovery) {
-                    element.discovery = true;
-                    isNewDiscovery = true;
-                }
-            },
-            (save: SaveProps) => {
-                if (recipeAdded) {
-                    save.recipeCount++;
-                }
-                if (isNewDiscovery) {
-                    save.discoveryCount++;
-                }
-            },
-            (pastTense: boolean) => {
-                return `add${pastTense ? "ed" : "ing"} recipe [${recipe}] to element with id ${elementId}`;
-            }
-        );
-    }
-
-    public async updateElementVisibility(elementId: number, hide: boolean): Promise<void> {
-        return this.updateElement(
-            elementId,
-            (element: ElementProps) => {
-                element.hide = hide;
-                if ( !hide) {
-                    delete element.hide;
-                }
-            },
-            () => {},
-            (pastTense: boolean) => {
-                return `updat${pastTense ? "ed" : "ing"} visibility of element with id ${elementId}`;
-            }
-        );
-    }
-
-    private async updateElement(
-        elementId,
-        update: (element: ElementProps) => void,
-        updateSave: (save: SaveProps) => void,
-        getLogEnding: (pastTense: boolean) => string,
-    ): Promise<void> {
+    public async updateElementVisibility(saveId: number, elementId: number, hide: boolean): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
-            const saveStore = tx.objectStore(SAVE_STORE);
+            const tx = this._db.transaction(ELEMENT_STORE, "readwrite");
             const elementStore = tx.objectStore(ELEMENT_STORE);
 
-            const getReq = elementStore.get(elementId);
+            const getReq = elementStore.get([saveId, elementId]);
 
             let abortReason: AbortReason;
             getReq.onsuccess = () => {
                 const element = getReq.result;
                 if ( !element) {
-                    abortReason = `Error ${getLogEnding(false)}: Element not found`;
+                    abortReason = `Error updating visibility of element with id ${elementId} in save with id ${saveId}: Element not found`;
                     tx.abort();
                     return;
                 }
 
-                update(element);
+                element.hide = hide;
+                if ( !hide) {
+                    delete element.hide;
+                }
                 elementStore.put(element);
-
-                this.updateSaveInfo(saveStore, element.saveId, elementId, updateSave, getLogEnding);
             }
 
             tx.onabort = (event: IDBTransactionEvent) => {
                 if (abortReason) {
                     app.logger.log("error", "db", abortReason);
                 } else {
-                    app.logger.log("error", "db", `Error ${getLogEnding(false)}: ${event.target.error?.message}`);
+                    app.logger.log("error", "db", `Error updating visibility of element with id ${elementId} in save with id ${saveId}: ${event.target.error?.message}`);
                 }
                 event.stopPropagation();
                 reject();
             }
 
             tx.oncomplete = () => {
-                app.logger.log("info", "db", `Successfully ${getLogEnding(true)}`);
+                app.logger.log("info", "db", `Successfully updated visibility of element with id ${elementId} in save with id ${saveId}`);
                 resolve();
             }
         });
     }
 
-    private updateSaveInfo(
-        saveStore: IDBObjectStore,
-        saveId: number,
-        elementId: number,
-        update: (save: SaveProps) => void,
-        getLogEnding: (pastTense: boolean) => string,
-    ): void {
-        const getSaveReq = saveStore.get(saveId);
-
-        getSaveReq.onerror = (event: IDBTransactionEvent) => {
-            app.logger.log("error", "db",
-                `Error updating save info when ${getLogEnding(false)}: ${event.target.error?.message}`
-            );
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        getSaveReq.onsuccess = () => {
-            const save = getSaveReq.result;
-            if ( !save) {
-                app.logger.log("error", "db",
-                    `Error updating save info when ${getLogEnding(false)} element with id ${elementId}: Save with id ${saveId} not found`
-                );
-                return;
-            }
-
-            update(save);
-            const req = saveStore.put(save);
-            req.onerror = (event: IDBTransactionEvent) => {
-                app.logger.log("error", "db",
-                    `Error updating save info when ${getLogEnding(false)} element with id ${elementId}: ${event.target.error?.message}`
-                );
-                event.stopPropagation();
-                event.preventDefault();
-            }
-        }
-    }
-
     // delete and/or create new instances
     // DOES NOT check that the data or type of the instances is valid
-    public async applyInstanceChanges(workspaceId: number, deleteIds?: number[], createInstances?: NewInstanceProps[]): Promise<InstanceProps[]> {
-        return new Promise<InstanceProps[]>((resolve, reject) => {
+    public async applyInstanceChanges(workspaceId: number, deleteIds?: number[], createInstances?: InstanceProps[]): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction([WORKSPACE_STORE, INSTANCE_STORE], "readwrite");
             const workspaceStore = tx.objectStore(WORKSPACE_STORE);
             const instanceStore = tx.objectStore(INSTANCE_STORE);
@@ -752,7 +668,6 @@ export class DatabaseService {
             const getReq = workspaceStore.getKey(workspaceId);
 
             let abortReason: AbortReason;
-            let newInstances: InstanceProps[] = [];
             getReq.onsuccess = () => {
                 if ( !getReq.result) {
                     abortReason = `Error applying instance changes: Workspace with id ${workspaceId} not found`;
@@ -760,24 +675,12 @@ export class DatabaseService {
                     return;
                 }
 
-                // delete them
                 deleteIds?.forEach((id) => {
-                    instanceStore.delete(id);
+                    instanceStore.delete([workspaceId, id]);
                 });
 
-                // create them
-                createInstances?.forEach((instanceToCreate) => {
-                    let instance = {
-                        ...instanceToCreate,
-                        workspaceId: workspaceId,
-                    }
-                    const req = instanceStore.add(instance);
-                    req.onsuccess = () => {
-                        newInstances.push({
-                            ...instance,
-                            id: <number>req.result,
-                        });
-                    }
+                createInstances?.forEach((instance) => {
+                    instanceStore.add(instance);
                 });
             }
 
@@ -800,7 +703,7 @@ export class DatabaseService {
                 app.logger.log("info", "db",
                     `Successfully applied instance changes (${toDelete} deleted, ${toCreate} created) in workspace with id ${workspaceId}`
                 );
-                resolve(newInstances);
+                resolve();
             }
         });
     }
@@ -812,12 +715,12 @@ export class DatabaseService {
 
             let abortReason: AbortReason;
             instances.forEach(instance => {
-                const req = store.get(instance.id);
+                const req = store.get([instance.workspaceId, instance.id]);
                 req.onsuccess = () => {
                     const gottenInstance = req.result;
                     if ( !gottenInstance) {
                         if ( !abortReason) {
-                            abortReason = `Error moving ${instances.length} instances: Instance with id ${instance.id} not found`;
+                            abortReason = `Error moving ${instances.length} instances: Instance with id ${instance.id} not found in workspace with id ${instance.workspaceId}`;
                         }
                         tx.abort();
                         return;

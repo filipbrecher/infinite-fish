@@ -70,8 +70,8 @@ export type RecipeProps = [  // sorted in ascending order
 ];
 
 export type ElementProps = {
-    id: number;
     saveId: number;
+    id: number;
     emoji: string;
     text: string;
     discovery?: boolean;   // false by default
@@ -79,10 +79,13 @@ export type ElementProps = {
     recipes?: RecipeProps[];     // [] by default
 }
 
-export type NewElementProps = {
+export type UpsertElementProps = {
+    saveId: number;
+    id: number;
     emoji: string;
     text: string;
-    discovery?: boolean;   // false by default;
+    discovery?: boolean;   // false by default
+    recipe: RecipeProps;
 }
 
 
@@ -106,34 +109,33 @@ export type WorkspaceChangesProps = {
 
 
 //============ INSTANCES ============//
-export enum InstanceTypeProps {
+export enum ViewTypeProps {
     Element,
+    GhostElement,
 }
 
-export type ElementInstanceData = number;   // id of the element
-export type InstanceDataProps = ElementInstanceData;
+export type ElementViewData = number;   // id of the element
+export type GhostElementViewData = {
+    emoji: string,
+    text: string,
+};
+export type ViewDataProps = ElementViewData | GhostElementViewData;
 
 export type InstanceProps = {
-    id: number;
     workspaceId: number;
+    id: number;
     x: number;
     y: number;
     zIndex: number;
-    type?: InstanceTypeProps;    // ElementInstanceData type by default
-    data: InstanceDataProps;
+    type?: ViewTypeProps;    // ElementViewData type by default
+    data: ViewDataProps;
 }
 
 export type InstanceMoveProps = {
+    workspaceId: number;
     id: number,
     x: number,
     y: number,
     zIndex: number,
 }
 
-export type NewInstanceProps = {
-    x: number;
-    y: number;
-    zIndex: number;
-    type?: InstanceTypeProps;
-    data: InstanceDataProps;
-}
