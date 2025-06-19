@@ -291,22 +291,18 @@ export class StateService {
         app.database.applyInstanceChanges(this._activeWorkspace!.id, deleted).catch();
     }
 
-    public async createInstances(instances: NewInstanceProps[]): Promise<boolean> {
+    public createInstances(instances: NewInstanceProps[]): InstanceProps[] {
         instances.forEach((i: InstanceProps) => {
             i.workspaceId = this._activeWorkspace!.id;
             i.id = ++this._maxInstanceId;
             this._instances.set(i.id, i);
         });
         this._instancesCreated.notify(instances as InstanceProps[]);
-        try {
-            await app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, instances as InstanceProps[]);
-        } catch {
-            return false;
-        }
-        return true;
+        app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, instances as InstanceProps[]).catch();
+        return instances as InstanceProps[];
     }
 
-    public async createInstance(instance: NewInstanceProps): Promise<InstanceProps> {
+    public createInstance(instance: NewInstanceProps): InstanceProps {
         const newInstance: InstanceProps = instance as InstanceProps;
         newInstance.workspaceId = this._activeWorkspace!.id;
         newInstance.id = ++this._maxInstanceId;

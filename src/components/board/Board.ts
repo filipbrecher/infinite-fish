@@ -15,6 +15,7 @@ export class Board implements IComponent {
     private readonly board: HTMLDivElement;
     private readonly dragLayer: HTMLDivElement;
     private instances: Map<number, InstanceWrapper> = new Map();
+    private instancesByZIndex: InstanceWrapper[] = [];
 
     private offsetX: number; // px in scale 1
     private offsetY: number; // px in scale 1
@@ -107,6 +108,7 @@ export class Board implements IComponent {
                 app.inputCapture.matchMouseDown("instance", e)(e, props.id);
             });
 
+            this.instancesByZIndex[props.zIndex] = instance;
             this.maxZIndex = Math.max(this.maxZIndex, props.zIndex);
 
             this.instances.set(props.id, instance);
@@ -131,6 +133,7 @@ export class Board implements IComponent {
     private onWorkspaceUnloaded = () => {
         this.instances.forEach(i => i.removeDiv());
         this.instances = new Map();
+        this.instancesByZIndex = [];
     }
 
     private clearDragging = () => {
@@ -161,10 +164,14 @@ export class Board implements IComponent {
         const x = boardX - unscaledWidth / 2;
         const y = boardY - unscaledHeight / 2;
 
-        app.state.createInstance({ x: x, y: y, zIndex: ++this.maxZIndex, type: e.detail.type || ViewTypeProps.Element, data: e.detail.data })
-            .then(instance => {
-                this.onStartDragging(e.detail.originalEvent, instance.id);
-            });
+        const created = app.state.createInstance({
+            x: x,
+            y: y,
+            zIndex: ++this.maxZIndex,
+            type: e.detail.type || ViewTypeProps.Element,
+            data: e.detail.data,
+        });
+        this.onStartDragging(e.detail.originalEvent, created.id);
     }
 
     private onStartPanning = (e: MouseEvent) => {
@@ -291,6 +298,7 @@ export class Board implements IComponent {
             const i = this.instances.get(id);
             i.removeDiv();
             this.instances.delete(id);
+            delete this.instancesByZIndex[i.getZIndex()];
         })
 
         return toDelete;
@@ -321,6 +329,7 @@ export class Board implements IComponent {
             const i = this.instances.get(id);
             i.removeDiv();
             this.instances.delete(id);
+            delete this.instancesByZIndex[i.getZIndex()];
         })
 
         return toDelete;
@@ -371,7 +380,9 @@ export class Board implements IComponent {
 
         this.dragged = this.selected.has(id) ? this.selected : new Set([id]);
         this.dragged.forEach((id) => {
-            this.instances.get(id).moveDivTo(this.dragLayer);
+            const i = this.instances.get(id);
+            i.moveDivTo(this.dragLayer);
+            delete this.instancesByZIndex[i.getZIndex()];
         });
 
         this.dragOffsetX = 0;
@@ -400,6 +411,7 @@ export class Board implements IComponent {
         toMove.forEach(i => {
             i.moveDivTo(this.board);
             i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
+            this.instancesByZIndex[this.maxZIndex] = i;
         });
         app.state.moveInstances(toMove);
 
@@ -413,34 +425,55 @@ export class Board implements IComponent {
     }
 
     private onStartCopying = (e: MouseEvent, id: number) => {
+        if (this.selecting) return;
         e.stopPropagation();
 
-        const newInstances: NewInstanceProps[] = [];
+        if (this.dragging) {
+            // copy instances on top of the board
 
-        if (this.dragging) { // copy instances on top of the board
-            const toMove: InstanceWrapper[] = Array.from(this.dragged)
+            const toCopy: InstanceWrapper[] = Array.from(this.dragged)
                 .map(id => this.instances.get(id))
                 .filter(instance => instance !== undefined)
                 .sort((a, b) => (a.getZIndex() - b.getZIndex()));
 
-            toMove.forEach(i => {
+            const newInstances: NewInstanceProps[] = [];
+            toCopy.forEach(i => {
                 newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex));
             });
 
-        } else { // copy instances in place of the previous ones
-            this.onStartDragging(e, id);
+            app.state.createInstances(newInstances);
 
-            this.dragged.forEach((id) => {
-                const i = this.instances.get(id);
-                if ( !i) {
-                    app.logger.log("error", "board", `Failed to get duplicate of instance with id ${id}: Instance not found`);
-                    return;
-                }
-                newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY));
+        } else {
+            // need to start dragging the instances that just got created, leave the clicked ones as they were
+            // originally started dragging these instances, created new instances with the same zIndex,
+            //      but that didn't ensure unique zIndex when the page was closed before dropping the dragged instances
+
+            const toCopy: InstanceWrapper[] = Array.from(this.selected.has(id) ? this.selected : [id])
+                .map(id => this.instances.get(id))
+                .filter(instance => instance !== undefined)
+                .sort((a, b) => (a.getZIndex() - b.getZIndex()));
+
+            const newInstances: NewInstanceProps[] = [];
+            toCopy.forEach(i => {
+                newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex));
             });
-        }
 
-        app.state.createInstances(newInstances).catch();
+            const created = app.state.createInstances(newInstances);
+
+            // if the original ones were selected, change selection to the created ones
+            if (this.selected.has(id)) {
+                this.selected.forEach((i) => {
+                    this.instances.get(i)?.setSelected(false);
+                })
+                this.selected = new Set();
+                created.forEach(i => {
+                    this.selected.add(i.id);
+                    this.instances.get(i.id)?.setSelected(true);
+                })
+            }
+
+            this.onStartDragging(e, created[0].id);
+        }
     }
 
     private onViewInfo = (e: MouseEvent) => {
