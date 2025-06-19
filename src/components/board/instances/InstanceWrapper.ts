@@ -2,9 +2,7 @@ import type {InstanceMoveProps, InstanceProps, NewInstanceProps} from "../../../
 import {View} from "./View";
 
 
-// todo - if id not found, do not render
-//      - if ghost, create a hook
-//      - todo - move view here
+// todo - if ghost, create a hook
 export class InstanceWrapper {
     private readonly workspaceId: number;
     private readonly instanceId: number;
