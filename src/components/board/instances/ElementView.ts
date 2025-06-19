@@ -41,7 +41,8 @@ export class ElementView extends View {
         const div = document.createElement("div");
         div.classList.add("view");
         div.classList.add("element-view");
-        div.innerText = `${this.emoji} ${this.text} ${this.discovery ? "discovery" : ""}`;
+        if (this.discovery) div.classList.add("discovery");
+        div.innerText = `${this.emoji} ${this.text}`;
         return div;
     }
 

@@ -1,4 +1,4 @@
-import type {ViewDataProps} from "../../../types/dbSchema";
+import type {ElementViewData, ViewDataProps} from "../../../types/dbSchema";
 import {ViewTypeProps} from "../../../types/dbSchema";
 import {ElementView} from "./ElementView";
 
@@ -8,7 +8,7 @@ export abstract class View {
     public static getView(type: ViewTypeProps, props: ViewDataProps): View {
         switch (type) {
             case ViewTypeProps.Element:
-                return new ElementView(props);
+                return new ElementView(props as ElementViewData);
             default:
                 throw new Error("Couldn't create view: Unknown type " + type);
         }

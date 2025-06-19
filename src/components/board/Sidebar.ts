@@ -1,11 +1,10 @@
 import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
-import {ElementView} from "./objects/ElementView";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {ViewTypeProps} from "../../types/dbSchema";
-import {ItemWrapper} from "./objects/ItemWrapper";
+import {Item} from "./items/Item";
 
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
@@ -54,13 +53,8 @@ export class Sidebar implements IComponent {
 
     private onSaveLoaded = () => {
         app.state.elementsById.forEach((props) => {
-            const view = new ElementView(props);
-            const viewDiv = view.getDiv();
-            if ( !viewDiv) return;
-
-            const item = new ItemWrapper(view);
+            const item = new Item(props);
             const itemDiv = item.getDiv();
-            itemDiv.appendChild(viewDiv);
             itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
                 app.inputCapture.matchMouseDown("item", e)(e, props.id);
             });

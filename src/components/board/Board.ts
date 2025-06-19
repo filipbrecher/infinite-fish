@@ -1,11 +1,11 @@
 import "./board.css"
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
-import {InstanceWrapper} from "./objects/InstanceWrapper";
+import {InstanceWrapper} from "./instances/InstanceWrapper";
 import type {InstanceProps, NewInstanceProps, WorkspaceChangesProps} from "../../types/dbSchema";
 import {ViewTypeProps} from "../../types/dbSchema";
 import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/defaults";
-import {View} from "./objects/View";
+import {View} from "./instances/View";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 

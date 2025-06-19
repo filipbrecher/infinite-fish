@@ -27,3 +27,16 @@
     white-space: nowrap;
     overflow-y: scroll;
 }
+
+.item {
+    background-color: var(--instance-bg);
+    border: 1px solid var(--instance-border);
+    padding: 4px 5px;
+    border-radius: 5px;
+}
+
+.item:hover {
+    background-color: var(--instance-bg-hover);
+    border: 1px solid var(--instance-border-hover);
+    cursor: pointer;
+}

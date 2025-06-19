@@ -10,7 +10,7 @@ import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "../signals/Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
-import {InstanceWrapper} from "../components/board/objects/InstanceWrapper";
+import {InstanceWrapper} from "../components/board/instances/InstanceWrapper";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
