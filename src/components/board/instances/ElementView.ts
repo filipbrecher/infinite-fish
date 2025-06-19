@@ -12,6 +12,7 @@ export class ElementView extends View {
     private readonly emoji: string;
     private readonly text: string;
     private discovery: boolean;
+    private disabled: boolean = false; // when combining two elements
 
     private div: HTMLDivElement | undefined;
 
@@ -34,6 +35,10 @@ export class ElementView extends View {
             this.text = elementData.text;
             this.discovery = elementData.discovery || false;
         }
+    }
+
+    public canCombine(): boolean {
+        return !this.disabled;
     }
 
     public getDiv(): HTMLDivElement {

@@ -8,7 +8,7 @@ export abstract class View {
     public static getView(type: ViewTypeProps, props: ViewDataProps): View {
         switch (type) {
             case ViewTypeProps.Element:
-                return new ElementView(props as ElementViewData);
+                return new ElementView(props as ElementViewData) as View;
             default:
                 throw new Error("Couldn't create view: Unknown type " + type);
         }
@@ -29,6 +29,9 @@ export abstract class View {
         return [width, height];
     }
 
+    public canCombine(): boolean {
+        return false;
+    }
     abstract getDiv(): HTMLDivElement;
     abstract type(): ViewTypeProps;
     abstract data(): ViewDataProps;

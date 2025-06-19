@@ -35,6 +35,9 @@ export class Board implements IComponent {
     private dragging: boolean = false;
     private dragOffsetX: number = 0;
     private dragOffsetY: number = 0;
+    // combining - when dragging
+    private canCombine: boolean = false;
+    private combinesWith: number | undefined = undefined;
 
     // deletion
     private deleting: boolean = false;
@@ -141,6 +144,8 @@ export class Board implements IComponent {
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         this.dragged = new Set();
+        this.canCombine = false
+        this.combinesWith = undefined;
     }
 
     private clearSelection = () => {
@@ -298,7 +303,7 @@ export class Board implements IComponent {
             const i = this.instances.get(id);
             i.removeDiv();
             this.instances.delete(id);
-            delete this.instancesByZIndex[i.getZIndex()];
+            delete this.instancesByZIndex[i.zIndex];
         })
 
         return toDelete;
@@ -329,7 +334,7 @@ export class Board implements IComponent {
             const i = this.instances.get(id);
             i.removeDiv();
             this.instances.delete(id);
-            delete this.instancesByZIndex[i.getZIndex()];
+            delete this.instancesByZIndex[i.zIndex];
         })
 
         return toDelete;
@@ -378,11 +383,15 @@ export class Board implements IComponent {
 
         this.dragging = true;
 
-        this.dragged = this.selected.has(id) ? this.selected : new Set([id]);
+        const isSelected = this.selected.has(id);
+        this.canCombine = !isSelected && this.instances.get(id).canCombine();
+        this.combinesWith = undefined;
+
+        this.dragged = isSelected ? this.selected : new Set([id]);
         this.dragged.forEach((id) => {
             const i = this.instances.get(id);
             i.moveDivTo(this.dragLayer);
-            delete this.instancesByZIndex[i.getZIndex()];
+            delete this.instancesByZIndex[i.zIndex];
         });
 
         this.dragOffsetX = 0;
@@ -396,6 +405,42 @@ export class Board implements IComponent {
 
         this.dragOffsetX += e.movementX / this.scale;
         this.dragOffsetY += e.movementY / this.scale;
+
+        if (this.canCombine) {
+            const [draggedId] = this.dragged;
+            let {x, y, width, height} = this.instances.get(draggedId).getPosDim();
+            x += this.dragOffsetX;
+            y += this.dragOffsetY;
+
+            const found = Object.keys(this.instancesByZIndex)
+                .reverse()
+                .map(Number)
+                .some(zIndex => {
+                    const i = this.instancesByZIndex[zIndex];
+                    const id = i.id;
+                    if (
+                        id === draggedId ||
+                        !i.canCombine() ||
+                        !i.isInBox(x, y, x + width, y + height)
+                    ) {
+                        return;
+                    }
+
+                    if (this.combinesWith === id) return true;
+                    if (this.combinesWith !== undefined) {
+                        this.instances.get(this.combinesWith)?.setHoveredOver(false);
+                    }
+                    this.combinesWith = id;
+                    i.setHoveredOver(true);
+                    return true;
+                });
+
+            if ( !found && this.combinesWith !== undefined) {
+                const i = this.instances.get(this.combinesWith);
+                i?.setHoveredOver(false);
+                this.combinesWith = undefined;
+            }
+        }
         this.updateTransform();
     }
 
@@ -406,7 +451,7 @@ export class Board implements IComponent {
         const toMove: InstanceWrapper[] = Array.from(this.dragged)
             .map(id => this.instances.get(id))
             .filter(instance => instance !== undefined)
-            .sort((a, b) => (a.getZIndex() - b.getZIndex()));
+            .sort((a, b) => (a.zIndex - b.zIndex));
 
         toMove.forEach(i => {
             i.moveDivTo(this.board);
@@ -414,6 +459,12 @@ export class Board implements IComponent {
             this.instancesByZIndex[this.maxZIndex] = i;
         });
         app.state.moveInstances(toMove);
+
+        if (this.canCombine && this.combinesWith !== undefined) {
+            this.instances.get(this.combinesWith)!.setHoveredOver(false);
+            // todo - combine -> don't forget to remove from selected elements if necessary
+            console.log(`COMBINING: ${this.dragged.values().next().value}+${this.combinesWith}`);
+        }
 
         this.dragged = new Set();
         this.dragOffsetX = 0;
@@ -434,7 +485,7 @@ export class Board implements IComponent {
             const toCopy: InstanceWrapper[] = Array.from(this.dragged)
                 .map(id => this.instances.get(id))
                 .filter(instance => instance !== undefined)
-                .sort((a, b) => (a.getZIndex() - b.getZIndex()));
+                .sort((a, b) => (a.zIndex - b.zIndex));
 
             const newInstances: NewInstanceProps[] = [];
             toCopy.forEach(i => {
@@ -451,7 +502,7 @@ export class Board implements IComponent {
             const toCopy: InstanceWrapper[] = Array.from(this.selected.has(id) ? this.selected : [id])
                 .map(id => this.instances.get(id))
                 .filter(instance => instance !== undefined)
-                .sort((a, b) => (a.getZIndex() - b.getZIndex()));
+                .sort((a, b) => (a.zIndex - b.zIndex));
 
             const newInstances: NewInstanceProps[] = [];
             toCopy.forEach(i => {

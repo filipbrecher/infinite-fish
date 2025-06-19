@@ -4,95 +4,114 @@ import {View} from "./View";
 
 // todo - if ghost, create a hook
 export class InstanceWrapper {
-    private readonly workspaceId: number;
-    private readonly instanceId: number;
-    private x: number;
-    private y: number;
-    private zIndex: number;
+    private readonly _workspaceId: number;
+    private readonly _instanceId: number;
+    public get id() { return this._instanceId; }
+    private _x: number;
+    private _y: number;
+    private _zIndex: number;
+    public get zIndex() { return this._zIndex; }
 
-    private height: number | undefined;
-    private width: number | undefined;
+    private _height: number | undefined;
+    private _width: number | undefined;
 
-    private selected: boolean;
+    private _selected: boolean;
 
-    private view: View;
-    private div: HTMLDivElement | undefined;
+    private _view: View;
+    private _div: HTMLDivElement | undefined;
 
     constructor(props: InstanceProps, view: View) {
-        this.workspaceId = props.workspaceId;
-        this.instanceId = props.id;
-        this.x = props.x;
-        this.y = props.y;
-        this.zIndex = props.zIndex;
-        this.view = view;
+        this._workspaceId = props.workspaceId;
+        this._instanceId = props.id;
+        this._x = props.x;
+        this._y = props.y;
+        this._zIndex = props.zIndex;
+        this._view = view;
     }
 
-    public getZIndex(): number {
-        return this.zIndex;
+    public canCombine(): boolean {
+        return this._view.canCombine();
     }
 
     public getDiv(): HTMLDivElement {
-        this.div = document.createElement("div");
+        this._div = document.createElement("div");
 
-        this.div.id = `instance-${this.instanceId}`;
-        this.div.classList.add("instance-wrapper");
-        this.div.style.zIndex = `${this.zIndex}`;
-        this.div.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        this._div.id = `instance-${this._instanceId}`;
+        this._div.classList.add("instance-wrapper");
+        this._div.style.zIndex = `${this._zIndex}`;
+        this._div.style.transform = `translate(${this._x}px, ${this._y}px)`;
 
-        return this.div;
+        return this._div;
     }
 
     public getMoveProps(): InstanceMoveProps {
         return {
-            workspaceId: this.workspaceId,
-            id: this.instanceId,
-            x: this.x,
-            y: this.y,
-            zIndex: this.zIndex,
+            workspaceId: this._workspaceId,
+            id: this._instanceId,
+            x: this._x,
+            y: this._y,
+            zIndex: this._zIndex,
         };
     }
 
     public isInBox(x1: number, y1: number, x2: number, y2: number): boolean {
-        if ( !this.height || !this.width) {
-            this.height = this.div!.offsetHeight;
-            this.width = this.div!.offsetWidth;
+        if ( !this._height || !this._width) {
+            this._height = this._div!.offsetHeight;
+            this._width = this._div!.offsetWidth;
         }
         return (
-            this.x < x2 &&
-            this.x + this.width > x1 &&
-            this.y < y2 &&
-            this.y + this.height > y1
+            this._x < x2 &&
+            this._x + this._width > x1 &&
+            this._y < y2 &&
+            this._y + this._height > y1
         );
     }
 
     public removeDiv() {
-        this.div?.remove();
+        this._div?.remove();
     }
 
     public setSelected(selected: boolean) {
-        this.selected = selected;
-        this.div?.classList.toggle("selected", selected);
+        this._selected = selected;
+        this._div?.classList.toggle("selected", selected);
+    }
+
+    public setHoveredOver(hoveredOver: boolean) {
+        this._div?.classList.toggle("hovered-over", hoveredOver);
+    }
+
+    public getPosDim(): {x: number, y: number, width: number, height: number} {
+        if ( !this._height || !this._width) {
+            this._height = this._div!.offsetHeight;
+            this._width = this._div!.offsetWidth;
+        }
+        return {
+            x: this._x,
+            y: this._y,
+            height: this._height,
+            width: this._width,
+        }
     }
 
     public updatePosition(offsetX: number, offsetY: number, zIndex: number) {
-        this.x += offsetX;
-        this.y += offsetY;
-        this.zIndex = zIndex;
-        this.div!.style.zIndex = `${this.zIndex}`;
-        this.div!.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        this._x += offsetX;
+        this._y += offsetY;
+        this._zIndex = zIndex;
+        this._div!.style.zIndex = `${this._zIndex}`;
+        this._div!.style.transform = `translate(${this._x}px, ${this._y}px)`;
     }
 
     public moveDivTo(dest: HTMLDivElement) {
-        dest.appendChild(this.div);
+        dest.appendChild(this._div);
     }
 
     public getDuplicate(dragOffsetX: number, dragOffsetY: number, zIndex?: number): NewInstanceProps {
         return {
-            x: this.x + dragOffsetX,
-            y: this.y + dragOffsetY,
-            zIndex: zIndex ? zIndex : this.zIndex,
-            type: this.view.type(),
-            data: this.view.data(),
+            x: this._x + dragOffsetX,
+            y: this._y + dragOffsetY,
+            zIndex: zIndex ? zIndex : this._zIndex,
+            type: this._view.type(),
+            data: this._view.data(),
         }
     }
 }
