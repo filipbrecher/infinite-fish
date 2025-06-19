@@ -7,7 +7,6 @@ import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {ViewTypeProps} from "../../types/dbSchema";
 import {ItemWrapper} from "./objects/ItemWrapper";
 
-// todo - add captures to sidebar that stop selecting/deleting in the board
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
@@ -28,7 +27,14 @@ export class Sidebar implements IComponent {
 
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onStartResizing);
+        this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("sidebar", e)(e);
+        });
 
+        app.inputCapture.set("sidebar", [ // to block workspace actions
+            { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.blockInputCapture },
+            { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.blockInputCapture },
+        ]);
         app.inputCapture.set("item", [
             { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
             { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onSpawnInstance },
@@ -84,6 +90,10 @@ export class Sidebar implements IComponent {
 
         document.removeEventListener("mousemove", this.onUpdateResizing);
         document.removeEventListener("mouseup", this.onEndResizing);
+    }
+
+    private blockInputCapture = (e: MouseEvent) => {
+        e.stopPropagation();
     }
 
     private onSpawnInstance = (e: MouseEvent, id: number) => {
