@@ -257,6 +257,7 @@ export class Board implements IComponent {
 
         const scaleFactor = Math.exp(-e.deltaY * ZOOM_SENSITIVITY);
         const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, this.scale * scaleFactor));
+        if (newScale === this.scale) return;
 
         const mouseX = e.clientX;
         const mouseY = e.clientY;
