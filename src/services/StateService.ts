@@ -55,16 +55,21 @@ enum State {
 export class StateService {
     private _saves: Map<number, SaveProps> = new Map();             // all saves
     private _activeSave: SaveProps | undefined;
-    private _elements: Map<number, ElementProps> = new Map();
+    private _elementsById: ElementProps[] = [];
+    private _elementsByText: Map<string, ElementProps> = new Map();
     private _workspaces: Map<number, WorkspaceProps> = new Map();   // all workspaces of the active save
     private _activeWorkspace: WorkspaceProps | undefined;
     private _instances: Map<number, InstanceProps> = new Map();
     public get saves() { return this._saves; }
     public get activeSave() { return this._activeSave; }
-    public get elements() { return this._elements; }
+    public get elementsById() { return this._elementsById; }
+    public get elementsByText() { return this._elementsByText; }
     public get workspaces() { return this._workspaces; }
     public get activeWorkspace() { return this._activeWorkspace; }
     public get instances() { return this._instances; }
+
+    private _maxElementId: number;
+    private _maxInstanceId: number;
 
     private _state: State;
     private _overlay: HTMLDivElement;
@@ -160,10 +165,8 @@ export class StateService {
         this._workspaces = new Map(workspacesArr.map(ws => [ws.id, ws]));
         this._activeWorkspace = this._workspaces.get(this._activeSave!.lastActiveWorkspaceId);
 
-        const elementsArr = await app.database.getElements(activeSaveId);
-        this._elements = new Map(elementsArr.map(e => [e.id, e]));
-        const instancesArr = await app.database.getInstances(this._activeWorkspace!.id);
-        this._instances = new Map(instancesArr.map(i => [i.id, i]));
+        await this.loadElements(this._activeSave!.id);
+        await this.loadInstances(this._activeWorkspace!.id);
         this.updateActiveTime();
 
         this._saveLoaded.notify(this._activeSave!);
@@ -184,10 +187,10 @@ export class StateService {
     }
 
     private async loadActiveWorkspace(activeWsId: number) {
-        const instancesArr = await app.database.getInstances(activeWsId);
-        this._instances = new Map(instancesArr.map(i => [i.id, i]));
-
         this._activeWorkspace = this._workspaces.get(activeWsId);
+
+        await this.loadInstances(this._activeWorkspace!.id);
+
         this._workspaceLoaded.notify(this._activeWorkspace!);
         this.setState(State.RUNNING);
         this._activeSave!.lastActiveWorkspaceId = activeWsId;
@@ -203,7 +206,8 @@ export class StateService {
     private clearSaveFromMemory() {
         this._activeSave = undefined;
         this._activeWorkspace = undefined;
-        this._elements = new Map();
+        this._elementsById = [];
+        this._elementsByText = new Map();
         this._workspaces = new Map();
         this._instances = new Map();
     }
@@ -211,6 +215,27 @@ export class StateService {
     private clearWorkspaceFromMemory() {
         this._activeWorkspace = undefined;
         this._instances = new Map();
+    }
+
+    private async loadElements(activeSaveId: number) {
+        const elements = await app.database.getElements(activeSaveId);
+        this._elementsById = [];
+        this._elementsByText = new Map();
+        this._maxElementId = -1;
+        elements.forEach(e => {
+            this._elementsById[e.id] = e;
+            this._elementsByText.set(e.text, e);
+            this._maxElementId = Math.max(this._maxElementId, e.id);
+        });
+    }
+
+    private async loadInstances(activeWorkspaceId: number) {
+        const instancesArr = await app.database.getInstances(this._activeWorkspace!.id);
+        this._maxInstanceId = -1;
+        this._instances = new Map(instancesArr.map(i => {
+            this._maxInstanceId = Math.max(this._maxInstanceId, i.id);
+            return [i.id, i];
+        }));
     }
 
     public async createNewSave(): Promise<SaveProps> {
@@ -267,22 +292,29 @@ export class StateService {
     }
 
     public async createInstances(instances: NewInstanceProps[]): Promise<boolean> {
+        instances.forEach((i: InstanceProps) => {
+            i.workspaceId = this._activeWorkspace!.id;
+            i.id = ++this._maxInstanceId;
+            this._instances.set(i.id, i);
+        });
+        this._instancesCreated.notify(instances as InstanceProps[]);
         try {
-            const newInstances = await app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, instances);
-            newInstances.forEach((i) => {
-                this._instances.set(i.id, i);
-            });
-            this._instancesCreated.notify(newInstances);
-            return true;
+            await app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, instances as InstanceProps[]);
         } catch {
             return false;
         }
+        return true;
     }
 
     public async createInstance(instance: NewInstanceProps): Promise<InstanceProps> {
-        const [ newInstance ] = await app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, [instance]);
+        const newInstance: InstanceProps = instance as InstanceProps;
+        newInstance.workspaceId = this._activeWorkspace!.id;
+        newInstance.id = ++this._maxInstanceId;
+
         this._instances.set(newInstance.id, newInstance);
         this._instancesCreated.notify([newInstance]);
+
+        app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, [newInstance]).catch();
         return newInstance;
     }
 }

@@ -6,6 +6,7 @@ import {View} from "./View";
 //      - if ghost, create a hook
 //      - todo - move view here
 export class InstanceWrapper {
+    private readonly workspaceId: number;
     private readonly instanceId: number;
     private x: number;
     private y: number;
@@ -20,6 +21,7 @@ export class InstanceWrapper {
     private div: HTMLDivElement | undefined;
 
     constructor(props: InstanceProps, view: View) {
+        this.workspaceId = props.workspaceId;
         this.instanceId = props.id;
         this.x = props.x;
         this.y = props.y;
@@ -44,6 +46,7 @@ export class InstanceWrapper {
 
     public getMoveProps(): InstanceMoveProps {
         return {
+            workspaceId: this.workspaceId,
             id: this.instanceId,
             x: this.x,
             y: this.y,

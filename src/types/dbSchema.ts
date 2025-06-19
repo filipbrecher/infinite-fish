@@ -121,13 +121,21 @@ export type GhostElementViewData = {
 };
 export type ViewDataProps = ElementViewData | GhostElementViewData;
 
-export type InstanceProps = {
+export interface InstanceProps extends NewInstanceProps {
     workspaceId: number;
     id: number;
     x: number;
     y: number;
     zIndex: number;
     type?: ViewTypeProps;    // ElementViewData type by default
+    data: ViewDataProps;
+}
+
+export interface NewInstanceProps {
+    x: number;
+    y: number;
+    zIndex: number;
+    type?: ViewTypeProps;
     data: ViewDataProps;
 }
 

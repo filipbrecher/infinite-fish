@@ -82,7 +82,7 @@ export class App {
         await db.createNewSave("lots of stuff here :)");
 
         for (let i = 0; i < 100; i++) {
-            await db.addNewElement(3, { emoji: "💧", text: `Water ${i}`, discovery: i % 7 === 0 }, [9, i - 1]);
+            await db.upsertElement({saveId: 3, id: i + 4, emoji: "💧", text: `Water ${i}`, discovery: i % 7 === 0, recipe: [9, i - 1] });
         }
         await db.createWorkspace(3, "ws2");
         await db.createWorkspace(3, "ws3");

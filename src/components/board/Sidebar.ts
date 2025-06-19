@@ -4,9 +4,10 @@ import {app} from "../../main";
 import {ElementView} from "./objects/ElementView";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
-import {InstanceTypeProps} from "../../types/dbSchema";
+import {ViewTypeProps} from "../../types/dbSchema";
 import {ItemWrapper} from "./objects/ItemWrapper";
 
+// todo - add captures to sidebar that stop selecting/deleting in the board
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
@@ -46,7 +47,7 @@ export class Sidebar implements IComponent {
     }
 
     private onSaveLoaded = () => {
-        app.state.elements.forEach((props) => {
+        app.state.elementsById.forEach((props) => {
             const view = new ElementView(props);
             const viewDiv = view.getDiv();
             if ( !viewDiv) return;
@@ -90,7 +91,7 @@ export class Sidebar implements IComponent {
         const event: WorkspaceSpawnEvent = new CustomEvent(WORKSPACE_SPAWN_INSTANCE, {
             detail: {
                 originalEvent: e,
-                type: InstanceTypeProps.Element,
+                type: ViewTypeProps.Element,
                 data: id,
             },
             bubbles: true,

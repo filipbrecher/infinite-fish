@@ -1,11 +1,11 @@
-import type {InstanceDataProps} from "../types/dbSchema";
-import {InstanceTypeProps} from "../types/dbSchema";
+import type {ViewDataProps} from "../types/dbSchema";
+import {ViewTypeProps} from "../types/dbSchema";
 
 
 export const WORKSPACE_SPAWN_INSTANCE = "workspace:spawn";
 
 export type WorkspaceSpawnEvent = CustomEvent<{
     originalEvent: MouseEvent;
-    type?: InstanceTypeProps;
-    data: InstanceDataProps;
+    type?: ViewTypeProps;
+    data: ViewDataProps;
 }>;

@@ -1,6 +1,6 @@
-import type {ElementInstanceData, ElementProps} from "../../../types/dbSchema";
-import type {InstanceDataProps} from "../../../types/dbSchema";
-import {InstanceTypeProps} from "../../../types/dbSchema";
+import type {ElementViewData, ElementProps} from "../../../types/dbSchema";
+import type {ViewDataProps} from "../../../types/dbSchema";
+import {ViewTypeProps} from "../../../types/dbSchema";
 import {app} from "../../../main";
 
 
@@ -15,11 +15,11 @@ export class ElementView extends View {
 
     private div: HTMLDivElement | undefined;
 
-    constructor(elementData: ElementInstanceData | ElementProps) {
+    constructor(elementData: ElementViewData | ElementProps) {
         super();
 
         if (typeof elementData === "number") {
-            const element = app.state.elements.get(elementData);
+            const element = app.state.elementsById[elementData];
             if ( !element) {
                 app.logger.log("error", "element-view", `Failed to create ElementView: Element with id ${elementData} not found`);
                 throw new Error("");
@@ -45,11 +45,11 @@ export class ElementView extends View {
         return div;
     }
 
-    public type(): InstanceTypeProps {
-        return InstanceTypeProps.Element;
+    public type(): ViewTypeProps {
+        return ViewTypeProps.Element;
     }
 
-    public data(): InstanceDataProps {
+    public data(): ViewDataProps {
         return this.elementId;
     }
 }

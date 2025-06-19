@@ -3,7 +3,7 @@ import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {InstanceWrapper} from "./objects/InstanceWrapper";
 import type {InstanceProps, NewInstanceProps, WorkspaceChangesProps} from "../../types/dbSchema";
-import {InstanceTypeProps} from "../../types/dbSchema";
+import {ViewTypeProps} from "../../types/dbSchema";
 import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/defaults";
 import {View} from "./objects/View";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
@@ -90,7 +90,7 @@ export class Board implements IComponent {
 
     private addInstancesToBoard = (instances: Iterable<InstanceProps>) => {
         for (const props of instances) {
-            const view = View.getView(props.type || InstanceTypeProps.Element, props.data);
+            const view = View.getView(props.type || ViewTypeProps.Element, props.data);
             const viewDiv = view.getDiv();
             if ( !viewDiv) {
                 app.logger.log("warning", "board", `Failed to load instance ${props}: ViewDiv not generated`);
@@ -155,13 +155,13 @@ export class Board implements IComponent {
     }
 
     private onSpawnInstance = (e: WorkspaceSpawnEvent) => {
-        const view = View.getView(e.detail.type || InstanceTypeProps.Element, e.detail.data);
+        const view = View.getView(e.detail.type || ViewTypeProps.Element, e.detail.data);
         const [ unscaledWidth, unscaledHeight ] = View.measureUnscaledSize(view);
         const [ boardX, boardY ] = this.getBoardCoordinates(e.detail.originalEvent);
         const x = boardX - unscaledWidth / 2;
         const y = boardY - unscaledHeight / 2;
 
-        app.state.createInstance({ x: x, y: y, zIndex: ++this.maxZIndex, type: e.detail.type || InstanceTypeProps.Element, data: e.detail.data })
+        app.state.createInstance({ x: x, y: y, zIndex: ++this.maxZIndex, type: e.detail.type || ViewTypeProps.Element, data: e.detail.data })
             .then(instance => {
                 this.onStartDragging(e.detail.originalEvent, instance.id);
             });

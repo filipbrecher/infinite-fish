@@ -1,13 +1,13 @@
-import type {InstanceDataProps} from "../../../types/dbSchema";
-import {InstanceTypeProps} from "../../../types/dbSchema";
+import type {ViewDataProps} from "../../../types/dbSchema";
+import {ViewTypeProps} from "../../../types/dbSchema";
 import {ElementView} from "./ElementView";
 
 
 export abstract class View {
 
-    public static getView(type: InstanceTypeProps, props: InstanceDataProps): View {
+    public static getView(type: ViewTypeProps, props: ViewDataProps): View {
         switch (type) {
-            case InstanceTypeProps.Element:
+            case ViewTypeProps.Element:
                 return new ElementView(props);
             default:
                 throw new Error("Couldn't create view: Unknown type " + type);
@@ -30,6 +30,6 @@ export abstract class View {
     }
 
     abstract getDiv(): HTMLDivElement;
-    abstract type(): InstanceTypeProps;
-    abstract data(): InstanceDataProps;
+    abstract type(): ViewTypeProps;
+    abstract data(): ViewDataProps;
 }
