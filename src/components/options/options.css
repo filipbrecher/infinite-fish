@@ -27,10 +27,10 @@
     width: 50px;
 }
 .saves-icon {
-    background-image: url("/public/save_button.png");
+    background-image: var(--image-save-button);
 }
 .settings-icon {
-    background-image: url("/public/settings_button.png");
+    background-image: var(--image-settings-button);
 }
 
 .popup {
@@ -152,19 +152,19 @@
     height: 20px;
 }
 .edit-icon {
-    background-image: url("/public/edit_name_button.png");
+    background-image: var(--image-edit-name-button);
 }
 .save-icon {
-    background-image: url("/public/save_name_button.png");
+    background-image: var(--image-save-name-button);
 }
 .load-icon {
-    background-image: url("/public/load_save_button.png");
+    background-image: var(--image-load-save-button);
 }
 .export-icon {
-    background-image: url("/public/export_button.png");
+    background-image: var(--image-export-button);
 }
 .delete-icon {
-    background-image: url("/public/delete_button.png");
+    background-image: var(--image-delete-button);
 }
 .save.active .delete-icon {
     background-image: none;

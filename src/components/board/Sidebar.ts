@@ -6,6 +6,7 @@ import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {ViewTypeProps} from "../../types/dbSchema";
 import {Item} from "./items/Item";
 
+
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {

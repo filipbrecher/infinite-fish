@@ -19,7 +19,12 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "types": ["tampermonkey"]
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "node_modules/vite-userscript-plugin/types/tampermonkey.d.ts",
+  ],
 }

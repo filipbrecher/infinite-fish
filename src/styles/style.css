@@ -15,6 +15,13 @@ h1, h2, h3 {
 
 :root {
     --sidebar-width: 200px;
+    --image-settings-button: url("/public/settings_button.png");
+    --image-save-button: url("/public/save_button.png");
+    --image-edit-name-button: url("/public/edit_name_button.png");
+    --image-save-name-button: url("/public/save_name_button.png");
+    --image-load-save-button: url("/public/load_save_button.png");
+    --image-export-button: url("/public/export_button.png");
+    --image-delete-button: url("/public/delete_button.png");
 }
 
 #board { z-index: 0; position: absolute; }

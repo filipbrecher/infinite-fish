@@ -3,6 +3,7 @@ import "./styles/themes/light.css";
 import "./styles/themes/dark.css";
 import {App} from "./app";
 
+
 const channel = new BroadcastChannel("infinite-fish");
 
 let isMainTab = true;

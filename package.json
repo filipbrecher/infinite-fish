@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "monkey": "vite build --config vite.monkey.config.ts && node ./bin/build-monkey.js",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/node": "^24.0.3",
+    "@types/tampermonkey": "^5.0.4",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-userscript-plugin": "^1.11.0"
   }
 }
