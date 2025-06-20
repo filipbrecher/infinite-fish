@@ -29,7 +29,7 @@ export class Utils {
             }
         });
 
-        return minItem;
+        return minItem!;
     }
 
     public static wait(ms: number): Promise<void> {

@@ -13,11 +13,11 @@ export class SavesPopup implements IPopup {
     private readonly savesList: HTMLDivElement;
 
     constructor() {
-        this.overlay = <HTMLDivElement>document.getElementById("options-overlay");
-        this.popup = <HTMLDivElement>document.getElementById("saves-popup");
-        this.importButton = <HTMLDivElement>document.getElementById("saves-import");
-        this.createButton = <HTMLDivElement>document.getElementById("saves-create");
-        this.savesList = <HTMLDivElement>document.getElementById("saves-list");
+        this.overlay = document.getElementById("options-overlay") as HTMLDivElement;
+        this.popup = document.getElementById("saves-popup") as HTMLDivElement;
+        this.importButton = document.getElementById("saves-import") as HTMLDivElement;
+        this.createButton = document.getElementById("saves-create") as HTMLDivElement;
+        this.savesList = document.getElementById("saves-list") as HTMLDivElement;
 
         this.importButton.addEventListener("click", this.onClickImportButton);
         this.createButton.addEventListener("click", this.onClickCreateButton);
@@ -86,11 +86,11 @@ export class SavesPopup implements IPopup {
         const isActive = app.state.activeSave?.id === save.id;
         if (isActive) wrapper.classList.add("active");
 
-        const nameSpan = <HTMLSpanElement>wrapper.querySelector(".name-display");
-        const nameInput = <HTMLInputElement>wrapper.querySelector(".name-input");
-        const editIcon = <HTMLDivElement>wrapper.querySelector(".name-action-icon");
-        const loadIcon = <HTMLDivElement>wrapper.querySelector(".load-icon");
-        const deleteIcon = <HTMLDivElement>wrapper.querySelector(".delete-icon");
+        const nameSpan = wrapper.querySelector(".name-display") as HTMLSpanElement;
+        const nameInput = wrapper.querySelector(".name-input") as HTMLInputElement;
+        const editIcon = wrapper.querySelector(".name-action-icon") as HTMLDivElement;
+        const loadIcon = wrapper.querySelector(".load-icon") as HTMLDivElement;
+        const deleteIcon = wrapper.querySelector(".delete-icon") as HTMLDivElement;
 
         nameSpan.textContent = save.name;
 

@@ -20,9 +20,9 @@ export class Sidebar implements IComponent {
     private isResizing = false;
 
     constructor() {
-        this.sidebar = <HTMLDivElement>document.getElementById("sidebar");
-        this.resizer = <HTMLDivElement>document.getElementById("resizer");
-        this.sidebarItems = <HTMLDivElement>document.getElementById("sidebar-items");
+        this.sidebar = document.getElementById("sidebar") as HTMLDivElement;
+        this.resizer = document.getElementById("resizer") as HTMLDivElement;
+        this.sidebarItems = document.getElementById("sidebar-items") as HTMLDivElement;
 
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onStartResizing);

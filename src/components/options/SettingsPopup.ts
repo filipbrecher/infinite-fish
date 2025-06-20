@@ -5,7 +5,7 @@ export class SettingsPopup implements IPopup {
     private readonly popup: HTMLDivElement;
 
     constructor() {
-        this.popup = <HTMLDivElement>document.getElementById("settings-popup");
+        this.popup = document.getElementById("settings-popup") as HTMLDivElement;
     }
 
     public open = () => {

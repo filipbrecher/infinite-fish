@@ -21,9 +21,9 @@ export class Options implements IComponent {
         this.savesPopup = new SavesPopup();
         this.settingsPopup = new SettingsPopup();
 
-        this.savesButton = <HTMLDivElement>document.getElementById("saves-button");
-        this.settingsButton = <HTMLDivElement>document.getElementById("settings-button");
-        this.overlay = <HTMLDivElement>document.getElementById("options-overlay");
+        this.savesButton = document.getElementById("saves-button") as HTMLDivElement;
+        this.settingsButton = document.getElementById("settings-button") as HTMLDivElement;
+        this.overlay = document.getElementById("options-overlay") as HTMLDivElement;
 
         this.overlay.addEventListener("click", this.closePopup);
         this.savesButton.addEventListener("click", this.onClickSavesButton);

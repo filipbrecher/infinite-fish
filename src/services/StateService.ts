@@ -86,8 +86,8 @@ export class StateService {
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
     constructor() {
-        this._overlay = <HTMLDivElement>document.getElementById("state-overlay");
-        this._overlayText = <HTMLDivElement>document.getElementById("overlay-text");
+        this._overlay = document.getElementById("state-overlay") as HTMLDivElement;
+        this._overlayText = document.getElementById("overlay-text") as HTMLDivElement;
 
         this.setState(State.LOADING_SAVE);
         this.updateActiveTimeLoop();
@@ -141,7 +141,7 @@ export class StateService {
             this._saves.set(newSave.id, newSave);
         }
 
-        const mostRecentSave = <SaveProps>Utils.minBy<SaveProps>(this._saves, save => -save.datetimeActive);
+        const mostRecentSave = Utils.minBy<SaveProps>(this._saves, save => -save.datetimeActive) as SaveProps;
         await this.loadActiveSave(mostRecentSave.id);
     }
 
@@ -230,7 +230,7 @@ export class StateService {
     }
 
     private async loadInstances(activeWorkspaceId: number) {
-        const instancesArr = await app.database.getInstances(this._activeWorkspace!.id);
+        const instancesArr = await app.database.getInstances(activeWorkspaceId);
         this._maxInstanceId = -1;
         this._instances = new Map(instancesArr.map(i => {
             this._maxInstanceId = Math.max(this._maxInstanceId, i.id);

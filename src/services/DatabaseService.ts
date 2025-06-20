@@ -123,7 +123,7 @@ export class DatabaseService {
     public async loadSaveInfo(): Promise<SaveProps[]> {
         let saves: SaveProps[];
 
-        await new Promise<boolean>((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             const req = this._db
                 .transaction(SAVE_STORE, "readonly")
                 .objectStore(SAVE_STORE)
@@ -161,7 +161,7 @@ export class DatabaseService {
             const saveReq = saveStore.add(save);
 
             saveReq.onsuccess = () => {
-                save.id = <number>saveReq.result;
+                save.id = saveReq.result as number;
 
                 DEFAULT_ELEMENTS.forEach((element, id) => {
                     elementStore.add({
@@ -179,7 +179,7 @@ export class DatabaseService {
                 }
                 const wsReq = workspaceStore.add(workspace);
                 wsReq.onsuccess = () => {
-                    save.lastActiveWorkspaceId = <number>wsReq.result;
+                    save.lastActiveWorkspaceId = wsReq.result as number;
                     saveStore.put(save);
                 }
             }
@@ -192,7 +192,7 @@ export class DatabaseService {
 
             tx.oncomplete = () => {
                 app.logger.log("info", "db", "New save created successfully");
-                resolve(save);
+                resolve(save as SaveProps);
             }
         });
     }
@@ -346,7 +346,7 @@ export class DatabaseService {
                     workspace.position = count + 1;
                     const wsReq = workspaceStore.add(workspace);
                     wsReq.onsuccess = () => {
-                        workspace.id = <number>wsReq.result;
+                        workspace.id = wsReq.result as number;
                     }
                 }
             }
@@ -363,7 +363,7 @@ export class DatabaseService {
 
             tx.oncomplete = () => {
                 app.logger.log("info", "db", "New workspace created successfully");
-                resolve(workspace);
+                resolve(workspace as WorkspaceProps);
             }
         });
     }
@@ -806,12 +806,12 @@ export class DatabaseService {
     }
 
     public async testPropagation(): Promise<string> {
-        return new Promise<string>(async (resolve, reject) => {
-            this._db.onerror = (event) => {
-                console.log("db.onerror: ", (<{error: {message: any}}>event.target).error?.message);
+        return new Promise<string>(async () => {
+            this._db.onerror = (event: IDBTransactionEvent) => {
+                console.log("db.onerror: ", event.target.error?.message);
             }
-            this._db.onabort = (event) => {
-                console.log("db.onabort: ", (<{error: {message: any}}>event.target).error?.message);
+            this._db.onabort = (event: IDBTransactionEvent) => {
+                console.log("db.onabort: ", event.target.error?.message);
             }
 
             const tx = this._db.transaction(SETTINGS_STORE, "readwrite");
@@ -820,18 +820,18 @@ export class DatabaseService {
             store.add({id: 1});
 
             const keyReq = store.add({id: 1});
-            keyReq.onerror = (event) => {
+            keyReq.onerror = () => {
                 console.log("keyReq.onerror", keyReq.result, keyReq.error?.message);
             }
-            keyReq.onsuccess = (event) => {
+            keyReq.onsuccess = () => {
                 console.log("keyReq.onsuccess", keyReq.result, keyReq.error?.message);
             }
 
             const keyReq2 = store.add({id: 2});
-            keyReq2.onerror = (event) => {
+            keyReq2.onerror = () => {
                 console.log("keyReq2.onerror", keyReq2.result, keyReq2.error?.message);
             }
-            keyReq2.onsuccess = (event) => {
+            keyReq2.onsuccess = () => {
                 console.log("keyReq2.onsuccess", keyReq2.result, keyReq2.error?.message);
             }
 

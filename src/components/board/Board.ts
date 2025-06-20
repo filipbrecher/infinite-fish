@@ -8,6 +8,7 @@ import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constan
 import {View} from "./instances/View";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
+import {ElementView} from "./instances/ElementView";
 
 
 // todo - delete instance when not selected and dropped over sidebar
@@ -43,9 +44,9 @@ export class Board implements IComponent {
     private deleting: boolean = false;
 
     constructor() {
-        this.board = <HTMLDivElement>document.getElementById("board");
-        this.dragLayer = <HTMLDivElement>document.getElementById("drag-layer");
-        this.selectionBox = <HTMLDivElement>document.getElementById("selection-box");
+        this.board = document.getElementById("board") as HTMLDivElement;
+        this.dragLayer = document.getElementById("drag-layer") as HTMLDivElement;
+        this.selectionBox = document.getElementById("selection-box") as HTMLDivElement;
 
         const boardWrapper = document.getElementById("board-wrapper");
         boardWrapper.addEventListener("mousedown", (e: MouseEvent) => {

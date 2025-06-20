@@ -1,7 +1,7 @@
 import "./styles/style.css";
 import "./styles/themes/light.css";
 import "./styles/themes/dark.css";
-import {App} from "./app.ts"
+import {App} from "./app";
 
 const channel = new BroadcastChannel("infinite-fish");
 
@@ -26,4 +26,8 @@ setTimeout(() => {
 
 
 export const app = new App();
-await app.init();
+
+async function main() {
+    await app.init();
+}
+main().catch();

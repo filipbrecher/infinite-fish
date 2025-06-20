@@ -8,7 +8,7 @@ export class Workspaces implements IComponent {
     private activeWsId: number | undefined;
 
     constructor() {
-        this.list = <HTMLDivElement>document.getElementById("workspaces-list");
+        this.list = document.getElementById("workspaces-list") as HTMLDivElement;
 
         app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
@@ -28,7 +28,7 @@ export class Workspaces implements IComponent {
                 return a.position - b.position;
             })
             .forEach((ws) => {
-                const wsDiv = <HTMLDivElement>document.createElement("div");
+                const wsDiv = document.createElement("div") as HTMLDivElement;
                 wsDiv.id = `workspace-tab-${ws.id}`;
                 wsDiv.classList.add("workspace-tab");
                 wsDiv.innerText = ws.name;
