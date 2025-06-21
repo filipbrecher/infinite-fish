@@ -32,6 +32,8 @@ export abstract class View {
     public canCombine(): boolean {
         return false;
     }
+    public setCombining(combining: boolean) {}
+
     abstract getDiv(): HTMLDivElement;
     abstract type(): ViewTypeProps;
     abstract data(): ViewDataProps;

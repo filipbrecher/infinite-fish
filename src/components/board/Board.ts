@@ -247,7 +247,7 @@ export class Board implements IComponent {
 
         this.selected = new Set();
         this.instances.forEach((instance, id) => {
-            if (instance.isInBox(left, top, left + width, top + height)) {
+            if ( !instance.disabled && instance.isInBox(left, top, left + width, top + height)) {
                 instance.setSelected(true);
                 this.selected.add(id);
             } else {
@@ -289,6 +289,7 @@ export class Board implements IComponent {
 
     // accounts for deleting the whole selection
     private removeInstanceById = (removeId: number): Set<number> => {
+        if (this.instances.get(removeId).disabled) return new Set();
         let toDelete: Set<number> = new Set([removeId]);
         if (this.selected.has(removeId)) {
             this.selected.forEach(id => {
@@ -314,7 +315,7 @@ export class Board implements IComponent {
         const toDelete: Set<number> = new Set();
         let deleteSelected = false;
         this.instances.forEach((instance, id) => {
-            if (instance.isInBox(x, y, x, y)) {
+            if ( !instance.disabled && instance.isInBox(x, y, x, y)) {
                 toDelete.add(id);
                 if (this.selected.has(id)) {
                     deleteSelected = true;
@@ -385,7 +386,7 @@ export class Board implements IComponent {
         this.dragging = true;
 
         const isSelected = this.selected.has(id);
-        this.canCombine = !isSelected && this.instances.get(id).canCombine();
+        this.canCombine = !isSelected && this.instances.get(id).canViewCombine();
         this.combinesWith = undefined;
 
         this.dragged = isSelected ? this.selected : new Set([id]);
@@ -421,7 +422,7 @@ export class Board implements IComponent {
                     const id = i.id;
                     if (
                         id === draggedId ||
-                        !i.canCombine() ||
+                        !i.canViewCombine() ||
                         !i.isInBox(x, y, x + width, y + height)
                     ) {
                         return;
@@ -462,9 +463,21 @@ export class Board implements IComponent {
         app.state.moveInstances(toMove);
 
         if (this.canCombine && this.combinesWith !== undefined) {
+            const [draggedId] = this.dragged;
+            const i1 = this.instances.get(draggedId);
+            const i2 = this.instances.get(this.combinesWith);
             this.instances.get(this.combinesWith)!.setHoveredOver(false);
-            // todo - combine -> don't forget to remove from selected elements if necessary
-            console.log(`COMBINING: ${this.dragged.values().next().value}+${this.combinesWith}`);
+
+            if (this.selected.has(i2.id)) {
+                i2.setSelected(false);
+                this.selected.delete(this.combinesWith);
+            }
+            i1.setDisabled(true);
+            i2.setDisabled(true);
+            i1.setViewCombining(true);
+            i2.setViewCombining(true);
+
+            app.state.combineElements(i1.getView() as ElementView, i2.getView() as ElementView);
         }
 
         this.dragged = new Set();

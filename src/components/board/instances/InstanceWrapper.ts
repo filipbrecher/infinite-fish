@@ -16,8 +16,10 @@ export class InstanceWrapper {
     private _width: number | undefined;
 
     private _selected: boolean;
+    private _disabled: boolean;
+    public get disabled() { return this._disabled; }
 
-    private _view: View;
+    private readonly _view: View;
     private _div: HTMLDivElement | undefined;
 
     constructor(props: InstanceProps, view: View) {
@@ -29,10 +31,6 @@ export class InstanceWrapper {
         this._view = view;
     }
 
-    public canCombine(): boolean {
-        return this._view.canCombine();
-    }
-
     public getDiv(): HTMLDivElement {
         this._div = document.createElement("div");
 
@@ -42,6 +40,10 @@ export class InstanceWrapper {
         this._div.style.transform = `translate(${this._x}px, ${this._y}px)`;
 
         return this._div;
+    }
+
+    public getView(): View {
+        return this._view;
     }
 
     public getMoveProps(): InstanceMoveProps {
@@ -78,6 +80,17 @@ export class InstanceWrapper {
 
     public setHoveredOver(hoveredOver: boolean) {
         this._div?.classList.toggle("hovered-over", hoveredOver);
+    }
+
+    public canViewCombine(): boolean {
+        return this._view.canCombine();
+    }
+    public setViewCombining(combining: boolean) {
+        this._view.setCombining(combining);
+    }
+    public setDisabled(disabled: boolean) {
+        this._disabled = disabled;
+        this._div?.classList.toggle("disabled", disabled);
     }
 
     public getPosDim(): {x: number, y: number, width: number, height: number} {

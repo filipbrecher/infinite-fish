@@ -12,12 +12,16 @@ body[data-theme="dark"] {
     --instance-bg: var(--board-bg);
     --instance-border-hover: #dadada;
     --instance-bg-hover: #3a3a3a;
-
+    /* pulsing */
+    --instance-pulsing-bg-1: #2d2d2d80;
+    --instance-pulsing-border-1: #ffffff80;
+    --instance-pulsing-bg-2: #2d2d2d20;
+    --instance-pulsing-border-2: #ffffff20;
     /* selection */
     --selection-box-bg: #0078ff33;
     --selection-box-border: #0078ff80;
-    --instance-selected-bg: #0078ff50;
-    --instance-selected-bg-hover: #0078ff80;
+    --instance-selected-bg: #00254f;
+    --instance-selected-bg-hover: #003c80;
     --instance-selected-border: #94cdff;
     --instance-selected-border-hover: #4babff;
 

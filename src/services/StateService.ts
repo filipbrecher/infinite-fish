@@ -11,6 +11,7 @@ import {Utils} from "./Utils";
 import {Subject} from "../signals/Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
 import {InstanceWrapper} from "../components/board/instances/InstanceWrapper";
+import {COMBINE_ELEMENTS} from "../config";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
@@ -312,5 +313,12 @@ export class StateService {
 
         app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, [newInstance]).catch();
         return newInstance;
+    }
+
+    public async combineElements(i1: { id: number, text: string }, i2: { id: number, text: string }): Promise<void> {
+        const res = await fetch(`${COMBINE_ELEMENTS}?first=${encodeURIComponent(i1.text)}&second=${encodeURIComponent(i2.text)}`);
+        const data = await res.json();
+        console.log(data);
+        return;
     }
 }

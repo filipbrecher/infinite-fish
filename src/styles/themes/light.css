@@ -12,7 +12,11 @@ body[data-theme="light"] {
     --instance-bg: var(--board-bg);
     --instance-border-hover: #313131;
     --instance-bg-hover: #e5e5e5;
-
+    /* pulsing */
+    --instance-pulsing-bg-1: #e5e5e580;
+    --instance-pulsing-border-1: #00000080;
+    --instance-pulsing-bg-2: #e5e5e520;
+    --instance-pulsing-border-2: #00000020;
     /* selection */
     --selection-box-bg: #0078ff33;
     --selection-box-border: #0078ff80;
