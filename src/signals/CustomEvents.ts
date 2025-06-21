@@ -1,5 +1,5 @@
-import type {ViewDataProps} from "../types/dbSchema";
-import {ViewTypeProps} from "../types/dbSchema";
+import type {ViewDataProps} from "../types/db/schema";
+import {ViewTypeProps} from "../types/db/schema";
 
 
 export const WORKSPACE_SPAWN_INSTANCE = "workspace:spawn";

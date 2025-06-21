@@ -8,21 +8,21 @@ import {
     WORKSPACE_STORE
 } from "../constants/dbSchema";
 import type {
+    AbortReason,
     ElementProps,
     IDBTransactionEvent,
-    InstanceProps, InstanceMoveProps,
+    InstanceProps,
     SaveProps,
     SettingsProps,
-    WorkspaceProps,
-    WorkspaceChangesProps
-} from "../types/dbSchema";
+    WorkspaceProps
+} from "../types/db/schema";
+import type {UpsertElementProps, InstanceMoveProps, WorkspaceChangesProps} from "../types/db/dto";
 import {
     DEFAULT_ELEMENTS, DEFAULT_SAVE,
     DEFAULT_SAVE_NAME,
     DEFAULT_SETTINGS, DEFAULT_WORKSPACE,
     DEFAULT_WORKSPACE_NAME
 } from "../constants/defaults";
-import type {AbortReason, UpsertElementProps} from "../types/dbSchema";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save

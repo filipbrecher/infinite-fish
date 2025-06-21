@@ -5,18 +5,18 @@ export interface IDBTransactionEvent extends Event {
 export type AbortReason = string | undefined;
 
 //============ SETTINGS ============//
-export enum KeyState {
+export const enum KeyState {
     YES = "yes",
     NO = "no",
     ANY = "any",
 }
-export enum KeyProps {
+export const enum KeyProps {
     CTRL = "ctrlKey",
     SHIFT = "shiftKey",
     ALT = "altKey",
     META = "metaKey",
 }
-export enum ButtonProps {
+export const enum ButtonProps {
     LEFT = 1,
     MIDDLE = 4,
     RIGHT = 2,
@@ -79,15 +79,6 @@ export type ElementProps = {
     recipes?: RecipeProps[];     // [] by default
 }
 
-export type UpsertElementProps = {
-    saveId: number;
-    id: number;
-    emoji: string;
-    text: string;
-    discovery?: boolean;   // false by default
-    recipe: RecipeProps;
-}
-
 
 //============ WORKSPACES ============//
 export type WorkspaceProps = {
@@ -100,16 +91,9 @@ export type WorkspaceProps = {
     scale: number;
 }
 
-export type WorkspaceChangesProps = {
-    name: string;
-    x: number;
-    y: number;
-    scale: number;
-}
-
 
 //============ INSTANCES ============//
-export enum ViewTypeProps {
+export const enum ViewTypeProps {
     Element,
     GhostElement,
 }
@@ -121,7 +105,7 @@ export type GhostElementViewData = {
 };
 export type ViewDataProps = ElementViewData | GhostElementViewData;
 
-export interface InstanceProps extends NewInstanceProps {
+export type InstanceProps = {
     workspaceId: number;
     id: number;
     x: number;
@@ -129,21 +113,5 @@ export interface InstanceProps extends NewInstanceProps {
     zIndex: number;
     type?: ViewTypeProps;    // ElementViewData type by default
     data: ViewDataProps;
-}
-
-export interface NewInstanceProps {
-    x: number;
-    y: number;
-    zIndex: number;
-    type?: ViewTypeProps;
-    data: ViewDataProps;
-}
-
-export type InstanceMoveProps = {
-    workspaceId: number;
-    id: number,
-    x: number,
-    y: number,
-    zIndex: number,
 }
 

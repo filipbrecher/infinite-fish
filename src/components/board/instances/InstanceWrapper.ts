@@ -1,4 +1,5 @@
-import type {InstanceMoveProps, InstanceProps, NewInstanceProps} from "../../../types/dbSchema";
+import type {InstanceProps} from "../../../types/db/schema";
+import type {InstanceMoveProps, NewInstanceProps} from "../../../types/db/dto";
 import {View} from "./View";
 
 

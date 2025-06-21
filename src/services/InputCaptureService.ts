@@ -1,17 +1,8 @@
 import {app} from "../main";
-import type {KeyPropsRecord, MouseProps, SettingsProps, WheelProps} from "../types/dbSchema";
-import {ButtonProps, KeyState} from "../types/dbSchema";
+import type {KeyPropsRecord, MouseProps, WheelProps} from "../types/db/schema";
+import {ButtonProps, KeyState} from "../types/db/schema";
+import type {ActionEntry, CaptureLevel, InputHandler} from "../types/services";
 
-
-type EventKind = "mousedown" | "wheel";
-type CaptureLevel = string;
-type InputHandler = (e: MouseEvent | WheelEvent, ...args: any[]) => void;
-
-type ActionEntry = {
-    kind: EventKind;
-    settingsKey: keyof SettingsProps;
-    handler: InputHandler;
-};
 
 export class InputCaptureService {
     private levels: Map<CaptureLevel, ActionEntry[]> = new Map();

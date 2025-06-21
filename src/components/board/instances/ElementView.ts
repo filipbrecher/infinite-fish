@@ -1,6 +1,5 @@
-import type {ElementViewData, ElementProps} from "../../../types/dbSchema";
-import type {ViewDataProps} from "../../../types/dbSchema";
-import {ViewTypeProps} from "../../../types/dbSchema";
+import type {ElementViewData, ViewDataProps, ElementProps} from "../../../types/db/schema";
+import {ViewTypeProps} from "../../../types/db/schema";
 import {app} from "../../../main";
 
 

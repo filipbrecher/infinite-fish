@@ -1,11 +1,8 @@
-import type {ElementProps, KeyPropsRecord, SaveProps, SettingsProps, WorkspaceProps} from "../types/dbSchema";
-import {ButtonProps, KeyProps, KeyState} from "../types/dbSchema";
+import type {ElementProps, KeyPropsRecord, SaveProps, SettingsProps, WorkspaceProps} from "../types/db/schema";
+import {ButtonProps, KeyProps, KeyState} from "../types/db/schema";
 import {SETTINGS_KEY} from "./dbSchema";
 
-export const ZOOM_SENSITIVITY = 0.001;
-export const MAX_ZOOM: number = 10;
-export const MIN_ZOOM: number = 0.1;
-export const Z_INDEX_START: number = 0;
+export const DEFAULT_SIDEBAR_WIDTH: number = 400;
 
 const DEFAULT_KEY_PROPS: KeyPropsRecord = {
     [KeyProps.CTRL]: KeyState.ANY,
@@ -82,8 +79,6 @@ export const DEFAULT_SETTINGS: SettingsProps = {
 
 
 export const DEFAULT_SAVE_NAME: string = "New Save";
-export const MAX_SAVE_NAME_LENGTH: number = 30;
-export const SAVE_ACTIVE_AT_TIMEOUT: number = 10000; // milliseconds
 export const DEFAULT_SAVE: Partial<SaveProps> = {
     datetimeCreated: 0,
     elementCount: 4,

@@ -1,6 +1,6 @@
-import type {SaveProps} from "../../types/dbSchema";
+import type {SaveProps} from "../../types/db/schema";
 import {app} from "../../main";
-import {MAX_SAVE_NAME_LENGTH} from "../../constants/defaults";
+import {MAX_SAVE_NAME_LENGTH} from "../../constants/save";
 import {Utils} from "../../services/Utils";
 import type {IPopup} from "./IPopup";
 

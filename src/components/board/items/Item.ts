@@ -1,4 +1,4 @@
-import type {ElementProps, ViewDataProps} from "../../../types/dbSchema";
+import type {ElementProps, ViewDataProps} from "../../../types/db/schema";
 
 
 export class Item {

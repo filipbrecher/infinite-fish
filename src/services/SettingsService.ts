@@ -1,5 +1,5 @@
 import {app} from "../main";
-import type {SettingsProps} from "../types/dbSchema";
+import type {SettingsProps} from "../types/db/schema";
 
 
 // todo - allow to choose options for which mouse presses trigger which stuff (panning, zooming, dragging elements, deleting elemnts, ...)

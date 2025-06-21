@@ -1,17 +1,12 @@
-import type {
-    SaveProps,
-    WorkspaceProps,
-    ElementProps,
-    InstanceProps,
-    WorkspaceChangesProps,
-    NewInstanceProps, InstanceMoveProps
-} from "../types/dbSchema";
+import type {SaveProps, WorkspaceProps, ElementProps, InstanceProps} from "../types/db/schema";
+import type {WorkspaceChangesProps, NewInstanceProps, InstanceMoveProps} from "../types/db/dto";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "../signals/Subject";
-import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/defaults";
+import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/save";
 import {InstanceWrapper} from "../components/board/instances/InstanceWrapper";
-import {COMBINE_ELEMENTS} from "../config";
+import {COMBINE_ELEMENTS} from "../constants/api";
+import {State} from "../types/services";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
@@ -41,13 +36,6 @@ import {COMBINE_ELEMENTS} from "../config";
 // 6) load all instances from the active workspace into memory
 // 7) add instances to the board
 // last) state := running
-
-enum State {
-    WAITING = "WAITING",
-    LOADING_SAVE = "LOADING_SAVE",
-    LOADING_WORKSPACE = "LOADING_WORKSPACE",
-    RUNNING = "RUNNING",
-}
 
 
 // todo - make sure everywhere is accounted for possible instances not found by their id

@@ -3,8 +3,10 @@ import type {IComponent} from "../IComponent";
 import {app} from "../../main";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
-import {ViewTypeProps} from "../../types/dbSchema";
+import {ViewTypeProps} from "../../types/db/schema";
 import {Item} from "./items/Item";
+import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
+import {MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH} from "../../constants/interaction";
 
 
 // todo - add input captures:
@@ -14,9 +16,7 @@ export class Sidebar implements IComponent {
     private resizer: HTMLDivElement;
     private sidebarItems: HTMLDivElement;
 
-    private static readonly MIN_WIDTH: number = 16;
-    private static readonly MAX_WIDTH: number = 2000;
-    private width: number = 400;
+    private width: number = DEFAULT_SIDEBAR_WIDTH;
 
     private isResizing = false;
 
@@ -76,7 +76,7 @@ export class Sidebar implements IComponent {
         if ( !this.isResizing) return;
 
         const newWidth = window.innerWidth - e.clientX;
-        this.width = Math.min(Sidebar.MAX_WIDTH, Math.max(Sidebar.MIN_WIDTH, newWidth));
+        this.width = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, newWidth));
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
     };
 
