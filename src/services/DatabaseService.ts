@@ -552,7 +552,7 @@ export class DatabaseService {
             getSaveReq.onsuccess = () => {
                 const save: SaveProps = getSaveReq.result;
                 if ( !save) {
-                    abortReason = `Error adding element/recipe ${props}: Save not found`;
+                    abortReason = `Error adding element/recipe ${JSON.stringify(props)}: Save not found`;
                     tx.abort();
                     return;
                 }
@@ -610,7 +610,7 @@ export class DatabaseService {
                     app.logger.log("error", "db", abortReason);
                 } else {
                     app.logger.log("error", "db",
-                        `Error adding element/recipe ${props}: ${event.target.error?.message}`
+                        `Error adding element/recipe ${JSON.stringify(props)}: ${event.target.error?.message}`
                     );
                 }
                 event.stopPropagation();
@@ -618,7 +618,7 @@ export class DatabaseService {
             }
 
             tx.oncomplete = () => {
-                app.logger.log("info", "db", `Element/recipe ${props} successfully added to save`);
+                app.logger.log("info", "db", `Element/recipe ${JSON.stringify(props)} successfully added to save`);
                 resolve();
             }
         });

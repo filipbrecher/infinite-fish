@@ -1,7 +1,7 @@
 import {Utils} from "./Utils";
 
 type LogLevel = "info" | "warning" | "error";
-type LogType = "db" | "settings" | "state_service" | "board" | "sidebar" | "workspace" | "instance" | "view" | string;
+type LogType = "db" | "settings" | "state" | "board" | "sidebar" | "workspace" | "instance" | "view" | string;
 
 // todo - make an array of structured log messages, which isn't displayed, but can be copies (for example in settings)
 //        that contains all logs, for debugging purposes (upon error, user can copy (or download a file?) and paste to discord)
@@ -10,7 +10,7 @@ export class Logger {
     private readonly emojiByType: Map<LogType, string> = new Map([
         ["db", "🛢️"],
         ["setting", "⚙️"],
-        ["state_service", "🧠"],
+        ["state", "🧠"],
         ["board", "🧭"],
         ["sidebar", "🧾"],
         ["workspace", "🗂️"],
