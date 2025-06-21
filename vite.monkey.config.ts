@@ -10,7 +10,7 @@ export default defineConfig((config) => {
                 entry: 'src/main.ts',
                 header: {
                     name: name,
-                    namespace: 'my namespace',
+                    namespace: 'alfofish',
                     version: version,
                     description: 'Infinite Fish script',
                     match: ['https://neal.fun/infinite-craft/*'],
