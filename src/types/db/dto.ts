@@ -8,7 +8,7 @@ export type UpsertElementProps = {
     emoji: string;
     text: string;
     discovery?: boolean;   // false by default
-    recipe: RecipeProps;
+    recipe?: RecipeProps;  // if for some reason the recipe isn't known or has already been detected as duplicate
 }
 
 

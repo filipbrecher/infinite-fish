@@ -541,7 +541,7 @@ export class DatabaseService {
     // DOES NOT check whether the element with this text exists or doesn't exist (just the id, saveId combo)
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
     public async upsertElement(props: UpsertElementProps): Promise<void> {
-        if (props.recipe[0] > props.recipe[1]) props.recipe.reverse();
+        if (props.recipe && props.recipe[0] > props.recipe[1]) props.recipe.reverse();
         return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);
@@ -563,15 +563,19 @@ export class DatabaseService {
 
                     let newElement = false;
                     let newDiscovery = false;
-                    let newRecipe = true;
+                    let newRecipe = false;
 
                     if (element) { // add recipe
-                        if (element.recipes?.some(r => r[0] === props.recipe[0] && r[1] === props.recipe[1])) {
-                            newRecipe = false;
-                        } else if (element.recipes) {
-                            element.recipes.push(props.recipe);
-                        } else {
-                            element.recipes = [props.recipe];
+                        if (props.recipe) {
+                            if (element.recipes?.some(r => r[0] === props.recipe![0] && r[1] === props.recipe![1])) {
+                                // newRecipe = false;
+                            } else if (element.recipes) {
+                                element.recipes.push(props.recipe);
+                                newRecipe = true;
+                            } else {
+                                element.recipes = [props.recipe];
+                                newRecipe = true;
+                            }
                         }
                     } else {
                         newElement = true;
@@ -580,12 +584,15 @@ export class DatabaseService {
                             id: props.id,
                             emoji: props.emoji,
                             text: props.text,
-                            recipes: [props.recipe],
+                        }
+                        if (props.recipe) {
+                            element.recipes = [props.recipe]
+                            newRecipe = true
                         }
                     }
                     if (props.discovery && !element.discovery) {
-                        newDiscovery = true;
                         element.discovery = true;
+                        newDiscovery = true;
                     }
                     elementStore.put(element);
 
