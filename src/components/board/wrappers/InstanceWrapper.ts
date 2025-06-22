@@ -1,6 +1,6 @@
 import type {InstanceProps} from "../../../types/db/schema";
 import type {InstanceMoveProps, NewInstanceProps} from "../../../types/db/dto";
-import {View} from "./View";
+import {View} from "../views/View";
 
 
 // todo - if ghost, create a hook
@@ -36,6 +36,7 @@ export class InstanceWrapper {
         this._div = document.createElement("div");
 
         this._div.id = `instance-${this._instanceId}`;
+        this._div.classList.add("wrapper");
         this._div.classList.add("instance-wrapper");
         this._div.style.zIndex = `${this._zIndex}`;
         this._div.style.transform = `translate(${this._x}px, ${this._y}px)`;

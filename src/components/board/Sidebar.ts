@@ -4,11 +4,15 @@ import {app} from "../../main";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {ViewTypeProps} from "../../types/db/schema";
-import {Item} from "./items/Item";
+import {ItemWrapper} from "./wrappers/ItemWrapper";
 import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
 import {MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH} from "../../constants/interaction";
+import {View} from "./views/View";
+import {InstanceWrapper} from "./wrappers/InstanceWrapper";
+import {ElementView} from "./views/ElementView";
 
 
+// todo - subscribe to state for _elementAdded and _elementUpdated
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
@@ -36,14 +40,15 @@ export class Sidebar implements IComponent {
             { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.blockInputCapture },
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.blockInputCapture },
         ]);
-        app.inputCapture.set("item", [
+        app.inputCapture.set("sidebar-item", [
             { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
             { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onSpawnInstance },
+            { kind: "mousedown", settingsKey: "elementToggleVisibility", handler: this.onToggleElementVisibility },
         ]);
-        // app.inputCapture.set("view", [
-        //     { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
-        //     { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
-        // ]);
+        app.inputCapture.set("sidebar-view", [
+            { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
+            { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
+        ]);
 
         app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
@@ -55,10 +60,17 @@ export class Sidebar implements IComponent {
 
     private onSaveLoaded = () => {
         app.state.elementsById.forEach((props) => {
-            const item = new Item(props);
+            const view = new ElementView(props);
+            const viewDiv = view.getDiv();
+            viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
+                app.inputCapture.matchMouseDown("sidebar-view", e)(e);
+            });
+
+            const item = new ItemWrapper(view);
             const itemDiv = item.getDiv();
+            itemDiv.appendChild(viewDiv);
             itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("item", e)(e, props.id);
+                app.inputCapture.matchMouseDown("sidebar-item", e)(e, props.id);
             });
 
             this.sidebarItems.appendChild(itemDiv);
@@ -113,5 +125,26 @@ export class Sidebar implements IComponent {
         if (this.disabled === disabled) return;
         this.disabled = disabled;
         this.sidebar.style.pointerEvents = disabled ? "none" : "auto";
+    }
+
+    private onToggleElementVisibility = (e: MouseEvent) => {
+        console.log("sidebar.view.onToggleElementVisibility");
+        e.stopPropagation();
+
+        // todo
+    }
+
+    private onViewInfo = (e: MouseEvent) => {
+        console.log("sidebar.view.onViewInfo");
+        e.stopPropagation();
+
+        // todo
+    }
+
+    private onViewCopyEmojiText = (e: MouseEvent) => {
+        console.log("sidebar.view.onViewCopyEmojiText");
+        e.stopPropagation();
+
+        // todo
     }
 }

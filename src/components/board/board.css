@@ -27,9 +27,11 @@
     pointer-events: none;
 }
 
+.wrapper {
+    cursor: pointer;
+}
 .instance-wrapper {
     position: absolute;
-    cursor: pointer;
 }
 .instance-wrapper.selected .view {
     background-color: var(--instance-selected-bg);
@@ -40,7 +42,7 @@
     border: 1px solid var(--instance-selected-border-hover);
 }
 
-.instance-wrapper.hovered-over .view {
+.instance-wrapper.hovered-over .item {
     transform: scale(1.05);
     background-color: var(--instance-bg-hover);
     border: 1px solid var(--instance-border-hover);
@@ -61,17 +63,20 @@
     50% { opacity: 0.3; }
 }
 
-
 .instance-wrapper .discovery::after {
-    content: var(--image-element-discovery);
-    width: 20px;
-    height: 20px;
-
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
+    width: 20px;
+    height: 20px;
     transform: translate(-50%, -50%);
     pointer-events: none;
+
+    background-image: var(--image-element-discovery);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 

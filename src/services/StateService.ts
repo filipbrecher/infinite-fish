@@ -4,7 +4,7 @@ import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "../signals/Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/save";
-import {InstanceWrapper} from "../components/board/instances/InstanceWrapper";
+import {InstanceWrapper} from "../components/board/wrappers/InstanceWrapper";
 import {CHECK_RECIPE, COMBINE_ELEMENTS} from "../constants/api";
 import {State} from "../types/services";
 import type {CheckRecipeResponse, CombineElementsResponse} from "../types/api";

@@ -1,7 +1,7 @@
 import "./board.css";
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
-import {InstanceWrapper} from "./instances/InstanceWrapper";
+import {InstanceWrapper} from "./wrappers/InstanceWrapper";
 import type {InstanceProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import type {NewInstanceProps, UpsertElementProps, WorkspaceChangesProps} from "../../types/db/dto";
@@ -13,10 +13,10 @@ import {
     Z_INDEX_START,
     ZOOM_SENSITIVITY
 } from "../../constants/interaction";
-import {View} from "./instances/View";
+import {View} from "./views/View";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
-import {ElementView} from "./instances/ElementView";
+import {ElementView} from "./views/ElementView";
 import {Sidebar} from "./Sidebar";
 import {Workspaces} from "./Workspaces";
 
@@ -81,12 +81,12 @@ export class Board implements IComponent {
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onStartDeleting },
             { kind: "wheel", settingsKey: "workspaceZooming", handler: this.onWheel },
         ]);
-        app.inputCapture.set("instance", [
+        app.inputCapture.set("board-instance", [
             { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onStartDragging },
             { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onStartCopying },
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onStartDeleting },
         ]);
-        app.inputCapture.set("view", [
+        app.inputCapture.set("board-view", [
             { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
             { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
         ]);
@@ -120,14 +120,14 @@ export class Board implements IComponent {
                 return;
             }
             viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("view", e)(e);
+                app.inputCapture.matchMouseDown("board-view", e)(e);
             });
 
             const instance = new InstanceWrapper(props, view);
             const instanceDiv = instance.getDiv();
             instanceDiv.appendChild(viewDiv);
             instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("instance", e)(e, props.id);
+                app.inputCapture.matchMouseDown("board-instance", e)(e, props.id);
             });
 
             this.instancesByZIndex[props.zIndex] = instance;
@@ -601,14 +601,14 @@ export class Board implements IComponent {
     }
 
     private onViewInfo = (e: MouseEvent) => {
-        console.log("view.onViewInfo");
+        console.log("board.view.onViewInfo");
         e.stopPropagation();
 
         // todo
     }
 
     private onViewCopyEmojiText = (e: MouseEvent) => {
-        console.log("view.onViewCopyEmojiText");
+        console.log("board.view.onViewCopyEmojiText");
         e.stopPropagation();
 
         // todo
