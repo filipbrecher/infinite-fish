@@ -203,6 +203,15 @@ export class StateService {
         });
     }
 
+    private static async fetchWithCatch(uri: string): Promise<Response | undefined> {
+        try {
+            return await fetch(uri);
+        } catch (err) {
+            app.logger.log("error", "state", `Failed to send fetch request ${uri}`)
+        }
+        return undefined;
+    }
+
     private clearSaveFromMemory() {
         this._activeSave = undefined;
         this._activeWorkspace = undefined;
@@ -390,7 +399,8 @@ export class StateService {
     }
 
     private static async checkRecipe(first: string, second: string, result: string): Promise<boolean> {
-        const res = await fetch(`${CHECK_RECIPE}?first=${encodeURIComponent(first)}&second=${encodeURIComponent(second)}&result=${encodeURIComponent(result)}`);
+        let res = await StateService.fetchWithCatch(`${CHECK_RECIPE}?first=${encodeURIComponent(first)}&second=${encodeURIComponent(second)}&result=${encodeURIComponent(result)}`);
+        if (res === undefined) return false;
 
         if ( !res.ok) {
             app.logger.log("error", "state", `Failed to verify if the following recipe is "valid":\n${first} + ${second} = ${result}`);
@@ -405,7 +415,8 @@ export class StateService {
     // returns undefined when the combining fails (error or returned "non-real" Nothing)
     public async startCombiningElements(e1: { id: number, text: string }, e2: { id: number, text: string }): Promise<UpsertElementProps | undefined> {
         this._queuedCombinations++;
-        const res = await fetch(`${COMBINE_ELEMENTS}?first=${encodeURIComponent(e1.text)}&second=${encodeURIComponent(e2.text)}`);
+        let res = await StateService.fetchWithCatch(`${COMBINE_ELEMENTS}?first=${encodeURIComponent(e1.text)}&second=${encodeURIComponent(e2.text)}`);
+        if (res === undefined) return undefined;
 
         if ( !res.ok) {
             app.logger.log("info", "state", `Elements '${e1.text}' and '${e2.text}' don't combine: HTTP error ${res.status}: ${res.statusText}`);
