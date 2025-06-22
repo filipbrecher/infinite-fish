@@ -79,7 +79,6 @@
     overflow-y: scroll;
     min-height: 100px;
     max-height: 80vh;
-    min-width: 200px;
     padding: 5px;
 
     display: flex;

@@ -14,7 +14,7 @@ h1, h2, h3 {
 }
 
 :root {
-    --sidebar-width: 200px;
+    --sidebar-width: 400px;
     --image-settings-button: url("/public/settings_button.png");
     --image-save-button: url("/public/save_button.png");
     --image-edit-name-button: url("/public/edit_name_button.png");
