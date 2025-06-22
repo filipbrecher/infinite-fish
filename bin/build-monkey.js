@@ -32,6 +32,58 @@ const EVENT_TYPES_TO_BLOCK = [
     // 'contextmenu',
 ];
 
+async function replaceFavicon(html) {
+    const faviconMatch = html.match(/<link\s+rel="icon"[^>]*href=["']\/public\/([^"']+\.png)["'][^>]*>/);
+    if (faviconMatch) {
+        const faviconFile = faviconMatch[1];
+        const faviconPath = path.join(DIST_DIR, faviconFile);
+
+        const pngData = await fs.promises.readFile(faviconPath);
+        const base64 = pngData.toString('base64');
+        const dataUrl = `data:image/png;base64,${base64}`;
+
+        const replacement = `<link rel="icon" type="image/png" href="${dataUrl}" />`;
+
+        return html.replace(faviconMatch[0], replacement);
+    }
+    return html;
+}
+
+async function replaceSVGImagesInCSS(files, cssWithBase64) {
+    const svgFiles = files.filter(f => f.endsWith('.svg'));
+
+    for (const svgFile of svgFiles) {
+        const imgPath = path.join(DIST_DIR, svgFile);
+        const imgData = await fs.promises.readFile(imgPath);
+
+        const encoded = encodeURIComponent(imgData.toString('utf8'))
+            .replace(/'/g, '%27')
+            .replace(/"/g, '%22');
+        const dataUrl = `url("data:image/svg+xml,${encoded}")`;
+
+        const regex = new RegExp(`url\\(["']?/public/${svgFile}["']?\\)`, 'g');
+        cssWithBase64 = cssWithBase64.replace(regex, dataUrl);
+    }
+
+    return cssWithBase64;
+}
+
+async function replacePNGImagesInCSS(files, cssWithBase64) {
+    const pngFiles = files.filter(f => f.endsWith('.png'));
+
+    for (const pngFile of pngFiles) {
+        const imgPath = path.join(DIST_DIR, pngFile);
+        const imgData = await fs.promises.readFile(imgPath);
+        const base64 = imgData.toString('base64');
+        const dataUrl = `url("data:image/png;base64,${base64}")`;
+
+        const regex = new RegExp(`url\\(["']?/public/${pngFile}["']?\\)`, 'g');
+        cssWithBase64 = cssWithBase64.replace(regex, dataUrl);
+    }
+
+    return cssWithBase64;
+}
+
 async function main() {
     // 1) Read meta
     const meta = await fs.promises.readFile(META_PATH, 'utf8');
@@ -39,13 +91,20 @@ async function main() {
     // 2) Start building output
     let out = meta + '\n\nsetTimeout(() => {\n';
 
-    // 3) Read index.html and remove lines containing 'crossorigin'
+    // 3) Read index.html
     let html = await fs.promises.readFile(HTML_PATH, 'utf8');
+
+    // Remove lines containing 'crossorigin'
     html = html
         .split('\n')
         .filter(line => !line.includes('crossorigin'))
-        .join('\n')
-        .replace(/`/g, '\\`')  // escape backticks for template literal
+        .join('\n');
+
+    // Find favicon href
+    html = await replaceFavicon(html);
+
+    // Escape backticks for template literal
+    html = html.replace(/`/g, '\\`');
 
     // 4) Add document.documentElement.innerHTML line
     out += `const newHTML = \`${html}\`;\n`
@@ -59,26 +118,17 @@ async function main() {
     ).join('\n');
     out += listeners + `\n\n`;
 
-    // 6) Read CSS and replace all url("/public/*.png") in CSS with base64 encoded images
+    // 6) Read CSS and replace all url("/public/*.svg") in CSS with URI encoded images
     const css = await fs.promises.readFile(CSS_PATH, 'utf8');
 
-    // Find all pngs in dist
+    // Find all SVGs in dist
     const files = await fs.promises.readdir(DIST_DIR);
-    const pngFiles = files.filter(f => f.endsWith('.png'));
 
     let cssWithBase64 = css;
-    for (const pngFile of pngFiles) {
-        const imgPath = path.join(DIST_DIR, pngFile);
-        const imgData = await fs.promises.readFile(imgPath);
-        const base64 = imgData.toString('base64');
-        const dataUrl = `url("data:image/png;base64,${base64}")`;
+    cssWithBase64 = await replaceSVGImagesInCSS(files, cssWithBase64);
+    cssWithBase64 = await replacePNGImagesInCSS(files, cssWithBase64);
 
-        // Replace url("/public/*.png") in CSS (adjust path if needed)
-        const regex = new RegExp(`url\\(["']?/public/${pngFile}["']?\\)`, 'g');
-        cssWithBase64 = cssWithBase64.replace(regex, dataUrl);
-    }
-
-    // Add the modified CSS with GM_addStyle
+    // Escape backticks in CSS and inject with GM_addStyle
     const cssWithBase64Escaped = cssWithBase64.replace(/`/g, '\\`');
     out += `GM_addStyle(\`${cssWithBase64Escaped}\`);\n\n`;
 
