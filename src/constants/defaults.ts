@@ -30,9 +30,8 @@ export const DEFAULT_SETTINGS: SettingsProps = {
     instanceSelecting: {
         keys: {
             ...DEFAULT_KEY_PROPS,
-            [KeyProps.CTRL]: KeyState.NO,
         },
-        buttons: ButtonProps.LEFT | ButtonProps.MIDDLE,
+        buttons: ButtonProps.LEFT,
     },
 
     instanceDragging: {
@@ -64,7 +63,6 @@ export const DEFAULT_SETTINGS: SettingsProps = {
         keys: {
             ...DEFAULT_KEY_PROPS,
             [KeyProps.SHIFT]: KeyState.YES,
-            [KeyProps.CTRL]: KeyState.NO,
         },
         buttons: ButtonProps.LEFT,
     },

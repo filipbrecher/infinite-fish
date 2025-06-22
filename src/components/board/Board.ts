@@ -5,15 +5,28 @@ import {InstanceWrapper} from "./instances/InstanceWrapper";
 import type {InstanceProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import type {NewInstanceProps, UpsertElementProps, WorkspaceChangesProps} from "../../types/db/dto";
-import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/interaction";
+import {
+    DRAG_Z_INDEX_ABOVE_SIDEBAR,
+    DRAG_Z_INDEX_BELOW_SIDEBAR,
+    MAX_ZOOM,
+    MIN_ZOOM,
+    Z_INDEX_START,
+    ZOOM_SENSITIVITY
+} from "../../constants/interaction";
 import {View} from "./instances/View";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import {ElementView} from "./instances/ElementView";
+import {Sidebar} from "./Sidebar";
+import {Workspaces} from "./Workspaces";
 
 
+// todo - fix height of views / items
 // todo - delete instance when not selected and dropped over sidebar
 export class Board implements IComponent {
+    private readonly sidebar: Sidebar;
+    private readonly workspaces: Workspaces;
+
     private readonly board: HTMLDivElement;
     private readonly dragLayer: HTMLDivElement;
     private instances: Map<number, InstanceWrapper> = new Map();
@@ -35,6 +48,7 @@ export class Board implements IComponent {
     // instance dragging
     private dragged: Set<number> = new Set();
     private dragging: boolean = false;
+    private draggingSelected: boolean = false;
     private dragOffsetX: number = 0;
     private dragOffsetY: number = 0;
     // combining - when dragging
@@ -45,6 +59,9 @@ export class Board implements IComponent {
     private deleting: boolean = false;
 
     constructor() {
+        this.sidebar = new Sidebar();
+        this.workspaces = new Workspaces();
+
         this.board = document.getElementById("board") as HTMLDivElement;
         this.dragLayer = document.getElementById("drag-layer") as HTMLDivElement;
         this.selectionBox = document.getElementById("selection-box") as HTMLDivElement;
@@ -143,6 +160,8 @@ export class Board implements IComponent {
 
     private clearDragging = () => {
         this.dragging = false;
+        this.draggingSelected = false;
+        this.sidebar.setDisabled(false);
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         this.dragged = new Set();
@@ -384,12 +403,14 @@ export class Board implements IComponent {
         e.stopPropagation();
 
         this.dragging = true;
+        this.draggingSelected = this.selected.has(id);
+        this.sidebar.setDisabled(this.draggingSelected);
 
-        const isSelected = this.selected.has(id);
-        this.canCombine = !isSelected && this.instances.get(id).canViewCombine();
+        this.canCombine = !this.draggingSelected && this.instances.get(id).canViewCombine();
         this.combinesWith = undefined;
 
-        this.dragged = isSelected ? this.selected : new Set([id]);
+        this.dragged = this.draggingSelected ? this.selected : new Set([id]);
+        this.dragLayer.style.zIndex = `${this.draggingSelected ? DRAG_Z_INDEX_BELOW_SIDEBAR  : DRAG_Z_INDEX_ABOVE_SIDEBAR}`;
         this.dragged.forEach((id) => {
             const i = this.instances.get(id);
             i.moveDivTo(this.dragLayer);
@@ -484,37 +505,42 @@ export class Board implements IComponent {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
         this.dragging = false;
 
-        const moved = this.dragOffsetX !== 0 || this.dragOffsetY !== 0;
-        if (moved) {
-            const toMove: InstanceWrapper[] = Array.from(this.dragged)
-                .map(id => this.instances.get(id))
-                .filter(instance => instance !== undefined)
-                .sort((a, b) => (a.zIndex - b.zIndex));
+        if (this.sidebar.isXOverSidebar(e.clientX) && !this.draggingSelected) {
+            // delete if non-selected instance is dropped over sidebar
+            this.deleteInstancesFromBoard(this.dragged);
+            app.state.deleteInstances(this.dragged);
 
-            toMove.forEach(i => {
-                i.moveDivTo(this.board);
-                i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
-                this.instancesByZIndex[this.maxZIndex] = i;
-            });
-            app.state.moveInstances(toMove);
-        }
+        } else {
+            const moved = this.dragOffsetX !== 0 || this.dragOffsetY !== 0;
+            if (moved) {
+                const toMove: InstanceWrapper[] = Array.from(this.dragged)
+                    .map(id => this.instances.get(id))
+                    .filter(instance => instance !== undefined)
+                    .sort((a, b) => (a.zIndex - b.zIndex));
 
-        if (this.canCombine && this.combinesWith !== undefined) {
-            const [draggedId] = this.dragged;
-            const i1 = this.instances.get(draggedId);
-            const i2 = this.instances.get(this.combinesWith);
-            this.instances.get(this.combinesWith)!.setHoveredOver(false);
-
-            if (this.selected.has(i2.id)) {
-                i2.setSelected(false);
-                this.selected.delete(this.combinesWith);
+                toMove.forEach(i => {
+                    i.moveDivTo(this.board);
+                    i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
+                    this.instancesByZIndex[this.maxZIndex] = i;
+                });
+                app.state.moveInstances(toMove);
             }
-            this.combineInstances(i1, i2);
+
+            if (this.canCombine && this.combinesWith !== undefined) {
+                const [draggedId] = this.dragged;
+                const i1 = this.instances.get(draggedId);
+                const i2 = this.instances.get(this.combinesWith);
+                this.instances.get(this.combinesWith)!.setHoveredOver(false);
+
+                if (this.selected.has(i2.id)) {
+                    i2.setSelected(false);
+                    this.selected.delete(this.combinesWith);
+                }
+                this.combineInstances(i1, i2);
+            }
         }
 
-        this.dragged = new Set();
-        this.dragOffsetX = 0;
-        this.dragOffsetY = 0;
+        this.clearDragging();
         this.updateTransform();
 
         window.removeEventListener("mousemove", this.onUpdateDragging);
@@ -526,7 +552,8 @@ export class Board implements IComponent {
         e.stopPropagation();
 
         if (this.dragging) {
-            // copy instances on top of the board
+            // copy instances on top of the board - unless dragging unselected
+            if ( !this.draggingSelected && this.sidebar.isXOverSidebar(e.clientX)) return;
 
             const toCopy: InstanceWrapper[] = Array.from(this.dragged)
                 .map(id => this.instances.get(id))

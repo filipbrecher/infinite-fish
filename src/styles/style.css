@@ -25,9 +25,9 @@ h1, h2, h3 {
 }
 
 #board { z-index: 0; position: absolute; }
-#drag-layer { z-index: 3; position: absolute; }
+#drag-layer { z-index: 4; position: absolute; } /* z-index can be either 2 or 4 */
 #workspaces-list { z-index: 1; position: absolute; }
-#sidebar { z-index: 2; position: absolute; }
+#sidebar { z-index: 3; position: absolute; }
 
 #board-wrapper { z-index: 0; position: absolute; }
 #options { z-index: 1; position: absolute; }

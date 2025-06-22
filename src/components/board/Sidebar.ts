@@ -15,6 +15,7 @@ export class Sidebar implements IComponent {
     private sidebar: HTMLDivElement;
     private resizer: HTMLDivElement;
     private sidebarItems: HTMLDivElement;
+    private disabled: boolean = false;
 
     private width: number = DEFAULT_SIDEBAR_WIDTH;
 
@@ -102,5 +103,15 @@ export class Sidebar implements IComponent {
             bubbles: true,
         });
         this.sidebar.dispatchEvent(event);
+    }
+
+    public isXOverSidebar = (x: number): boolean => {
+        return x >= window.innerWidth - this.width;
+    }
+
+    public setDisabled = (disabled: boolean) => {
+        if (this.disabled === disabled) return;
+        this.disabled = disabled;
+        this.sidebar.style.pointerEvents = disabled ? "none" : "auto";
     }
 }

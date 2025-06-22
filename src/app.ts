@@ -18,8 +18,6 @@ export class App {
     private _inputCapture: InputCaptureService;
 
     private _options: IComponent;
-    private _sidebar: IComponent;
-    private _workspaces: IComponent;
     private _board: IComponent;
 
     public get logger() { return this._logger; }
@@ -50,8 +48,6 @@ export class App {
 
             // prepare components
             this._options = new Options();
-            this._sidebar = new Sidebar();
-            this._workspaces = new Workspaces();
             this._board = new Board();
 
             // load save
