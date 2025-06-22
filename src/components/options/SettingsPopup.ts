@@ -1,6 +1,7 @@
 import type {IPopup} from "./IPopup";
 
 
+// todo - the option to allow Nothing to be generated -> with a disclaimer that it can break lineages containing it in infinibrowser
 export class SettingsPopup implements IPopup {
     private readonly popup: HTMLDivElement;
 

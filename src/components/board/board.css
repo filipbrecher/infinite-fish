@@ -41,7 +41,7 @@
 }
 
 .instance-wrapper.hovered-over .view {
-    transform: scale(1.15);
+    transform: scale(1.05);
     background-color: var(--instance-bg-hover);
     border: 1px solid var(--instance-border-hover);
 }

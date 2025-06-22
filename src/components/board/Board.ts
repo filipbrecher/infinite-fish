@@ -2,9 +2,9 @@ import "./board.css";
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {InstanceWrapper} from "./instances/InstanceWrapper";
-import {ViewTypeProps} from "../../types/db/schema";
 import type {InstanceProps} from "../../types/db/schema";
-import type {NewInstanceProps, WorkspaceChangesProps} from "../../types/db/dto";
+import {ViewTypeProps} from "../../types/db/schema";
+import type {NewInstanceProps, UpsertElementProps, WorkspaceChangesProps} from "../../types/db/dto";
 import {MAX_ZOOM, MIN_ZOOM, Z_INDEX_START, ZOOM_SENSITIVITY} from "../../constants/interaction";
 import {View} from "./instances/View";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
@@ -288,6 +288,15 @@ export class Board implements IComponent {
         });
     }
 
+    private deleteInstancesFromBoard = (toDelete: Set<number>) => {
+        toDelete.forEach(id => {
+            const i = this.instances.get(id);
+            i.removeDiv();
+            this.instances.delete(id);
+            delete this.instancesByZIndex[i.zIndex];
+        })
+    }
+
     // accounts for deleting the whole selection
     private removeInstanceById = (removeId: number): Set<number> => {
         if (this.instances.get(removeId).disabled) return new Set();
@@ -302,12 +311,7 @@ export class Board implements IComponent {
         }
         this.clearDragging();
 
-        toDelete.forEach(id => {
-            const i = this.instances.get(id);
-            i.removeDiv();
-            this.instances.delete(id);
-            delete this.instancesByZIndex[i.zIndex];
-        })
+        this.deleteInstancesFromBoard(toDelete);
 
         return toDelete;
     }
@@ -333,12 +337,7 @@ export class Board implements IComponent {
         }
         this.clearDragging();
 
-        toDelete.forEach(id => {
-            const i = this.instances.get(id);
-            i.removeDiv();
-            this.instances.delete(id);
-            delete this.instancesByZIndex[i.zIndex];
-        })
+        this.deleteInstancesFromBoard(toDelete);
 
         return toDelete;
     }
@@ -447,6 +446,40 @@ export class Board implements IComponent {
         this.updateTransform();
     }
 
+    private combineInstances = (i1: InstanceWrapper, i2: InstanceWrapper) => {
+        i1.setDisabled(true);
+        i2.setDisabled(true);
+        i1.setViewCombining(true);
+        i2.setViewCombining(true);
+
+        app.state.startCombiningElements(i1.getView() as ElementView, i2.getView() as ElementView)
+            .then((element: UpsertElementProps | undefined) => {
+                if (element === undefined) {
+                    i1.setViewCombining(false);
+                    i2.setViewCombining(false);
+                    i1.setDisabled(false);
+                    i2.setDisabled(false);
+                    return;
+                }
+
+                const view = View.getView(ViewTypeProps.Element, element.id);
+                const [ unscaledWidth, unscaledHeight ] = View.measureUnscaledSize(view);
+                const { x: x1, y: y1, width: w1, height: h1 } = i1.getPosDim();
+                const { x: x2, y: y2, width: w2, height: h2 } = i2.getPosDim();
+
+                const newInstance: NewInstanceProps = {
+                    x: (x1 + x2 + (w1 + w2) / 2 - unscaledWidth) / 2,
+                    y: (y1 + y2 + (h1 + h2) / 2 - unscaledHeight) / 2,
+                    zIndex: ++this.maxZIndex,
+                    type: ViewTypeProps.Element,
+                    data: element.id,
+                }
+
+                app.state.finishCombiningElements(i1.id, i2.id, newInstance);
+                this.deleteInstancesFromBoard(new Set([i1.id, i2.id]));
+            }).catch();
+    }
+
     private onEndDragging = (e: MouseEvent) => {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
         this.dragging = false;
@@ -473,12 +506,7 @@ export class Board implements IComponent {
                 i2.setSelected(false);
                 this.selected.delete(this.combinesWith);
             }
-            i1.setDisabled(true);
-            i2.setDisabled(true);
-            i1.setViewCombining(true);
-            i2.setViewCombining(true);
-
-            app.state.combineElements(i1.getView() as ElementView, i2.getView() as ElementView);
+            this.combineInstances(i1, i2);
         }
 
         this.dragged = new Set();

@@ -1,12 +1,13 @@
-import type {SaveProps, WorkspaceProps, ElementProps, InstanceProps} from "../types/db/schema";
-import type {WorkspaceChangesProps, NewInstanceProps, InstanceMoveProps} from "../types/db/dto";
+import type {ElementProps, InstanceProps, RecipeProps, SaveProps, WorkspaceProps} from "../types/db/schema";
+import type {InstanceMoveProps, NewInstanceProps, UpsertElementProps, WorkspaceChangesProps} from "../types/db/dto";
 import {app} from "../main";
 import {Utils} from "./Utils";
 import {Subject} from "../signals/Subject";
 import {SAVE_ACTIVE_AT_TIMEOUT} from "../constants/save";
 import {InstanceWrapper} from "../components/board/instances/InstanceWrapper";
-import {COMBINE_ELEMENTS} from "../constants/api";
+import {CHECK_RECIPE, COMBINE_ELEMENTS} from "../constants/api";
 import {State} from "../types/services";
+import type {CheckRecipeResponse, CombineElementsResponse} from "../types/api";
 
 // on page load -> after db is initialized and settings are loaded (.init method)
 // 1) state := loading
@@ -57,8 +58,14 @@ export class StateService {
     public get activeWorkspace() { return this._activeWorkspace; }
     public get instances() { return this._instances; }
 
+    // db indexing
     private _maxElementId: number;
     private _maxInstanceId: number;
+
+    // combineQueue
+    private _queuedCombinations: number = 0;
+    private _queueDoneCallback: () => void = () => {};
+
 
     private _state: State;
     private _overlay: HTMLDivElement;
@@ -72,6 +79,8 @@ export class StateService {
     public readonly _instancesMoved: Subject<InstanceMoveProps[]> = new Subject();
     public readonly _instancesDeleted: Subject<number[]> = new Subject();
     public readonly _instancesCreated: Subject<InstanceProps[]> = new Subject();
+    public readonly _elementAdded: Subject<UpsertElementProps> = new Subject();
+    public readonly _elementUpdated: Subject<UpsertElementProps> = new Subject();
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
     constructor() {
@@ -188,8 +197,10 @@ export class StateService {
 
     private async waitForElementsToCombine() {
         this.setState(State.WAITING);
-        // todo - wait for elements to finish combining
-        await Utils.wait(500);
+        if (this._queuedCombinations === 0) return;
+        await new Promise<void>((resolve) => {
+            this._queueDoneCallback = () => resolve();
+        });
     }
 
     private clearSaveFromMemory() {
@@ -303,10 +314,131 @@ export class StateService {
         return newInstance;
     }
 
-    public async combineElements(i1: { id: number, text: string }, i2: { id: number, text: string }): Promise<void> {
-        const res = await fetch(`${COMBINE_ELEMENTS}?first=${encodeURIComponent(i1.text)}&second=${encodeURIComponent(i2.text)}`);
-        const data = await res.json();
-        console.log(data);
-        return;
+    // assumes data is all valid and returned successfully + recipe is valid and sorted
+    // returns undefined when nothing changed
+    private async upsertElement(emoji: string, text: string, discovery: boolean, recipe: RecipeProps): Promise<UpsertElementProps> {
+        const e = this._elementsByText.get(text);
+        let upsertProps: UpsertElementProps = {
+            saveId: e ? e.saveId : this._activeSave!.id,
+            id: e ? e.id : ++this._maxElementId,
+            emoji: emoji,
+            text: text,
+            discovery: discovery,
+            recipe: recipe,
+        }
+        if ( !discovery) delete upsertProps.discovery;
+
+        if (e) {
+            // check for new recipe or discovery
+            const recipes = e.recipes || [];
+            let hasNewRecipe = recipes.every((r: RecipeProps) => { // new recipe if all recipes differ
+                return r[0] != recipe[0] || r[1] != recipe[1];
+            });
+            let discoveryChanged = !e.discovery && discovery;
+
+            if ( !hasNewRecipe) delete upsertProps.recipe;
+
+            if (hasNewRecipe || discoveryChanged) {
+                await app.database.upsertElement(upsertProps)
+
+                if (discoveryChanged) this._activeSave!.discoveryCount++;
+                if (hasNewRecipe) this._activeSave!.recipeCount++;
+
+                this._elementUpdated.notify(upsertProps);
+            }
+        } else {
+            // new element
+            const newElement: ElementProps = {
+                saveId: upsertProps.saveId,
+                id: upsertProps.id,
+                emoji: emoji,
+                text: text,
+                discovery: discovery,
+                recipes: [recipe],
+            }
+            if ( !discovery) delete newElement.discovery;
+
+            await app.database.upsertElement(upsertProps);
+
+            this._activeSave!.elementCount++;
+            if (discovery) this._activeSave!.discoveryCount++;
+            this._activeSave!.recipeCount++;
+
+            this._elementsById[newElement.id] = newElement;
+            this._elementsByText.set(newElement.text, newElement);
+            this._elementAdded.notify(upsertProps);
+        }
+
+        return upsertProps;
+    }
+
+    private replaceInstancesWithNew(id1: number, id2: number, instance: NewInstanceProps): InstanceProps {
+        const toDelete: number[] = [];
+        if (this.instances.delete(id1)) toDelete.push(id1);
+        if (this.instances.delete(id2)) toDelete.push(id2);
+        this._instancesDeleted.notify(toDelete);
+
+        const newInstance: InstanceProps = instance as InstanceProps;
+        newInstance.workspaceId = this._activeWorkspace!.id;
+        newInstance.id = ++this._maxInstanceId;
+        this._instances.set(newInstance.id, newInstance);
+        this._instancesCreated.notify([newInstance]);
+
+        app.database.applyInstanceChanges(this._activeWorkspace!.id, toDelete, [newInstance]).catch();
+
+        return newInstance;
+    }
+
+    private static async checkRecipe(first: string, second: string, result: string): Promise<boolean> {
+        const res = await fetch(`${CHECK_RECIPE}?first=${encodeURIComponent(first)}&second=${encodeURIComponent(second)}&result=${encodeURIComponent(result)}`);
+
+        if ( !res.ok) {
+            app.logger.log("error", "state", `Failed to verify if the following recipe is "valid":\n${first} + ${second} = ${result}`);
+            return false;
+        }
+
+        const data: CheckRecipeResponse = await res.json();
+        return data.valid;
+    }
+
+    // returns only after the combination's result was successfully saved to the db (or not if the fetch failed)
+    // returns undefined when the combining fails (error or returned "non-real" Nothing)
+    public async startCombiningElements(e1: { id: number, text: string }, e2: { id: number, text: string }): Promise<UpsertElementProps | undefined> {
+        this._queuedCombinations++;
+        const res = await fetch(`${COMBINE_ELEMENTS}?first=${encodeURIComponent(e1.text)}&second=${encodeURIComponent(e2.text)}`);
+
+        if ( !res.ok) {
+            app.logger.log("info", "state", `Elements '${e1.text}' and '${e2.text}' don't combine: HTTP error ${res.status}: ${res.statusText}`);
+            return undefined;
+        }
+
+        const data: CombineElementsResponse = await res.json();
+        if (data.result === "Nothing") {
+            if ( !app.settings.settings.allowCombineToNothing) {
+                app.logger.log("info", "state", `Tried to combine ${e1.text} + ${e2.text}, but they result in Nothing and it is blocked in Settings`);
+                return undefined;
+            }
+
+            const valid = await StateService.checkRecipe(e1.text, e2.text, "Nothing");
+            if (!valid) {
+                app.logger.log("info", "state", `Tried to combine ${e1.text} + ${e2.text}, but they don't combine`);
+                return undefined;
+            }
+        }
+
+        const recipe = e1.id < e2.id ? [e1.id, e2.id] : [e2.id, e1.id];
+        const upsertProps = await this.upsertElement(data.emoji, data.result, data.isNew, recipe);
+        app.logger.log("info", "state", `Successfully combined elements ${e1.text} + ${e2.text} = ${data.result}`);
+        return upsertProps;
+    }
+
+    public finishCombiningElements(id1: number, id2: number, instance: NewInstanceProps): void {
+        this.replaceInstancesWithNew(id1, id2, instance);
+
+        this._queuedCombinations--;
+        if (this._queuedCombinations === 0) {
+            this._queueDoneCallback();
+            this._queueDoneCallback = () => {};
+        }
     }
 }

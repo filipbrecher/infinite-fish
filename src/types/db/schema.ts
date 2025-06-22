@@ -34,6 +34,7 @@ export type MouseProps = {
 export type SettingsProps = {
     id: number;
     theme: "light" | "dark";
+    allowCombineToNothing: boolean;
 
     workspacePanning: MouseProps;
     workspaceZooming: WheelProps;

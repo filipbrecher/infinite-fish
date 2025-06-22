@@ -14,6 +14,7 @@ const DEFAULT_KEY_PROPS: KeyPropsRecord = {
 export const DEFAULT_SETTINGS: SettingsProps = {
     id: SETTINGS_KEY,
     theme: "dark",
+    allowCombineToNothing: false,
 
     workspacePanning: {
         keys: {
