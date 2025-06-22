@@ -22,7 +22,6 @@ import {Workspaces} from "./Workspaces";
 
 
 // todo - fix height of views / items
-// todo - delete instance when not selected and dropped over sidebar
 export class Board implements IComponent {
     private readonly sidebar: Sidebar;
     private readonly workspaces: Workspaces;

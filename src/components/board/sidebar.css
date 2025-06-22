@@ -20,40 +20,45 @@
 #sidebar-search {
     background-color: transparent;
     border-bottom: 1px solid var(--sidebar-border);
-    padding: 8px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: row;
-    gap: 8px;
+    gap: 12px;
+    min-width: 10px;
     box-sizing: border-box;
 }
 
 #sidebar-search-input {
+    all: unset;
     flex: 1;
-    background-color: blue;
-    min-height: 30px;
+    border-bottom: 1px solid var(--sidebar-border);
+    min-height: 25px;
+    min-width: 75px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .sidebar-search-toggle {
     flex: 0;
-    min-width: 30px;
-    min-height: 30px;
+    min-width: 25px;
+    min-height: 25px;
     cursor: pointer;
 
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
 }
-#sidebar-search-toggle-fd {
-    background-image: var(--image-element-discovery-black);
+#sidebar-search-toggle-discovery {
+    background-image: var(--sidebar-discovery-off);
 }
-#sidebar-search-toggle-fd.toggle-on {
-    background-image: var(--image-element-discovery);
+#sidebar-search-toggle-discovery.toggle-on {
+    background-image: var(--view-discovery);
 }
 #sidebar-search-toggle-hidden {
-    background-image: var(--image-hide-elements);
+    background-image: var(--sidebar-hide-elements);
 }
 #sidebar-search-toggle-hidden.toggle-on {
-    background-image: var(--image-unhide-elements);
+    background-image: var(--sidebar-unhide-elements);
 }
 
 #sidebar-items {

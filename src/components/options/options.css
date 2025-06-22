@@ -27,10 +27,10 @@
     width: 50px;
 }
 .saves-icon {
-    background-image: var(--image-save-button);
+    background-image: var(--options-saves-popup);
 }
 .settings-icon {
-    background-image: var(--image-settings-button);
+    background-image: var(--options-settings-popup);
 }
 
 .popup {
@@ -151,19 +151,19 @@
     height: 20px;
 }
 .edit-icon {
-    background-image: var(--image-edit-name-button);
+    background-image: var(--options-edit-save-name);
 }
 .save-icon {
-    background-image: var(--image-save-name-button);
+    background-image: var(--options-save-save-name);
 }
 .load-icon {
-    background-image: var(--image-load-save-button);
+    background-image: var(--options-load-save);
 }
 .export-icon {
-    background-image: var(--image-export-button);
+    background-image: var(--options-export-save);
 }
 .delete-icon {
-    background-image: var(--image-delete-button);
+    background-image: var(--options-delete-save);
 }
 .save.active .delete-icon {
     background-image: none;

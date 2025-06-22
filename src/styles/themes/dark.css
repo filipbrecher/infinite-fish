@@ -3,7 +3,7 @@ body[data-theme="dark"] {
     --text-color: white;
     --text-color-fainted: #bebebe;
 
-    --scrollbar-track-color: black;
+    --scrollbar-track-color: var(--board-bg);
     --scrollbar-thumb-color: #4f4f4f;
 
     /* board */
@@ -33,6 +33,9 @@ body[data-theme="dark"] {
     /* sidebar */
     --sidebar-bg: var(--board-bg);
     --sidebar-border: white;
+    --sidebar-discovery-off: url("/public/sidebar_discovery_dark.svg");
+    --sidebar-unhide-elements: url("/public/sidebar_unhide_elements_dark.svg");
+    --sidebar-hide-elements: url("/public/sidebar_hide_elements_dark.svg");
 
     /* options */
     --overlay: #00000020;

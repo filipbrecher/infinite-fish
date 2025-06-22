@@ -68,6 +68,7 @@ export class StateService {
 
 
     private _state: State;
+    public get state() { return this._state; }
     private _overlay: HTMLDivElement;
     private _overlayText: HTMLDivElement;
 

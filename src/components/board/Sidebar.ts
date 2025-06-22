@@ -7,34 +7,52 @@ import {ViewTypeProps} from "../../types/db/schema";
 import {ItemWrapper} from "./wrappers/ItemWrapper";
 import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
 import {MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH} from "../../constants/interaction";
-import {View} from "./views/View";
-import {InstanceWrapper} from "./wrappers/InstanceWrapper";
 import {ElementView} from "./views/ElementView";
+import {State} from "../../types/services";
 
 
 // todo - subscribe to state for _elementAdded and _elementUpdated
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
-    private sidebar: HTMLDivElement;
-    private resizer: HTMLDivElement;
-    private sidebarItems: HTMLDivElement;
+    private readonly sidebar: HTMLDivElement;
+    private readonly resizer: HTMLDivElement;
+    private readonly sidebarItems: HTMLDivElement;
+
     private disabled: boolean = false;
 
-    private width: number = DEFAULT_SIDEBAR_WIDTH;
+    private readonly searchInput: HTMLInputElement;
+    private lastCaret = 0;
 
+    private showHidden: boolean = false;
+    private showOnlyDiscoveries: boolean = false;
+    private readonly hiddenToggleDiv: HTMLDivElement;
+    private readonly discoveryToggleDiv: HTMLDivElement;
+
+    private width: number = DEFAULT_SIDEBAR_WIDTH;
     private isResizing = false;
 
     constructor() {
         this.sidebar = document.getElementById("sidebar") as HTMLDivElement;
         this.resizer = document.getElementById("resizer") as HTMLDivElement;
         this.sidebarItems = document.getElementById("sidebar-items") as HTMLDivElement;
+        this.searchInput = document.getElementById("sidebar-search-input") as HTMLInputElement;
+        this.hiddenToggleDiv = document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement;
+        this.discoveryToggleDiv = document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement;
 
         document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onStartResizing);
         this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("sidebar", e)(e);
         });
+
+        window.addEventListener('keydown', this.onKeyDown);
+        this.searchInput.addEventListener('blur', () => {
+            this.lastCaret = this.searchInput.selectionStart ?? 0;
+        });
+
+        this.hiddenToggleDiv.addEventListener("click", this.toggleHidden);
+        this.discoveryToggleDiv.addEventListener("click", this.toggleDiscoveries);
 
         app.inputCapture.set("sidebar", [ // to block workspace actions
             { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.blockInputCapture },
@@ -100,6 +118,16 @@ export class Sidebar implements IComponent {
         window.removeEventListener("mouseup", this.onEndResizing);
     }
 
+    private toggleHidden = () => {
+        this.showHidden = !this.showHidden;
+        this.hiddenToggleDiv.classList.toggle("toggle-on", this.showHidden);
+    }
+
+    private toggleDiscoveries = () => {
+        this.showOnlyDiscoveries = !this.showOnlyDiscoveries;
+        this.discoveryToggleDiv.classList.toggle("toggle-on", this.showOnlyDiscoveries);
+    }
+
     private blockInputCapture = (e: MouseEvent) => {
         e.stopPropagation();
     }
@@ -146,5 +174,22 @@ export class Sidebar implements IComponent {
         e.stopPropagation();
 
         // todo
+    }
+
+    private onKeyDown = () => {
+        if (this.disabled || app.state.state !== State.RUNNING) return;
+        if (document.activeElement === this.searchInput) return;
+
+        // don't steal focus if user is typing elsewhere
+        const active = document.activeElement;
+        const isTyping = active && (
+            active.tagName === "INPUT" ||
+            active.tagName === "TEXTAREA" ||
+            active.getAttribute("contenteditable") === "true"
+        );
+        if (isTyping) return;
+
+        this.searchInput.focus();
+        this.searchInput.setSelectionRange(this.lastCaret, this.lastCaret);
     }
 }

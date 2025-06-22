@@ -15,17 +15,14 @@ h1, h2, h3 {
 
 :root {
     --sidebar-width: 400px;
-    --image-settings-button: url("/public/settings_button.svg");
-    --image-save-button: url("/public/save_button.svg");
-    --image-edit-name-button: url("/public/edit_name_button.svg");
-    --image-save-name-button: url("/public/save_name_button.svg");
-    --image-load-save-button: url("/public/load_save_button.svg");
-    --image-export-button: url("/public/export_button.svg");
-    --image-delete-button: url("/public/delete_button.svg");
-    --image-element-discovery: url("/public/discovery_emoji.svg");
-    --image-element-discovery-black: url("/public/discovery_emoji_black.svg");
-    --image-unhide-elements: url("/public/unhide_elements_button.svg");
-    --image-hide-elements: url("/public/hide_elements_button.svg");
+    --options-settings-popup: url("/public/options_settings_popup.svg");
+    --options-saves-popup: url("/public/options_saves_popup.svg");
+    --options-edit-save-name: url("/public/options_edit_save_name.svg");
+    --options-save-save-name: url("/public/options_save_save_name.svg");
+    --options-load-save: url("/public/options_load_save.svg");
+    --options-export-save: url("/public/options_export_save.svg");
+    --options-delete-save: url("/public/options_delete_save.svg");
+    --view-discovery: url("/public/view_discovery.svg");
 }
 
 #board { z-index: 0; position: absolute; }

@@ -33,6 +33,9 @@ body[data-theme="light"] {
     /* sidebar */
     --sidebar-bg: var(--board-bg);
     --sidebar-border: black;
+    --sidebar-discovery-off: url("/public/sidebar_discovery_light.svg");
+    --sidebar-unhide-elements: url("/public/sidebar_unhide_elements_light.svg");
+    --sidebar-hide-elements: url("/public/sidebar_hide_elements_light.svg");
 
     /* options */
     --overlay: #00000020;
