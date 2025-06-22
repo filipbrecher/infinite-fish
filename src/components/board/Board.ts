@@ -485,6 +485,7 @@ export class Board implements IComponent {
                     i2.setViewCombining(false);
                     i1.setDisabled(false);
                     i2.setDisabled(false);
+                    app.state.finishCombiningElements(i1.id, i2.id, undefined);
                     return;
                 }
 

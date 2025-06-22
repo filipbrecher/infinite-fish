@@ -443,8 +443,10 @@ export class StateService {
         return upsertProps;
     }
 
-    public finishCombiningElements(id1: number, id2: number, instance: NewInstanceProps): void {
-        this.replaceInstancesWithNew(id1, id2, instance);
+    public finishCombiningElements(id1: number, id2: number, instance: NewInstanceProps | undefined): void {
+        if (instance) {
+            this.replaceInstancesWithNew(id1, id2, instance);
+        }
 
         this._queuedCombinations--;
         if (this._queuedCombinations === 0) {
