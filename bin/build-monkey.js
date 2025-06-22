@@ -32,6 +32,15 @@ const EVENT_TYPES_TO_BLOCK = [
     // 'contextmenu',
 ];
 
+const licenseComments = [
+    '// Twemoji sparkles SVG from https://www.svgrepo.com/svg/407500/sparkles',
+    '// Licensed under the MIT License (© 2021 Twitter)',
+    '// https://github.com/twitter/twemoji/blob/master/LICENSE',
+    '',
+    '// Other assets from https://www.svgrepo.com/',
+    '// Licensed under CC0 (Public Domain)',
+];
+
 async function replaceFavicon(html) {
     const faviconMatch = html.match(/<link\s+rel="icon"[^>]*href=["']\/public\/([^"']+\.png)["'][^>]*>/);
     if (faviconMatch) {
@@ -85,11 +94,15 @@ async function replacePNGImagesInCSS(files, cssWithBase64) {
 }
 
 async function main() {
-    // 1) Read meta
-    const meta = await fs.promises.readFile(META_PATH, 'utf8');
+    // 1) Add meta to output
+    let out = await fs.promises.readFile(META_PATH, 'utf8');
 
-    // 2) Start building output
-    let out = meta + '\n\nsetTimeout(() => {\n';
+    // 2) Add licenses
+    const licenses = licenseComments.join('\n');
+    out += '\n\n' + licenses;
+
+    // 2) Open setTimeout
+    out += '\n\nsetTimeout(() => {\n';
 
     // 3) Read index.html
     let html = await fs.promises.readFile(HTML_PATH, 'utf8');
@@ -100,7 +113,7 @@ async function main() {
         .filter(line => !line.includes('crossorigin'))
         .join('\n');
 
-    // Find favicon href
+    // Replace favicon href
     html = await replaceFavicon(html);
 
     // Escape backticks for template literal
