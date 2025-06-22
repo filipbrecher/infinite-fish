@@ -484,17 +484,20 @@ export class Board implements IComponent {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
         this.dragging = false;
 
-        const toMove: InstanceWrapper[] = Array.from(this.dragged)
-            .map(id => this.instances.get(id))
-            .filter(instance => instance !== undefined)
-            .sort((a, b) => (a.zIndex - b.zIndex));
+        const moved = this.dragOffsetX !== 0 || this.dragOffsetY !== 0;
+        if (moved) {
+            const toMove: InstanceWrapper[] = Array.from(this.dragged)
+                .map(id => this.instances.get(id))
+                .filter(instance => instance !== undefined)
+                .sort((a, b) => (a.zIndex - b.zIndex));
 
-        toMove.forEach(i => {
-            i.moveDivTo(this.board);
-            i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
-            this.instancesByZIndex[this.maxZIndex] = i;
-        });
-        app.state.moveInstances(toMove);
+            toMove.forEach(i => {
+                i.moveDivTo(this.board);
+                i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
+                this.instancesByZIndex[this.maxZIndex] = i;
+            });
+            app.state.moveInstances(toMove);
+        }
 
         if (this.canCombine && this.combinesWith !== undefined) {
             const [draggedId] = this.dragged;
