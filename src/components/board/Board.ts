@@ -186,8 +186,8 @@ export class Board implements IComponent {
         e.stopPropagation();
 
         this.panning = true;
-        document.addEventListener("mousemove", this.onUpdatePanning);
-        document.addEventListener("mouseup", this.onEndPanning);
+        window.addEventListener("mousemove", this.onUpdatePanning);
+        window.addEventListener("mouseup", this.onEndPanning);
     }
 
     private onUpdatePanning = (e: MouseEvent) => {
@@ -227,8 +227,8 @@ export class Board implements IComponent {
         this.selected = new Set();
 
         [ this.selectionStartX, this.selectionStartY ] = this.getBoardCoordinates(e);
-        document.addEventListener("mousemove", this.onUpdateSelecting);
-        document.addEventListener("mouseup", this.onEndSelecting);
+        window.addEventListener("mousemove", this.onUpdateSelecting);
+        window.addEventListener("mouseup", this.onEndSelecting);
     }
 
     private onUpdateSelecting = (e: MouseEvent) => {
@@ -359,8 +359,8 @@ export class Board implements IComponent {
             app.state.deleteInstances(deleted);
         }
 
-        document.addEventListener("mousemove", this.onUpdateDeleting);
-        document.addEventListener("mouseup", this.onEndDeleting);
+        window.addEventListener("mousemove", this.onUpdateDeleting);
+        window.addEventListener("mouseup", this.onEndDeleting);
     }
 
     private onUpdateDeleting = (e: MouseEvent) => {
@@ -399,8 +399,8 @@ export class Board implements IComponent {
 
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
-        document.addEventListener("mousemove", this.onUpdateDragging);
-        document.addEventListener("mouseup", this.onEndDragging);
+        window.addEventListener("mousemove", this.onUpdateDragging);
+        window.addEventListener("mouseup", this.onEndDragging);
     }
 
     private onUpdateDragging = (e: MouseEvent) => {

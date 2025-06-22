@@ -68,8 +68,8 @@ export class Sidebar implements IComponent {
         e.stopPropagation();
         this.isResizing = true;
 
-        document.addEventListener("mousemove", this.onUpdateResizing);
-        document.addEventListener("mouseup", this.onEndResizing);
+        window.addEventListener("mousemove", this.onUpdateResizing);
+        window.addEventListener("mouseup", this.onEndResizing);
     }
 
     private onUpdateResizing = (e: MouseEvent) => {
@@ -83,8 +83,8 @@ export class Sidebar implements IComponent {
     private onEndResizing = () => {
         this.isResizing = false;
 
-        document.removeEventListener("mousemove", this.onUpdateResizing);
-        document.removeEventListener("mouseup", this.onEndResizing);
+        window.removeEventListener("mousemove", this.onUpdateResizing);
+        window.removeEventListener("mouseup", this.onEndResizing);
     }
 
     private blockInputCapture = (e: MouseEvent) => {
