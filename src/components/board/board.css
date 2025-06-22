@@ -42,7 +42,7 @@
     border: 1px solid var(--instance-selected-border-hover);
 }
 
-.instance-wrapper.hovered-over .item {
+.instance-wrapper.hovered-over .view {
     transform: scale(1.05);
     background-color: var(--instance-bg-hover);
     border: 1px solid var(--instance-border-hover);

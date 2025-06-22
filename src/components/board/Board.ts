@@ -158,29 +158,11 @@ export class Board implements IComponent {
         this.instancesByZIndex = [];
     }
 
-    private clearDragging = () => {
-        this.dragging = false;
-        this.draggingSelected = false;
-        this.sidebar.setDisabled(false);
-        this.dragOffsetX = 0;
-        this.dragOffsetY = 0;
-        this.dragged = new Set();
-        this.canCombine = false
-        this.combinesWith = undefined;
-    }
-
-    private clearSelection = () => {
-        this.selecting = false;
-        this.selected = new Set();
-        this.selectionBox.style.display = "none";
-    }
-
     private onStateWaiting = () => {
-        this.panning = false;
-        this.deleting = false;
-        this.clearSelection();
+        this.clearPanning();
+        this.clearDeleting();
+        this.clearSelecting();
         this.clearDragging();
-        this.updateTransform();
     }
 
     private onSpawnInstance = (e: WorkspaceSpawnEvent) => {
@@ -217,6 +199,12 @@ export class Board implements IComponent {
 
     private onEndPanning = (e: MouseEvent) => {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartPanning)) return;
+
+        this.clearPanning();
+    }
+
+    private clearPanning = () => {
+        if ( !this.panning) return;
         this.panning = false;
 
         app.state.updateWorkspace({ x: this.offsetX, y: this.offsetY });
@@ -240,14 +228,18 @@ export class Board implements IComponent {
         e.stopPropagation();
 
         this.selecting = true;
-        for (const id of this.selected) {
-            this.instances.get(id).setSelected(false);
-        }
-        this.selected = new Set();
+        this.clearSelected();
 
         [ this.selectionStartX, this.selectionStartY ] = this.getBoardCoordinates(e);
         window.addEventListener("mousemove", this.onUpdateSelecting);
         window.addEventListener("mouseup", this.onEndSelecting);
+    }
+
+    private clearSelected = () => {
+        for (const id of this.selected) {
+            this.instances.get(id)?.setSelected(false);
+        }
+        this.selected = new Set();
     }
 
     private onUpdateSelecting = (e: MouseEvent) => {
@@ -278,11 +270,18 @@ export class Board implements IComponent {
 
     private onEndSelecting = (e: MouseEvent) => {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartSelecting)) return;
+
+        this.clearSelecting();
+    }
+
+    private clearSelecting = () => {
+        if ( !this.selecting) return;
         this.selecting = false;
 
         this.selectionBox.style.display = "none";
         window.removeEventListener("mousemove", this.onUpdateSelecting);
         window.removeEventListener("mouseup", this.onEndSelecting);
+
     }
 
     private onWheel = (e: WheelEvent) => {
@@ -326,7 +325,7 @@ export class Board implements IComponent {
                     toDelete.add(id);
                 }
             })
-            this.clearSelection();
+            this.clearSelected();
         }
         this.clearDragging();
 
@@ -352,7 +351,7 @@ export class Board implements IComponent {
                     toDelete.add(id);
                 }
             })
-            this.clearSelection();
+            this.clearSelected();
         }
         this.clearDragging();
 
@@ -392,6 +391,12 @@ export class Board implements IComponent {
 
     private onEndDeleting = (e: MouseEvent) => {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDeleting)) return;
+
+        this.clearDeleting();
+    }
+
+    private clearDeleting = () => {
+        if ( !this.deleting) return;
         this.deleting = false;
 
         window.removeEventListener("mousemove", this.onUpdateDeleting);
@@ -503,7 +508,7 @@ export class Board implements IComponent {
 
     private onEndDragging = (e: MouseEvent) => {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
-        this.dragging = false;
+        if ( !this.dragging) return;
 
         if (this.sidebar.isXOverSidebar(e.clientX) && !this.draggingSelected) {
             // delete if non-selected instance is dropped over sidebar
@@ -541,8 +546,20 @@ export class Board implements IComponent {
         }
 
         this.clearDragging();
-        this.updateTransform();
+    }
 
+    private clearDragging = () => {
+        if ( !this.dragging) return;
+        this.dragging = false;
+        this.draggingSelected = false;
+        this.sidebar.setDisabled(false);
+        this.dragOffsetX = 0;
+        this.dragOffsetY = 0;
+        this.dragged = new Set();
+        this.canCombine = false
+        if (this.combinesWith !== undefined) this.instances.get(this.combinesWith)?.setHoveredOver(false);
+        this.combinesWith = undefined;
+        this.updateTransform();
         window.removeEventListener("mousemove", this.onUpdateDragging);
         window.removeEventListener("mouseup", this.onEndDragging);
     }
