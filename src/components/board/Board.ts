@@ -123,8 +123,7 @@ export class Board implements IComponent {
             });
 
             const instance = new InstanceWrapper(props, view);
-            const instanceDiv = instance.getDiv();
-            instanceDiv.appendChild(viewDiv);
+            const instanceDiv = instance.getDiv(viewDiv);
             instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
                 app.inputCapture.matchMouseDown("board-instance", e)(e, props.id);
             });

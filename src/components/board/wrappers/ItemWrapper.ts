@@ -1,12 +1,14 @@
 import {ElementView} from "../views/ElementView";
 import {View} from "../views/View";
+import {Wrapper} from "./Wrapper";
 
 
-export class ItemWrapper {
+export class ItemWrapper extends Wrapper {
     private readonly _view: ElementView;
     private _div: HTMLDivElement | undefined;
 
     constructor(view: ElementView) {
+        super();
         this._view = view;
     }
 

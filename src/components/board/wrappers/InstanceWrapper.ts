@@ -1,10 +1,11 @@
 import type {InstanceProps} from "../../../types/db/schema";
 import type {InstanceMoveProps, NewInstanceProps} from "../../../types/db/dto";
 import {View} from "../views/View";
+import {Wrapper} from "./Wrapper";
 
 
 // todo - if ghost, create a hook
-export class InstanceWrapper {
+export class InstanceWrapper extends Wrapper {
     private readonly _workspaceId: number;
     private readonly _instanceId: number;
     public get id() { return this._instanceId; }
@@ -24,6 +25,7 @@ export class InstanceWrapper {
     private _div: HTMLDivElement | undefined;
 
     constructor(props: InstanceProps, view: View) {
+        super();
         this._workspaceId = props.workspaceId;
         this._instanceId = props.id;
         this._x = props.x;
@@ -32,7 +34,7 @@ export class InstanceWrapper {
         this._view = view;
     }
 
-    public getDiv(): HTMLDivElement {
+    public getDiv(viewDiv: HTMLDivElement): HTMLDivElement {
         this._div = document.createElement("div");
 
         this._div.id = `instance-${this._instanceId}`;
@@ -40,6 +42,8 @@ export class InstanceWrapper {
         this._div.classList.add("instance-wrapper");
         this._div.style.zIndex = `${this._zIndex}`;
         this._div.style.transform = `translate(${this._x}px, ${this._y}px)`;
+
+        this._div.appendChild(viewDiv);
 
         return this._div;
     }
