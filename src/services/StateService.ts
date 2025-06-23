@@ -327,55 +327,85 @@ export class StateService {
     // assumes data is all valid and returned successfully + recipe is valid and sorted
     // returns undefined when nothing changed
     private async upsertElement(emoji: string, text: string, discovery: boolean, recipe: RecipeProps): Promise<UpsertElementProps> {
-        const e = this._elementsByText.get(text);
-        let upsertProps: UpsertElementProps = {
-            saveId: e ? e.saveId : this._activeSave!.id,
-            id: e ? e.id : ++this._maxElementId,
+        let existing = this._elementsByText.get(text);
+        const recipeCountBefore = existing?.recipes?.length ?? 0;
+
+        // check that there is a change that needs to be persisted to db
+        let isNewRecipe = true;
+        let isNewDiscovery = true;
+
+        if (existing) {
+            const recipes = existing.recipes || [];
+            isNewRecipe = recipes.every(r => r[0] !== recipe[0] || r[1] !== recipe[1]);
+            isNewDiscovery = !existing.discovery && discovery;
+
+            if ( !isNewRecipe && !isNewDiscovery) {
+                // no change
+                return {
+                    saveId: existing.saveId,
+                    id: existing.id,
+                    emoji: emoji,
+                    text: text,
+                    discovery: discovery,
+                    recipe: recipe
+                }
+            }
+        }
+
+        // prepare props for db upsert
+        const upsertProps: UpsertElementProps = {
+            saveId: existing ? existing.saveId : this._activeSave!.id,
+            id: existing ? existing.id : ++this._maxElementId,
             emoji: emoji,
             text: text,
-            discovery: discovery,
             recipe: recipe,
         }
-        if ( !discovery) delete upsertProps.discovery;
+        if (discovery) upsertProps.discovery = true;
 
-        if (e) {
-            // check for new recipe or discovery
-            const recipes = e.recipes || [];
-            let hasNewRecipe = recipes.every((r: RecipeProps) => { // new recipe if all recipes differ
-                return r[0] != recipe[0] || r[1] != recipe[1];
-            });
-            let discoveryChanged = !e.discovery && discovery;
+        // db upsert - can throw an error (like unreachable db)
+        await app.database.upsertElement(upsertProps);
 
-            if ( !hasNewRecipe) delete upsertProps.recipe;
+        // update local state (important that this is done after db succeeds)
 
-            if (hasNewRecipe || discoveryChanged) {
-                await app.database.upsertElement(upsertProps)
+        // race condition prevention
+        existing = this._elementsByText.get(text);
+        const recipeCountAfter = existing?.recipes?.length ?? 0;
 
-                if (discoveryChanged) this._activeSave!.discoveryCount++;
-                if (hasNewRecipe) this._activeSave!.recipeCount++;
-
-                this._elementUpdated.notify(upsertProps);
+        if (existing) {
+            const recipes = existing.recipes || [];
+            const stillIsNewRecipe = isNewRecipe &&
+                ((recipeCountBefore === recipeCountAfter) || recipes.every(r => r[0] !== recipe[0] || r[1] !== recipe[1]));
+            if (stillIsNewRecipe) {
+                if ( !existing.recipes) existing.recipes = [];
+                existing.recipes.push(recipe);
+                this._activeSave!.recipeCount++;
             }
+
+            const stillIsNewDiscovery = !existing.discovery && discovery;
+            if (stillIsNewDiscovery) {
+                existing.discovery = true;
+                this._activeSave!.discoveryCount++;
+            }
+
+            this._elementUpdated.notify(upsertProps);
+
         } else {
-            // new element
             const newElement: ElementProps = {
                 saveId: upsertProps.saveId,
                 id: upsertProps.id,
                 emoji: emoji,
                 text: text,
-                discovery: discovery,
                 recipes: [recipe],
             }
-            if ( !discovery) delete newElement.discovery;
-
-            await app.database.upsertElement(upsertProps);
-
-            this._activeSave!.elementCount++;
-            if (discovery) this._activeSave!.discoveryCount++;
-            this._activeSave!.recipeCount++;
+            if (discovery) newElement.discovery = true;
 
             this._elementsById[newElement.id] = newElement;
-            this._elementsByText.set(newElement.text, newElement);
+            this._elementsByText.set(text, newElement);
+
+            this._activeSave!.elementCount++;
+            this._activeSave!.recipeCount++;
+            if (discovery) this._activeSave!.discoveryCount++;
+
             this._elementAdded.notify(upsertProps);
         }
 
