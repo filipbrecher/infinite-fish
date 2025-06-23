@@ -12,11 +12,13 @@ export class ItemWrapper extends Wrapper {
         this._view = view;
     }
 
-    public getDiv(): HTMLDivElement {
+    public getDiv(viewDiv: HTMLDivElement): HTMLDivElement {
         this._div = document.createElement("div");
 
         this._div.classList.add("wrapper");
         this._div.classList.add("item-wrapper");
+
+        this._div.appendChild(viewDiv);
 
         return this._div;
     }

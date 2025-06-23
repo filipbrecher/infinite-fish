@@ -32,6 +32,15 @@ export class Utils {
         return minItem!;
     }
 
+    public static binaryCompare = (a: string, b: string): number => {
+        const len = Math.min(a.length, b.length);
+        for (let i = 0; i < len; i++) {
+            const diff = a.charCodeAt(i) - b.charCodeAt(i);
+            if (diff !== 0) return diff;
+        }
+        return a.length - b.length;
+    }
+
     public static wait(ms: number): Promise<void> {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
     }

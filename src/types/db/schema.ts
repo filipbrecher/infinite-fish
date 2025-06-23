@@ -34,6 +34,8 @@ export type MouseProps = {
 export type SettingsProps = {
     id: number;
     theme: "light" | "dark";
+    searchResultLimit: number;      // 0 for unlimited
+    searchResultDebounce: number;   // in ms
     allowCombineToNothing: boolean;
 
     workspacePanning: MouseProps;

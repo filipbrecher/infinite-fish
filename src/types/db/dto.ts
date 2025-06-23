@@ -1,4 +1,4 @@
-import {RecipeProps, ViewDataProps, ViewTypeProps} from "./schema";
+import type {RecipeProps, ViewDataProps, ViewTypeProps} from "./schema";
 
 
 //============ ELEMENTS ============//

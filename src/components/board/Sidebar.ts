@@ -10,7 +10,11 @@ import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
 import {MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH} from "../../constants/interaction";
 import {ElementView} from "./views/ElementView";
 import {State} from "../../types/services";
+import type {UpsertElementProps} from "../../types/db/dto";
+import {Utils} from "../../services/Utils";
 
+
+type ElementWithLower = [ElementProps, string];
 
 // todo - subscribe to state for _elementAdded and _elementUpdated
 // todo - add input captures:
@@ -24,6 +28,7 @@ export class Sidebar implements IComponent {
     private isResizing = false;
 
     private readonly searchInput: HTMLInputElement;
+    private lowercaseSearchText: string = "";
     private lastCaret = 0;
 
     private showReversed: boolean = false;
@@ -33,28 +38,34 @@ export class Sidebar implements IComponent {
     private readonly hiddenToggleDiv: HTMLDivElement;
     private readonly discoveryToggleDiv: HTMLDivElement;
 
-    private readonly sidebarItems: HTMLDivElement;
-    private sortedItems: ElementProps[] = [];
+    private readonly sidebarItemsContainer: HTMLDivElement;
+    // all elements (sorted by mixed case, with lower case cached)
+    private sortedElements: ElementWithLower[] = [];
+    // current filtered list shown in sidebar (sorted by mixed case + reversed if filter set)
+    private filterTimeout: ReturnType<typeof setTimeout> | null = null;
+    private filteredElements: ElementWithLower[] = [];
+    private sidebarItems: ItemWrapper[] = [];
 
     constructor() {
         this.sidebar = document.getElementById("sidebar") as HTMLDivElement;
         this.resizer = document.getElementById("resizer") as HTMLDivElement;
-        this.sidebarItems = document.getElementById("sidebar-items") as HTMLDivElement;
+        this.sidebarItemsContainer = document.getElementById("sidebar-items") as HTMLDivElement;
         this.searchInput = document.getElementById("sidebar-search-input") as HTMLInputElement;
         this.orderToggleDiv = document.getElementById("sidebar-search-toggle-order") as HTMLDivElement;
         this.hiddenToggleDiv = document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement;
         this.discoveryToggleDiv = document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement;
 
-        document.documentElement.style.setProperty('--sidebar-width', `${this.width}px`);
+        document.documentElement.style.setProperty("--sidebar-width", `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onStartResizing);
         this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("sidebar", e)(e);
         });
 
-        window.addEventListener('keydown', this.onKeyDown);
-        this.searchInput.addEventListener('blur', () => {
+        window.addEventListener("keydown", this.onKeyDown);
+        this.searchInput.addEventListener("blur", () => {
             this.lastCaret = this.searchInput.selectionStart ?? 0;
         });
+        this.searchInput.addEventListener("input", this.onSearchInputChange);
 
         this.orderToggleDiv.addEventListener("click", this.toggleOrder);
         this.hiddenToggleDiv.addEventListener("click", this.toggleHidden);
@@ -76,33 +87,98 @@ export class Sidebar implements IComponent {
 
         app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
+        app.state._elementAdded.subscribe(this.onElementAdded);
+        app.state._elementUpdated.subscribe(this.onElementUpdated);
     }
 
-    private onSaveUnloaded = () => {
-        // todo - clear search + caret
-        this.sidebarItems.innerHTML = "";
-        this.sortedItems = [];
+    private static lowerBound(arr: ElementWithLower[], target: string): number {
+        let low = 0;
+        let high = arr.length;
+        while (low < high) {
+            const mid = (low + high) >> 1;
+            if (Utils.binaryCompare(arr[mid][0].text, target) < 0) low = mid + 1;
+            else high = mid;
+        }
+        return low;
     }
 
-    private onSaveLoaded = () => {
-        this.sortedItems = [...app.state.elementsById];
-        this.sortedItems.sort((a, b) => a.text.localeCompare(b.text));
-        this.sortedItems.forEach((props) => {
-            const view = new ElementView(props);
+    private matchesFilter(ewl: ElementWithLower): boolean {
+        if ( !ewl[1].includes(this.lowercaseSearchText)) return false;
+        if ( !this.showHidden && ewl[0].hide) return false;
+        if (this.showOnlyDiscoveries && !ewl[0].discovery) return false;
+        return true;
+    }
+
+    private calculateFiltered() {
+        let left = app.settings.settings.searchResultLimit;
+        this.filteredElements = [];
+
+        const inc = this.showReversed ? -1 : 1;
+        for (let i = this.showReversed ? this.sortedElements.length - 1 : 0; this.showReversed ? i >= 0 : i < this.sortedElements.length; i += inc) {
+            const ewl = this.sortedElements[i];
+            if (this.matchesFilter(ewl)) {
+                this.filteredElements.push(ewl);
+                if (--left === 0) break;
+            }
+        }
+    }
+
+    private renderFiltered() {
+        this.sidebarItemsContainer.innerHTML = "";
+        this.sidebarItems = [];
+        this.filteredElements.forEach((ewl) => {
+            const view = new ElementView(ewl[0]);
             const viewDiv = view.getDiv();
             viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
                 app.inputCapture.matchMouseDown("sidebar-view", e)(e);
             });
 
             const item = new ItemWrapper(view);
-            const itemDiv = item.getDiv();
-            itemDiv.appendChild(viewDiv);
+            const itemDiv = item.getDiv(viewDiv);
             itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("sidebar-item", e)(e, props.id);
+                app.inputCapture.matchMouseDown("sidebar-item", e)(e, ewl[0].id);
             });
 
-            this.sidebarItems.appendChild(itemDiv);
+            this.sidebarItems.push(item);
+            this.sidebarItemsContainer.appendChild(itemDiv);
         });
+    }
+
+    private onFilterChange() {
+        if (this.filterTimeout) clearTimeout(this.filterTimeout);
+
+        this.filterTimeout = setTimeout(() => {
+            // todo - optimise
+            this.calculateFiltered();
+            this.renderFiltered();
+        }, app.settings.settings.searchResultDebounce);
+    }
+
+    private onSaveUnloaded = () => {
+        this.lastCaret = 0;
+        this.searchInput.value = "";
+        this.lowercaseSearchText = "";
+        this.sidebarItemsContainer.innerHTML = "";
+        this.sortedElements = [];
+        this.filteredElements = [];
+        this.sidebarItems = [];
+    }
+
+    private onSaveLoaded = () => {
+        this.sortedElements = app.state.elementsById.map(e => [e, e.text.toLowerCase()]);
+        this.sortedElements.sort((a, b) => Utils.binaryCompare(a[1], b[1]));
+        this.lowercaseSearchText = "";
+
+        this.calculateFiltered();
+        this.renderFiltered();
+    }
+
+    private onElementAdded = (props: UpsertElementProps) => {
+        // todo - add to sorted + if filter matches and item is in visible range -> add to items visible in sidebar
+    }
+
+    private onElementUpdated = (props: UpsertElementProps) => {
+        // todo - if newly discovered -> add or remove from divs accordingly
     }
 
     private onStartResizing = (e: MouseEvent) => {
@@ -128,19 +204,27 @@ export class Sidebar implements IComponent {
         window.removeEventListener("mouseup", this.onEndResizing);
     }
 
+    private onSearchInputChange = (e: InputEvent) => {
+        this.lowercaseSearchText = this.searchInput.value.toLowerCase();
+        this.onFilterChange();
+    }
+
     private toggleOrder = () => {
         this.showReversed = !this.showReversed;
         this.orderToggleDiv.classList.toggle("toggle-on", this.showReversed);
+        this.onFilterChange();
     }
 
     private toggleHidden = () => {
         this.showHidden = !this.showHidden;
         this.hiddenToggleDiv.classList.toggle("toggle-on", this.showHidden);
+        this.onFilterChange();
     }
 
     private toggleDiscoveries = () => {
         this.showOnlyDiscoveries = !this.showOnlyDiscoveries;
         this.discoveryToggleDiv.classList.toggle("toggle-on", this.showOnlyDiscoveries);
+        this.onFilterChange();
     }
 
     private blockInputCapture = (e: MouseEvent) => {
@@ -174,7 +258,7 @@ export class Sidebar implements IComponent {
         console.log("sidebar.view.onToggleElementVisibility");
         e.stopPropagation();
 
-        // todo
+        // todo - if not showing hidden -> remove from sidebar (if it is still there - might not be) -> otherwise toggle hidden class
     }
 
     private onViewInfo = (e: MouseEvent) => {
