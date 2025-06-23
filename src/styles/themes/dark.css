@@ -41,7 +41,7 @@ body[data-theme="dark"] {
 
     /* options */
     --overlay: #00000020;
-    --options-icon-opacity: 0.4;
+    --options-icon-opacity: 0.3;
     --options-icon-opacity-hover: 1;
     --options-icon-filter: invert(1);
     --options-icon-color: white;

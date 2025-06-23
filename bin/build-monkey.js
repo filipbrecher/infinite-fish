@@ -36,7 +36,7 @@ const licenseComments = [
     '// This script is released under the MIT License',
     '// https://opensource.org/licenses/MIT',
     '//',
-    '// Twemoji "sparkles" SVG from svgrepo.com (https://www.svgrepo.com/svg/407500/sparkles)',
+    '// Twemoji "sparkles" SVG (and its modified versions) from svgrepo.com (https://www.svgrepo.com/svg/407500/sparkles)',
     '// Originally by Twitter, licensed under the MIT License',
     '// https://github.com/twitter/twemoji/blob/master/LICENSE',
     '//',

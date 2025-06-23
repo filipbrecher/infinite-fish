@@ -16,6 +16,14 @@ import {Utils} from "../../services/Utils";
 
 type ElementWithLower = [ElementProps, string];
 
+type Filters = {
+    substring: { curr: string, next: string, div: HTMLInputElement },
+    reversed: { curr: boolean, next: boolean, div: HTMLDivElement },
+    hidden: { curr: boolean, next: boolean, div: HTMLDivElement },
+    discovery: { curr: boolean, next: boolean, div: HTMLDivElement },
+};
+
+// todo - toggles hideable via settings
 // todo - subscribe to state for _elementAdded and _elementUpdated
 // todo - add input captures:
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
@@ -27,50 +35,65 @@ export class Sidebar implements IComponent {
     private width: number = DEFAULT_SIDEBAR_WIDTH;
     private isResizing = false;
 
-    private readonly searchInput: HTMLInputElement;
-    private lowercaseSearchText: string = "";
-    private lastCaret = 0;
-
-    private showReversed: boolean = false;
-    private showHidden: boolean = false;
-    private showOnlyDiscoveries: boolean = false;
-    private readonly orderToggleDiv: HTMLDivElement;
-    private readonly hiddenToggleDiv: HTMLDivElement;
-    private readonly discoveryToggleDiv: HTMLDivElement;
-
     private readonly sidebarItemsContainer: HTMLDivElement;
     // all elements (sorted by mixed case, with lower case cached)
     private sortedElements: ElementWithLower[] = [];
     // current filtered list shown in sidebar (sorted by mixed case + reversed if filter set)
-    private filterTimeout: ReturnType<typeof setTimeout> | null = null;
     private filteredElements: ElementWithLower[] = [];
     private sidebarItems: ItemWrapper[] = [];
+
+    private unicodeInputWrapper: HTMLDivElement;
+    private unicodeInput: HTMLInputElement;
+    private unicodeInputButton: HTMLDivElement;
+
+    private lastCaret = 0;
+    private readonly filters: Filters;
+    private filterTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor() {
         this.sidebar = document.getElementById("sidebar") as HTMLDivElement;
         this.resizer = document.getElementById("resizer") as HTMLDivElement;
+        this.unicodeInputWrapper = document.getElementById("sidebar-search-unicode-input-wrapper") as HTMLDivElement;
+        this.unicodeInput = document.getElementById("sidebar-search-unicode-input") as HTMLInputElement;
+        this.unicodeInputButton = document.getElementById("sidebar-search-unicode-input-button") as HTMLDivElement;
         this.sidebarItemsContainer = document.getElementById("sidebar-items") as HTMLDivElement;
-        this.searchInput = document.getElementById("sidebar-search-input") as HTMLInputElement;
-        this.orderToggleDiv = document.getElementById("sidebar-search-toggle-order") as HTMLDivElement;
-        this.hiddenToggleDiv = document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement;
-        this.discoveryToggleDiv = document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement;
 
+        this.filters = {
+            substring: { curr: "", next: "", div: document.getElementById("sidebar-search-input") as HTMLInputElement },
+            reversed: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-order") as HTMLDivElement },
+            hidden: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement },
+            discovery: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement },
+        };
+        if ( !app.settings.settings.searchShowReverseToggle) this.filters.reversed.div.style.display = "none";
+        if ( !app.settings.settings.searchShowHiddenToggle) this.filters.hidden.div.style.display = "none";
+        if ( !app.settings.settings.searchShowDiscoveryToggle) this.filters.discovery.div.style.display = "none";
+
+        // resizer + input capture
         document.documentElement.style.setProperty("--sidebar-width", `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onStartResizing);
         this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("sidebar", e)(e);
         });
 
+        // focus
         window.addEventListener("keydown", this.onKeyDown);
-        this.searchInput.addEventListener("blur", () => {
-            this.lastCaret = this.searchInput.selectionStart ?? 0;
+        const searchInputDiv = this.filters.substring.div;
+        searchInputDiv.addEventListener("blur", () => {
+            this.lastCaret = searchInputDiv.selectionStart ?? 0;
         });
-        this.searchInput.addEventListener("input", this.onSearchInputChange);
+        searchInputDiv.addEventListener("input", this.onSearchInputChange);
 
-        this.orderToggleDiv.addEventListener("click", this.toggleOrder);
-        this.hiddenToggleDiv.addEventListener("click", this.toggleHidden);
-        this.discoveryToggleDiv.addEventListener("click", this.toggleDiscoveries);
+        // unicode input
+        this.unicodeInput.addEventListener("input", this.onUnicodeInputChange);
+        this.unicodeInputButton.addEventListener("click", this.onUnicodeInputClick);
+        if (app.settings.settings.searchShowUnicodeInput) this.unicodeInputWrapper.style.display = "block";
 
+        // filters
+        this.filters.reversed.div.addEventListener("click", this.toggleOrder);
+        this.filters.hidden.div.addEventListener("click", this.toggleHidden);
+        this.filters.discovery.div.addEventListener("click", this.toggleDiscoveries);
+
+        // input capture
         app.inputCapture.set("sidebar", [ // to block workspace actions
             { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.blockInputCapture },
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.blockInputCapture },
@@ -85,6 +108,7 @@ export class Sidebar implements IComponent {
             { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
         ]);
 
+        // hooks
         app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
         app.state._elementAdded.subscribe(this.onElementAdded);
@@ -103,9 +127,9 @@ export class Sidebar implements IComponent {
     }
 
     private matchesFilter(ewl: ElementWithLower): boolean {
-        if ( !ewl[1].includes(this.lowercaseSearchText)) return false;
-        if ( !this.showHidden && ewl[0].hide) return false;
-        if (this.showOnlyDiscoveries && !ewl[0].discovery) return false;
+        if ( !ewl[1].includes(this.filters.substring.curr)) return false;
+        if ( !this.filters.hidden.curr && ewl[0].hide) return false;
+        if (this.filters.discovery.curr && !ewl[0].discovery) return false;
         return true;
     }
 
@@ -113,8 +137,9 @@ export class Sidebar implements IComponent {
         let left = app.settings.settings.searchResultLimit;
         this.filteredElements = [];
 
-        const inc = this.showReversed ? -1 : 1;
-        for (let i = this.showReversed ? this.sortedElements.length - 1 : 0; this.showReversed ? i >= 0 : i < this.sortedElements.length; i += inc) {
+        const reversed = this.filters.reversed.curr;
+        const inc = reversed ? -1 : 1;
+        for (let i = reversed ? this.sortedElements.length - 1 : 0; reversed ? i >= 0 : i < this.sortedElements.length; i += inc) {
             const ewl = this.sortedElements[i];
             if (this.matchesFilter(ewl)) {
                 this.filteredElements.push(ewl);
@@ -149,6 +174,15 @@ export class Sidebar implements IComponent {
 
         this.filterTimeout = setTimeout(() => {
             // todo - optimise
+
+            let changed = false;
+            Object.values(this.filters).forEach(f => {
+                if (f.curr === f.next) return;
+                changed = true;
+                f.curr = f.next;
+            });
+            if ( !changed) return;
+
             this.calculateFiltered();
             this.renderFiltered();
         }, app.settings.settings.searchResultDebounce);
@@ -156,8 +190,9 @@ export class Sidebar implements IComponent {
 
     private onSaveUnloaded = () => {
         this.lastCaret = 0;
-        this.searchInput.value = "";
-        this.lowercaseSearchText = "";
+        this.filters.substring.div.value = "";
+        this.filters.substring.curr = "";
+        this.filters.substring.next = "";
         this.sidebarItemsContainer.innerHTML = "";
         this.sortedElements = [];
         this.filteredElements = [];
@@ -165,15 +200,20 @@ export class Sidebar implements IComponent {
     }
 
     private onSaveLoaded = () => {
-        this.sortedElements = app.state.elementsById.map(e => [e, e.text.toLowerCase()]);
+        this.sortedElements = app.state.elementsById
+            .filter(e => e !== undefined)
+            .map(e => [e, e.text.toLowerCase()]);
         this.sortedElements.sort((a, b) => Utils.binaryCompare(a[1], b[1]));
-        this.lowercaseSearchText = "";
 
         this.calculateFiltered();
         this.renderFiltered();
     }
 
     private onElementAdded = (props: UpsertElementProps) => {
+        const pos = Sidebar.lowerBound(this.sortedElements, props.text);
+        this.sortedElements.splice(pos, 0, [props, props.text.toLowerCase()]);
+
+        // todo - add currfilter settings so that we insert it correctly (so that it doesn't match filters on timeout)
         // todo - add to sorted + if filter matches and item is in visible range -> add to items visible in sidebar
     }
 
@@ -204,26 +244,78 @@ export class Sidebar implements IComponent {
         window.removeEventListener("mouseup", this.onEndResizing);
     }
 
-    private onSearchInputChange = (e: InputEvent) => {
-        this.lowercaseSearchText = this.searchInput.value.toLowerCase();
+    private onSearchInputChange = () => {
+        this.filters.substring.next = this.filters.substring.div.value.toLowerCase();
         this.onFilterChange();
     }
 
+    private onUnicodeInputChange = () => {
+        const raw = this.unicodeInput.value.toLowerCase();
+        let caret = this.unicodeInput.selectionStart ?? raw.length;
+
+        let cleaned = "";
+        let j = 0;
+
+        for (let i = 0; i < raw.length; i++) {
+            const c = raw[i];
+            if (/[0-9a-fA-F]/.test(c)) {
+                cleaned += c.toLowerCase();
+                if (++j === 6) break;
+            } else if (i < caret) {
+                caret--;
+            }
+        }
+        caret = Math.min(caret, 6);
+
+        if (cleaned.length === 6) {
+            if (cleaned[0] !== "0" && !(cleaned[0] === "1" && cleaned[1] === "0")) {
+                cleaned = cleaned.slice(0, 5);
+            }
+        }
+
+        this.unicodeInput.value = cleaned;
+        this.unicodeInput.setSelectionRange(caret, caret);
+    }
+
+    private onUnicodeInputClick = () => {
+        const raw = this.unicodeInput.value;
+        const codepoint = Number(`0x${raw}`);
+        if (isNaN(codepoint)) return;
+        const char = String.fromCodePoint(codepoint);
+
+        const input = this.filters.substring.div;
+        const start = input.selectionStart ?? 0;
+        const end = input.selectionEnd ?? 0;
+        const value = input.value;
+
+        input.value = value.slice(0, start) + char + value.slice(end);
+
+        // set caret after inserted char
+        const caretPos = start + char.length;
+        input.setSelectionRange(caretPos, caretPos);
+        input.focus();
+
+        this.onSearchInputChange();
+    }
+
     private toggleOrder = () => {
-        this.showReversed = !this.showReversed;
-        this.orderToggleDiv.classList.toggle("toggle-on", this.showReversed);
+        const reversed = this.filters.reversed;
+        reversed.next = !reversed.next;
+        reversed.div.classList.toggle("toggle-on", reversed.next);
         this.onFilterChange();
     }
 
     private toggleHidden = () => {
-        this.showHidden = !this.showHidden;
-        this.hiddenToggleDiv.classList.toggle("toggle-on", this.showHidden);
+        const hidden = this.filters.hidden;
+        hidden.next = !hidden.next;
+        hidden.div.classList.toggle("toggle-on", hidden.next);
         this.onFilterChange();
     }
 
     private toggleDiscoveries = () => {
-        this.showOnlyDiscoveries = !this.showOnlyDiscoveries;
-        this.discoveryToggleDiv.classList.toggle("toggle-on", this.showOnlyDiscoveries);
+        const discovery = this.filters.discovery;
+        discovery.next = !discovery.next;
+        discovery.div.classList.toggle("toggle-on", discovery.next);
         this.onFilterChange();
     }
 
@@ -277,7 +369,7 @@ export class Sidebar implements IComponent {
 
     private onKeyDown = () => {
         if (this.disabled || app.state.state !== State.RUNNING) return;
-        if (document.activeElement === this.searchInput) return;
+        if (document.activeElement === this.filters.substring.div) return;
 
         // don't steal focus if user is typing elsewhere
         const active = document.activeElement;
@@ -288,7 +380,7 @@ export class Sidebar implements IComponent {
         );
         if (isTyping) return;
 
-        this.searchInput.focus();
-        this.searchInput.setSelectionRange(this.lastCaret, this.lastCaret);
+        this.filters.substring.div.focus();
+        this.filters.substring.div.setSelectionRange(this.lastCaret, this.lastCaret);
     }
 }

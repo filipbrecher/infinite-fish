@@ -33,20 +33,33 @@ export type MouseProps = {
 
 export type SettingsProps = {
     id: number;
+
+    // general
     theme: "light" | "dark";
-    searchResultLimit: number;      // 0 for unlimited
-    searchResultDebounce: number;   // in ms
     allowCombineToNothing: boolean;
 
+    // sidebar
+    searchShowUnicodeInput: boolean;
+    searchShowReverseToggle: boolean;
+    searchShowHiddenToggle: boolean;
+    searchShowDiscoveryToggle: boolean;
+    searchResultLimit: number;      // 0 for unlimited
+    searchResultDebounce: number;   // in ms
+
+    // controls workspace
     workspacePanning: MouseProps;
     workspaceZooming: WheelProps;
     instanceSelecting: MouseProps;
 
+    // controls instance
     instanceDragging: MouseProps;
     instanceCopying: MouseProps;
     instanceDeleting: MouseProps;
+
+    // controls element
     elementToggleVisibility: MouseProps; // item in sidebar
 
+    // controls view
     viewInfo: MouseProps;
     viewCopyEmojiText: MouseProps; // copy emoji if mouse over emoji, copy text if mouse over text
 }
