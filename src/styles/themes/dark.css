@@ -33,6 +33,8 @@ body[data-theme="dark"] {
     /* sidebar */
     --sidebar-bg: var(--board-bg);
     --sidebar-border: white;
+    --sidebar-order-a-z: url("/public/sidebar_order_a_z_dark.svg");
+    --sidebar-order-z-a: url("/public/sidebar_order_z_a_dark.svg");
     --sidebar-discovery-off: url("/public/sidebar_discovery_dark.svg");
     --sidebar-unhide-elements: url("/public/sidebar_unhide_elements_dark.svg");
     --sidebar-hide-elements: url("/public/sidebar_hide_elements_dark.svg");

@@ -548,6 +548,9 @@ export class Board implements IComponent {
         this.clearDragging();
     }
 
+    // todo - fix bug, where an instance isn't somehow moved from drag layer back to board, so when we drag a different instance, it moves, but upon dropping
+    //        the dragged instances, this instance snaps back to its original position (because when we drop dragged, only stuff in this.dragged moves -> the
+    //        bugged instance is in drag-layer div, but not in this.dragged)
     private clearDragging = () => {
         if ( !this.dragging) return;
         this.dragging = false;

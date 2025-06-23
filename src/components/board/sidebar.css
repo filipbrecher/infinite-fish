@@ -48,17 +48,23 @@
     background-position: center;
     background-size: contain;
 }
-#sidebar-search-toggle-discovery {
-    background-image: var(--sidebar-discovery-off);
+#sidebar-search-toggle-order {
+    background-image: var(--sidebar-order-a-z);
 }
-#sidebar-search-toggle-discovery.toggle-on {
-    background-image: var(--view-discovery);
+#sidebar-search-toggle-order.toggle-on {
+    background-image: var(--sidebar-order-z-a);
 }
 #sidebar-search-toggle-hidden {
     background-image: var(--sidebar-hide-elements);
 }
 #sidebar-search-toggle-hidden.toggle-on {
     background-image: var(--sidebar-unhide-elements);
+}
+#sidebar-search-toggle-discovery {
+    background-image: var(--sidebar-discovery-off);
+}
+#sidebar-search-toggle-discovery.toggle-on {
+    background-image: var(--view-discovery);
 }
 
 #sidebar-items {

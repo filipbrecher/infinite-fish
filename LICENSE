@@ -22,6 +22,41 @@ SOFTWARE.
 
 ---
 
-This project uses the following third-party assets under the MIT License:
+## Third-party Assets
 
-- Sparkles SVG Vector: Twemoji Emojis - author: Twitter
+### Assets under the MIT License
+
+The following asset is licensed under the MIT License (https://opensource.org/licenses/MIT):
+
+- /public/view_discovery.svg
+  Sparkles SVG Vector from Twemoji Emojis
+  Author: Twitter (https://github.com/twitter/twemoji/blob/master/LICENSE)
+
+Modified versions of this file are used as:
+
+- /public/sidebar_discovery_light.svg
+- /public/sidebar_discovery_dark.svg
+
+### Assets under the Creative Commons Attribution 4.0 License (CC BY 4.0)
+
+The following assets are licensed under the CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/):
+
+- /public/sidebar_order_a_z_light.svg
+- /public/sidebar_order_z_a_light.svg
+  Icons by Dazzle UI from https://www.svgrepo.com/
+
+Modified versions of these files are used as:
+
+- /public/sidebar_order_a_z_dark.svg
+- /public/sidebar_order_z_a_dark.svg
+  Colors modified to support dark mode themes
+
+### Assets under the Creative Commons CC0 1.0 Universal (Public Domain) License
+
+The following assets are provided under the Creative Commons CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain) License.
+These are modified versions with color changes:
+
+- /public/sidebar_unhide_elements_light.svg
+- /public/sidebar_unhide_elements_dark.svg
+- /public/sidebar_hide_elements_light.svg
+- /public/sidebar_hide_elements_dark.svg

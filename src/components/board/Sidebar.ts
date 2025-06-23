@@ -3,6 +3,7 @@ import type {IComponent} from "../IComponent";
 import {app} from "../../main";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
+import type {ElementProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import {ItemWrapper} from "./wrappers/ItemWrapper";
 import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
@@ -16,27 +17,31 @@ import {State} from "../../types/services";
 //      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
     private readonly sidebar: HTMLDivElement;
-    private readonly resizer: HTMLDivElement;
-    private readonly sidebarItems: HTMLDivElement;
-
     private disabled: boolean = false;
+
+    private readonly resizer: HTMLDivElement;
+    private width: number = DEFAULT_SIDEBAR_WIDTH;
+    private isResizing = false;
 
     private readonly searchInput: HTMLInputElement;
     private lastCaret = 0;
 
+    private showReversed: boolean = false;
     private showHidden: boolean = false;
     private showOnlyDiscoveries: boolean = false;
+    private readonly orderToggleDiv: HTMLDivElement;
     private readonly hiddenToggleDiv: HTMLDivElement;
     private readonly discoveryToggleDiv: HTMLDivElement;
 
-    private width: number = DEFAULT_SIDEBAR_WIDTH;
-    private isResizing = false;
+    private readonly sidebarItems: HTMLDivElement;
+    private sortedItems: ElementProps[] = [];
 
     constructor() {
         this.sidebar = document.getElementById("sidebar") as HTMLDivElement;
         this.resizer = document.getElementById("resizer") as HTMLDivElement;
         this.sidebarItems = document.getElementById("sidebar-items") as HTMLDivElement;
         this.searchInput = document.getElementById("sidebar-search-input") as HTMLInputElement;
+        this.orderToggleDiv = document.getElementById("sidebar-search-toggle-order") as HTMLDivElement;
         this.hiddenToggleDiv = document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement;
         this.discoveryToggleDiv = document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement;
 
@@ -51,6 +56,7 @@ export class Sidebar implements IComponent {
             this.lastCaret = this.searchInput.selectionStart ?? 0;
         });
 
+        this.orderToggleDiv.addEventListener("click", this.toggleOrder);
         this.hiddenToggleDiv.addEventListener("click", this.toggleHidden);
         this.discoveryToggleDiv.addEventListener("click", this.toggleDiscoveries);
 
@@ -73,11 +79,15 @@ export class Sidebar implements IComponent {
     }
 
     private onSaveUnloaded = () => {
+        // todo - clear search + caret
         this.sidebarItems.innerHTML = "";
+        this.sortedItems = [];
     }
 
     private onSaveLoaded = () => {
-        app.state.elementsById.forEach((props) => {
+        this.sortedItems = [...app.state.elementsById];
+        this.sortedItems.sort((a, b) => a.text.localeCompare(b.text));
+        this.sortedItems.forEach((props) => {
             const view = new ElementView(props);
             const viewDiv = view.getDiv();
             viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
@@ -116,6 +126,11 @@ export class Sidebar implements IComponent {
 
         window.removeEventListener("mousemove", this.onUpdateResizing);
         window.removeEventListener("mouseup", this.onEndResizing);
+    }
+
+    private toggleOrder = () => {
+        this.showReversed = !this.showReversed;
+        this.orderToggleDiv.classList.toggle("toggle-on", this.showReversed);
     }
 
     private toggleHidden = () => {

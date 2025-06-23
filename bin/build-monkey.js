@@ -33,12 +33,19 @@ const EVENT_TYPES_TO_BLOCK = [
 ];
 
 const licenseComments = [
-    '// Twemoji sparkles SVG from https://www.svgrepo.com/svg/407500/sparkles',
-    '// Licensed under the MIT License (© 2021 Twitter)',
+    '// This script is released under the MIT License',
+    '// https://opensource.org/licenses/MIT',
+    '//',
+    '// Twemoji "sparkles" SVG from svgrepo.com (https://www.svgrepo.com/svg/407500/sparkles)',
+    '// Originally by Twitter, licensed under the MIT License',
     '// https://github.com/twitter/twemoji/blob/master/LICENSE',
-    '',
-    '// Other assets from https://www.svgrepo.com/',
-    '// Licensed under CC0 (Public Domain)',
+    '//',
+    '// Some SVG assets from svgrepo.com are licensed under CC BY 4.0',
+    '// https://creativecommons.org/licenses/by/4.0/',
+    '// These may include modified versions with color adjustments',
+    '//',
+    '// Other assets are under CC0 (Public Domain)',
+    '// https://creativecommons.org/publicdomain/zero/1.0/',
 ];
 
 async function replaceFavicon(html) {
