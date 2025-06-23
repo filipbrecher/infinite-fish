@@ -68,14 +68,11 @@ export class Sidebar implements IComponent {
         if ( !app.settings.settings.searchShowHiddenToggle) this.filters.hidden.div.style.display = "none";
         if ( !app.settings.settings.searchShowDiscoveryToggle) this.filters.discovery.div.style.display = "none";
 
-        // resizer + input capture
+        // resizer
         document.documentElement.style.setProperty("--sidebar-width", `${this.width}px`);
         this.resizer.addEventListener("mousedown", this.onStartResizing);
-        this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
-            app.inputCapture.matchMouseDown("sidebar", e)(e);
-        });
 
-        // focus
+        // input
         window.addEventListener("keydown", this.onKeyDown);
         const searchInputDiv = this.filters.substring.div;
         searchInputDiv.addEventListener("blur", () => {
@@ -94,6 +91,9 @@ export class Sidebar implements IComponent {
         this.filters.discovery.div.addEventListener("click", this.toggleDiscoveries);
 
         // input capture
+        this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("sidebar", e)(e);
+        });
         app.inputCapture.set("sidebar", [ // to block workspace actions
             { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.blockInputCapture },
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.blockInputCapture },
@@ -115,12 +115,13 @@ export class Sidebar implements IComponent {
         app.state._elementUpdated.subscribe(this.onElementUpdated);
     }
 
-    private static lowerBound(arr: ElementWithLower[], target: string): number {
+    private static lowerBound(arr: ElementWithLower[], target: string, reversed: boolean = false): number {
         let low = 0;
         let high = arr.length;
+        const compare = reversed ? (x: number) => x <= 0 : (x: number) => x >= 0;
         while (low < high) {
             const mid = (low + high) >> 1;
-            if (Utils.binaryCompare(arr[mid][0].text, target) < 0) low = mid + 1;
+            if (compare(Utils.binaryCompare(target, arr[mid][1]))) low = mid + 1;
             else high = mid;
         }
         return low;
@@ -148,22 +149,26 @@ export class Sidebar implements IComponent {
         }
     }
 
+    private static getItemAndDiv(ewl: ElementWithLower): [ItemWrapper, HTMLDivElement] {
+        const view = new ElementView(ewl[0]);
+        const viewDiv = view.getDiv();
+        viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("sidebar-view", e)(e);
+        });
+
+        const item = new ItemWrapper(view);
+        const itemDiv = item.getDiv(viewDiv);
+        itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("sidebar-item", e)(e, ewl[0].id);
+        });
+        return [item, itemDiv];
+    }
+
     private renderFiltered() {
         this.sidebarItemsContainer.innerHTML = "";
         this.sidebarItems = [];
         this.filteredElements.forEach((ewl) => {
-            const view = new ElementView(ewl[0]);
-            const viewDiv = view.getDiv();
-            viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("sidebar-view", e)(e);
-            });
-
-            const item = new ItemWrapper(view);
-            const itemDiv = item.getDiv(viewDiv);
-            itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("sidebar-item", e)(e, ewl[0].id);
-            });
-
+            const [item, itemDiv] = Sidebar.getItemAndDiv(ewl);
             this.sidebarItems.push(item);
             this.sidebarItemsContainer.appendChild(itemDiv);
         });
@@ -210,11 +215,31 @@ export class Sidebar implements IComponent {
     }
 
     private onElementAdded = (props: UpsertElementProps) => {
-        const pos = Sidebar.lowerBound(this.sortedElements, props.text);
-        this.sortedElements.splice(pos, 0, [props, props.text.toLowerCase()]);
+        const ewl: ElementWithLower = [props, props.text.toLowerCase()];
+        const sortedPos = Sidebar.lowerBound(this.sortedElements, ewl[1]);
+        this.sortedElements.splice(sortedPos, 0, ewl);
 
-        // todo - add currfilter settings so that we insert it correctly (so that it doesn't match filters on timeout)
-        // todo - add to sorted + if filter matches and item is in visible range -> add to items visible in sidebar
+        if ( !this.matchesFilter(ewl)) return;
+        const limit = app.settings.settings.searchResultLimit;
+        const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
+        if (filteredPos >= limit) return;
+
+        // insert
+        this.filteredElements.splice(filteredPos, 0, ewl);
+        const [item, itemDiv] = Sidebar.getItemAndDiv(ewl);
+        this.sidebarItems.splice(filteredPos, 0, item);
+
+        if (this.filteredElements.length === 1) {
+            this.sidebarItemsContainer.appendChild(itemDiv);
+        } else {
+            const nextSibling = this.sidebarItemsContainer.children[filteredPos] as Node || null;
+            this.sidebarItemsContainer.insertBefore(itemDiv, nextSibling);
+        }
+
+        if (this.filteredElements.length > limit) {
+            this.sidebarItemsContainer.lastChild.remove();
+            this.sidebarItems.pop();
+        }
     }
 
     private onElementUpdated = (props: UpsertElementProps) => {
