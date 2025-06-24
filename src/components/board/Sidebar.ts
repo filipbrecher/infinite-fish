@@ -159,7 +159,7 @@ export class Sidebar implements IComponent {
         const item = new ItemWrapper(view);
         const itemDiv = item.getDiv(viewDiv);
         itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
-            app.inputCapture.matchMouseDown("sidebar-item", e)(e, ewl[0].id);
+            app.inputCapture.matchMouseDown("sidebar-item", e)(e, ewl);
         });
         return [item, itemDiv];
     }
@@ -214,8 +214,27 @@ export class Sidebar implements IComponent {
         this.renderFiltered();
     }
 
+    private insertInFilteredAtPos(pos: number, ewl: ElementWithLower) {
+        this.filteredElements.splice(pos, 0, ewl);
+        const [item, itemDiv] = Sidebar.getItemAndDiv(ewl);
+        this.sidebarItems.splice(pos, 0, item);
+
+        if (this.filteredElements.length === 1) {
+            this.sidebarItemsContainer.appendChild(itemDiv);
+        } else {
+            const nextSibling = this.sidebarItemsContainer.children[pos] as Node || null;
+            this.sidebarItemsContainer.insertBefore(itemDiv, nextSibling);
+        }
+
+        if (this.filteredElements.length > app.settings.settings.searchResultLimit) {
+            this.sidebarItemsContainer.lastChild.remove();
+            this.sidebarItems.pop();
+        }
+    }
+
     private onElementAdded = (props: UpsertElementProps) => {
-        const ewl: ElementWithLower = [props, props.text.toLowerCase()];
+        const e = app.state.elementsById[props.id];
+        const ewl: ElementWithLower = [e, props.text.toLowerCase()];
         const sortedPos = Sidebar.lowerBound(this.sortedElements, ewl[1]);
         this.sortedElements.splice(sortedPos, 0, ewl);
 
@@ -225,25 +244,30 @@ export class Sidebar implements IComponent {
         if (filteredPos >= limit) return;
 
         // insert
-        this.filteredElements.splice(filteredPos, 0, ewl);
-        const [item, itemDiv] = Sidebar.getItemAndDiv(ewl);
-        this.sidebarItems.splice(filteredPos, 0, item);
-
-        if (this.filteredElements.length === 1) {
-            this.sidebarItemsContainer.appendChild(itemDiv);
-        } else {
-            const nextSibling = this.sidebarItemsContainer.children[filteredPos] as Node || null;
-            this.sidebarItemsContainer.insertBefore(itemDiv, nextSibling);
-        }
-
-        if (this.filteredElements.length > limit) {
-            this.sidebarItemsContainer.lastChild.remove();
-            this.sidebarItems.pop();
-        }
+        this.insertInFilteredAtPos(filteredPos, ewl);
     }
 
     private onElementUpdated = (props: UpsertElementProps) => {
-        // todo - if newly discovered -> add or remove from divs accordingly
+        if ( !props.discovery) return;
+        const e = app.state.elementsById[props.id];
+        if (e.hide && !this.filters.hidden) return;
+
+        const sortedPos = Sidebar.lowerBound(this.sortedElements, props.text.toLowerCase());
+        const ewl = this.sortedElements[sortedPos];
+        if ( !this.matchesFilter(ewl)) return;
+
+        const limit = app.settings.settings.searchResultLimit;
+        const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
+        if (filteredPos >= limit) return;
+
+        if (this.filters.discovery.curr) {
+            // non-discovery changed to discovery when only discovery filter was on -> insert
+            this.insertInFilteredAtPos(filteredPos, ewl);
+            return;
+        }
+        if (filteredPos >= this.filteredElements.length) return;
+        const item = this.sidebarItems[filteredPos];
+        item.setElementDiscovery(true);
     }
 
     private onStartResizing = (e: MouseEvent) => {
@@ -348,13 +372,13 @@ export class Sidebar implements IComponent {
         e.stopPropagation();
     }
 
-    private onSpawnInstance = (e: MouseEvent, id: number) => {
+    private onSpawnInstance = (e: MouseEvent, ewl: ElementWithLower) => {
         e.stopPropagation();
         const event: WorkspaceSpawnEvent = new CustomEvent(WORKSPACE_SPAWN_INSTANCE, {
             detail: {
                 originalEvent: e,
                 type: ViewTypeProps.Element,
-                data: id,
+                data: ewl[0].id,
             },
             bubbles: true,
         });
@@ -371,11 +395,21 @@ export class Sidebar implements IComponent {
         this.sidebar.style.pointerEvents = disabled ? "none" : "auto";
     }
 
-    private onToggleElementVisibility = (e: MouseEvent) => {
-        console.log("sidebar.view.onToggleElementVisibility");
+    private onToggleElementVisibility = (e: MouseEvent, ewl: ElementWithLower) => {
         e.stopPropagation();
 
-        // todo - if not showing hidden -> remove from sidebar (if it is still there - might not be) -> otherwise toggle hidden class
+        const pos = Sidebar.lowerBound(this.filteredElements, ewl[1]);
+        if (this.filteredElements[pos] !== ewl) return;
+        const item = this.sidebarItems[pos];
+        if ( !this.filters.hidden.curr) {
+            this.filteredElements.splice(pos, 1);
+            item.removeDiv();
+            this.sidebarItems.splice(pos, 1);
+            app.state.updateElementVisibility(ewl[0].id, true);
+            return;
+        }
+        item.setElementHide(!ewl[0].hide);
+        app.state.updateElementVisibility(ewl[0].id, !ewl[0].hide);
     }
 
     private onViewInfo = (e: MouseEvent) => {

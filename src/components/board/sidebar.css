@@ -126,3 +126,25 @@
     white-space: nowrap;
     overflow-y: scroll;
 }
+
+.item-wrapper {
+    position: relative;
+}
+
+/*.item-wrapper .discovery {*/
+/*    background-color: var(--view-discovery-bg);*/
+/*    border: 1px solid var(--view-discovery-border);*/
+/*}*/
+/*.item-wrapper .discovery:hover {*/
+/*    background-color: var(--view-discovery-bg-hover);*/
+/*    border: 1px solid var(--view-discovery-border-hover);*/
+/*}*/
+
+.item-wrapper .hide {
+    background-color: var(--view-hide-bg);
+    border: 1px solid var(--view-hide-border);
+}
+.item-wrapper .hide:hover {
+    background-color: var(--view-hide-bg-hover);
+    border: 1px solid var(--view-hide-border-hover);
+}

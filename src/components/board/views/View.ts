@@ -33,6 +33,8 @@ export abstract class View {
         return false;
     }
     public setCombining(combining: boolean) {}
+    public setHide() {}
+    public setDiscovery() {}
 
     abstract getDiv(): HTMLDivElement;
     abstract type(): ViewTypeProps;

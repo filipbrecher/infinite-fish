@@ -34,22 +34,22 @@
     position: absolute;
 }
 .instance-wrapper.selected .view {
-    background-color: var(--instance-selected-bg);
-    border: 1px solid var(--instance-selected-border);
+    background-color: var(--view-selected-bg);
+    border: 1px solid var(--view-selected-border);
 }
 .instance-wrapper.selected .view:hover {
-    background-color: var(--instance-selected-bg-hover);
-    border: 1px solid var(--instance-selected-border-hover);
+    background-color: var(--view-selected-bg-hover);
+    border: 1px solid var(--view-selected-border-hover);
 }
 
 .instance-wrapper.hovered-over .view {
     transform: scale(1.05);
-    background-color: var(--instance-bg-hover);
-    border: 1px solid var(--instance-border-hover);
+    background-color: var(--view-bg-hover);
+    border: 1px solid var(--view-border-hover);
 }
 .instance-wrapper.hovered-over.selected .view {
-    background-color: var(--instance-selected-bg-hover);
-    border: 1px solid var(--instance-selected-border-hover);
+    background-color: var(--view-selected-bg-hover);
+    border: 1px solid var(--view-selected-border-hover);
 }
 
 .instance-wrapper.disabled {
@@ -63,13 +63,25 @@
     50% { opacity: 0.3; }
 }
 
-.instance-wrapper .discovery::after {
+
+.view {
+    background-color: var(--view-bg);
+    border: 1px solid var(--view-border);
+    padding: 4px 5px;
+    border-radius: 5px;
+    white-space: pre;
+}
+
+.view:hover {
+    background-color: var(--view-bg-hover);
+    border: 1px solid var(--view-border-hover);
+}
+
+.instance-wrapper .view.discovery::after {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
-    width: 20px;
-    height: 20px;
     transform: translate(-50%, -50%);
     pointer-events: none;
 
@@ -78,17 +90,11 @@
     background-repeat: no-repeat;
     background-position: center;
 }
-
-
-.view {
-    background-color: var(--instance-bg);
-    border: 1px solid var(--instance-border);
-    padding: 4px 5px;
-    border-radius: 5px;
-    white-space: pre;
+.instance-wrapper .view.discovery::after {
+    width: 20px;
+    height: 20px;
 }
-
-.view:hover {
-    background-color: var(--instance-bg-hover);
-    border: 1px solid var(--instance-border-hover);
-}
+/*.item-wrapper .view.discovery::after {*/
+/*    width: 15px;*/
+/*    height: 15px;*/
+/*}*/

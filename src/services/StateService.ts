@@ -81,7 +81,8 @@ export class StateService {
     public readonly _instancesDeleted: Subject<number[]> = new Subject();
     public readonly _instancesCreated: Subject<InstanceProps[]> = new Subject();
     public readonly _elementAdded: Subject<UpsertElementProps> = new Subject();
-    public readonly _elementUpdated: Subject<UpsertElementProps> = new Subject();
+    public readonly _elementUpdated: Subject<UpsertElementProps> = new Subject(); // visibility change NOT included
+    public readonly _elementChangedVisibility: Subject<{id: number, hide: boolean}> = new Subject();
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
     constructor() {
@@ -322,6 +323,18 @@ export class StateService {
 
         app.database.applyInstanceChanges(this._activeWorkspace!.id, undefined, [newInstance]).catch();
         return newInstance;
+    }
+
+    public updateElementVisibility(id: number, hide: boolean) {
+        const e = this.elementsById[id];
+        if (!!e.hide === hide) return;
+        if (hide) {
+            e.hide = true;
+        } else {
+            delete e.hide;
+        }
+        this._elementChangedVisibility.notify({id, hide});
+        app.database.updateElementVisibility(this._activeSave!.id, id, hide).catch();
     }
 
     // assumes data is all valid and returned successfully + recipe is valid and sorted

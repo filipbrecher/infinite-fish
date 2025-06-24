@@ -1,6 +1,6 @@
 import {ElementView} from "../views/ElementView";
-import {View} from "../views/View";
 import {Wrapper} from "./Wrapper";
+import {View} from "../views/View";
 
 
 export class ItemWrapper extends Wrapper {
@@ -24,10 +24,18 @@ export class ItemWrapper extends Wrapper {
     }
 
     public getView(): View {
-        return this._view;
+        return this._view as View;
     }
 
     public removeDiv() {
         this._div?.remove();
+    }
+
+    public setElementDiscovery(discovery: boolean) {
+        this._view.setDiscovery(discovery);
+    }
+
+    public setElementHide(hide: boolean) {
+        this._view.setHide(hide);
     }
 }
