@@ -157,7 +157,7 @@ async function main() {
     out += js + '\n';
 
     // 8) Close setTimeout
-    out += '}, 1000);\n';
+    out += '}, 2000);\n';
 
     // Write output
     await fs.promises.writeFile(OUTPUT_PATH, out, 'utf8');

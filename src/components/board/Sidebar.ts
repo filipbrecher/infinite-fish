@@ -227,7 +227,8 @@ export class Sidebar implements IComponent {
             this.sidebarItemsContainer.insertBefore(itemDiv, nextSibling);
         }
 
-        if (this.filteredElements.length > this.filters.resultLimit.curr) {
+        const limit = this.filters.resultLimit.curr;
+        if (this.filteredElements.length > limit && limit !== 0) {
             this.sidebarItemsContainer.lastChild.remove();
             this.sidebarItems.pop();
         }
@@ -242,7 +243,7 @@ export class Sidebar implements IComponent {
         if ( !this.matchesFilter(ewl)) return;
         const limit = this.filters.resultLimit.curr;
         const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
-        if (filteredPos >= limit) return;
+        if (filteredPos >= limit && limit !== 0) return;
 
         // insert
         this.insertInFilteredAtPos(filteredPos, ewl);
@@ -259,7 +260,7 @@ export class Sidebar implements IComponent {
 
         const limit = this.filters.resultLimit.curr;
         const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
-        if (filteredPos >= limit) return;
+        if (filteredPos >= limit && limit !== 0) return;
 
         if (this.filters.discovery.curr) {
             // non-discovery changed to discovery when only discovery filter was on -> insert
