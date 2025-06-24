@@ -2,10 +2,9 @@ import "./settings.css";
 import type {IPopup} from "./IPopup";
 import type {SettingsProps, Theme} from "../../types/db/schema";
 import {app} from "../../main";
-import {THEME_STYLES} from "../../constants/settings";
+import {SECTION_NAME_LIST, THEME_STYLES} from "../../constants/settings";
 
 
-const SECTION_NAME_LIST = ["general", "controls", "sidebar"];
 type SectionName = typeof SECTION_NAME_LIST[number];
 type Section = {
     nav: HTMLDivElement;
@@ -21,7 +20,8 @@ type Sections = {
     sidebar: Section,
 };
 
-// todo - make a neew object for themes -> they import themes + define colors for settings
+// todo - make nicer? possibly in the future import the settings' structure from a json (text file that would define the structure)
+// todo - make a new object for themes ??? -> they import themes + define colors for settings -> so that a single theme is in a single file
 export class SettingsPopup implements IPopup {
     private readonly overlay: HTMLDivElement;
     private readonly popup: HTMLDivElement;
@@ -56,7 +56,6 @@ export class SettingsPopup implements IPopup {
     }
 
     private initGeneral() {
-        console.log("initGeneral");
         const content = this.sections.general.content;
         content.innerHTML = `
             <div class="settings-row">
@@ -93,7 +92,66 @@ export class SettingsPopup implements IPopup {
     }
 
     private initSidebar() {
-        console.log("initSidebar", this.sections.sidebar);
+        const content = this.sections.sidebar.content;
+        content.innerHTML = `
+            <div class="settings-row">
+                <div class="settings-row-title">Items In Sidebar Limit</div>
+                <input id="settings-content-sidebar-result-limit" class="underlined-input" type="text" placeholder="..." maxlength="10" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-title">Sidebar Debounce (in ms)</div>
+                <input id="settings-content-sidebar-debounce" class="underlined-input" type="text" placeholder="..." maxlength="10" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-title">Show Unicode Input</div>
+                <div id="settings-content-sidebar-unicode-input" class="yes-no-toggle"></div>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-title">Show Hidden Elements Toggle</div>
+                <div id="settings-content-general-hidden" class="yes-no-toggle"></div>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-title">Show Discovered Elements Toggle</div>
+                <div id="settings-content-general-discovery" class="yes-no-toggle"></div>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-title">Show Reversed Order Toggle</div>
+                <div id="settings-content-general-reversed" class="yes-no-toggle"></div>
+            </div>
+        `;
+
+        const resultLimit = content.querySelector("#settings-content-sidebar-result-limit") as HTMLInputElement;
+        const debounce = content.querySelector("#settings-content-sidebar-debounce") as HTMLInputElement;
+        const unicodeInput = content.querySelector("#settings-content-sidebar-unicode-input") as HTMLDivElement;
+        const hidden = content.querySelector("#settings-content-general-hidden") as HTMLDivElement;
+        const discovery = content.querySelector("#settings-content-general-discovery") as HTMLDivElement;
+        const reversed = content.querySelector("#settings-content-general-reversed") as HTMLDivElement;
+
+        resultLimit.value = app.settings.settings.searchResultLimit.toString();
+        debounce.value = app.settings.settings.searchResultDebounce .toString();
+        unicodeInput.classList.toggle("toggle-on", app.settings.settings.searchShowUnicodeInput);
+        hidden.classList.toggle("toggle-on", app.settings.settings.searchShowHiddenToggle);
+        discovery.classList.toggle("toggle-on", app.settings.settings.searchShowDiscoveryToggle);
+        reversed.classList.toggle("toggle-on", app.settings.settings.searchShowReverseToggle);
+
+        resultLimit.addEventListener("input", (e: InputEvent) => {
+            this.onNaturalNumberInput(e, "searchResultLimit");
+        })
+        debounce.addEventListener("input", (e: InputEvent) => {
+            this.onNaturalNumberInput(e, "searchResultDebounce");
+        })
+        unicodeInput.addEventListener("click", () => {
+            this.onToggleBoolean("searchShowUnicodeInput", unicodeInput);
+        });
+        hidden.addEventListener("click", () => {
+            this.onToggleBoolean("searchShowHiddenToggle", hidden);
+        });
+        discovery.addEventListener("click", () => {
+            this.onToggleBoolean("searchShowDiscoveryToggle", discovery);
+        });
+        reversed.addEventListener("click", () => {
+            this.onToggleBoolean("searchShowReverseToggle", reversed);
+        });
     }
 
     public open = () => {
@@ -192,6 +250,37 @@ export class SettingsPopup implements IPopup {
         ptr[keys[keys.length - 1]] = newValue;
     }
 
+    /* common */
+    private onToggleBoolean = (settingsKey: string, div: HTMLDivElement) => {
+        const prev = this.getSettingsProperty<boolean>([settingsKey]);
+        this.changeSettingsProperty<boolean>([settingsKey], !prev);
+        div.classList.toggle("toggle-on", !prev);
+    }
+
+    private onNaturalNumberInput = (e: InputEvent, settingsKey: string) => {
+        const div = e.target as HTMLInputElement;
+        const raw = div.value;
+        let caret = div.selectionStart ?? raw.length;
+
+        let cleaned = "";
+
+        for (let i = 0; i < raw.length; i++) {
+            const c = raw[i];
+            if ("0" <= c && c <= "9") {
+                cleaned += c;
+            } else if (i < caret) {
+                caret--;
+            }
+        }
+        caret = Math.min(caret, cleaned.length);
+
+        const value = Number(cleaned);
+        this.changeSettingsProperty<number>([settingsKey], value);
+        div.value = cleaned === "" ? "" : value.toString();
+        div.setSelectionRange(caret, caret);
+    }
+
+    /* general */
     private onGeneralToggleTheme = () => {
         const prev = this.getSettingsProperty<Theme>(["theme"]);
         let next: Theme;
@@ -226,5 +315,8 @@ export class SettingsPopup implements IPopup {
         this.sections.general.nothingToggle.classList.toggle("toggle-on", !prev);
     }
 
-    // todo - functions for each button / toggle whatever
+    /* controls */
+    // todo
+
+    /* sidebar - nothing extra */
 }

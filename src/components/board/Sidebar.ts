@@ -3,7 +3,7 @@ import type {IComponent} from "../IComponent";
 import {app} from "../../main";
 import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
-import type {ElementProps} from "../../types/db/schema";
+import type {ElementProps, SettingsProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import {ItemWrapper} from "./wrappers/ItemWrapper";
 import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
@@ -17,6 +17,7 @@ import {Utils} from "../../services/Utils";
 type ElementWithLower = [ElementProps, string];
 
 type Filters = {
+    resultLimit: { curr: number, next: number },
     substring: { curr: string, next: string, div: HTMLInputElement },
     reversed: { curr: boolean, next: boolean, div: HTMLDivElement },
     hidden: { curr: boolean, next: boolean, div: HTMLDivElement },
@@ -55,7 +56,9 @@ export class Sidebar implements IComponent {
         this.unicodeInputButton = document.getElementById("sidebar-search-unicode-input-button") as HTMLDivElement;
         this.sidebarItemsContainer = document.getElementById("sidebar-items") as HTMLDivElement;
 
+        const resultLimit = app.settings.settings.searchResultLimit;
         this.filters = {
+            resultLimit: { curr: resultLimit, next: resultLimit },
             substring: { curr: "", next: "", div: document.getElementById("sidebar-search-input") as HTMLInputElement },
             reversed: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-order") as HTMLDivElement },
             hidden: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement },
@@ -110,6 +113,7 @@ export class Sidebar implements IComponent {
         app.state._saveLoaded.subscribe(this.onSaveLoaded);
         app.state._elementAdded.subscribe(this.onElementAdded);
         app.state._elementUpdated.subscribe(this.onElementUpdated);
+        app.settings._changed.subscribe(this.onSettingsChanged);
     }
 
     private static lowerBound(arr: ElementWithLower[], target: string, reversed: boolean = false): number {
@@ -132,7 +136,7 @@ export class Sidebar implements IComponent {
     }
 
     private calculateFiltered() {
-        let left = app.settings.settings.searchResultLimit;
+        let left = this.filters.resultLimit.curr;
         this.filteredElements = [];
 
         const reversed = this.filters.reversed.curr;
@@ -223,7 +227,7 @@ export class Sidebar implements IComponent {
             this.sidebarItemsContainer.insertBefore(itemDiv, nextSibling);
         }
 
-        if (this.filteredElements.length > app.settings.settings.searchResultLimit) {
+        if (this.filteredElements.length > this.filters.resultLimit.curr) {
             this.sidebarItemsContainer.lastChild.remove();
             this.sidebarItems.pop();
         }
@@ -236,7 +240,7 @@ export class Sidebar implements IComponent {
         this.sortedElements.splice(sortedPos, 0, ewl);
 
         if ( !this.matchesFilter(ewl)) return;
-        const limit = app.settings.settings.searchResultLimit;
+        const limit = this.filters.resultLimit.curr;
         const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
         if (filteredPos >= limit) return;
 
@@ -253,7 +257,7 @@ export class Sidebar implements IComponent {
         const ewl = this.sortedElements[sortedPos];
         if ( !this.matchesFilter(ewl)) return;
 
-        const limit = app.settings.settings.searchResultLimit;
+        const limit = this.filters.resultLimit.curr;
         const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
         if (filteredPos >= limit) return;
 
@@ -265,6 +269,37 @@ export class Sidebar implements IComponent {
         if (filteredPos >= this.filteredElements.length) return;
         const item = this.sidebarItems[filteredPos];
         item.setElementDiscovery(true);
+    }
+
+    private onSettingsChanged = (changes: Partial<SettingsProps>) => {
+        if (changes.hasOwnProperty("searchResultLimit")) {
+            this.filters.resultLimit.next = changes.searchResultLimit!;
+            this.onFilterChange();
+        }
+        if (changes.hasOwnProperty("searchShowUnicodeInput")) {
+            this.unicodeInputWrapper.style.display = changes.searchShowUnicodeInput ? "flex" : "none";
+        }
+        if (changes.hasOwnProperty("searchShowHiddenToggle")) {
+            const hidden = this.filters.hidden;
+            hidden.div.style.display = changes.searchShowHiddenToggle ? "block" : "none";
+            if ( !changes.searchShowHiddenToggle && hidden.next) { // needs to disappear and was turned on
+                this.toggleHidden();
+            }
+        }
+        if (changes.hasOwnProperty("searchShowDiscoveryToggle")) {
+            const discovery = this.filters.discovery;
+            discovery.div.style.display = changes.searchShowDiscoveryToggle ? "block" : "none";
+            if ( !changes.searchShowHiddenToggle && discovery.next) { // needs to disappear and was turned on
+                this.toggleHidden();
+            }
+        }
+        if (changes.hasOwnProperty("searchShowReverseToggle")) {
+            const reversed = this.filters.reversed;
+            reversed.div.style.display = changes.searchShowReverseToggle ? "block" : "none";
+            if ( !changes.searchShowHiddenToggle && reversed.next) { // needs to disappear and was turned on
+                this.toggleHidden();
+            }
+        }
     }
 
     private onStartResizing = (e: MouseEvent) => {

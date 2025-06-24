@@ -1,5 +1,7 @@
 import {Theme} from "../types/db/schema";
 
+export const SECTION_NAME_LIST = ["general", "controls", "sidebar"];
+
 export const THEME_STYLES: Record<Theme, { name: string; background: string; border: string }> = {
     light: {
         name: "Light",
@@ -12,3 +14,5 @@ export const THEME_STYLES: Record<Theme, { name: string; background: string; bor
         border: "#2c2c2c",
     },
 };
+
+

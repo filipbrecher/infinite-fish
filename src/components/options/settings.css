@@ -47,7 +47,7 @@
 #settings-content {
     flex: 1;
     min-width: 500px;
-    padding: 5px;
+    padding: 10px;
 }
 
 .settings-section {
@@ -89,6 +89,11 @@
 .yes-no-toggle.toggle-on::before {
     content: "YES";
     background-color: var(--green);
+}
+
+.underlined-input {
+    border-bottom: 1px solid var(--options-popup-border);
+    width: 100px;
 }
 
 /* GENERAL */

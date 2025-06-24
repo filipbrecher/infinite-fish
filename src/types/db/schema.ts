@@ -48,9 +48,9 @@ export type SettingsProps = {
     searchResultLimit: number;      // 0 for unlimited
     searchResultDebounce: number;   // in ms
     searchShowUnicodeInput: boolean;
-    searchShowReverseToggle: boolean;
     searchShowHiddenToggle: boolean;
     searchShowDiscoveryToggle: boolean;
+    searchShowReverseToggle: boolean;
 
     // CONTROLS
     // workspace
