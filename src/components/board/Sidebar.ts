@@ -83,7 +83,7 @@ export class Sidebar implements IComponent {
         // unicode input
         this.unicodeInput.addEventListener("input", this.onUnicodeInputChange);
         this.unicodeInputButton.addEventListener("click", this.onUnicodeInputClick);
-        if (app.settings.settings.searchShowUnicodeInput) this.unicodeInputWrapper.style.display = "block";
+        if (app.settings.settings.searchShowUnicodeInput) this.unicodeInputWrapper.style.display = "flex";
 
         // filters
         this.filters.reversed.div.addEventListener("click", this.toggleOrder);
@@ -118,7 +118,7 @@ export class Sidebar implements IComponent {
     private static lowerBound(arr: ElementWithLower[], target: string, reversed: boolean = false): number {
         let low = 0;
         let high = arr.length;
-        const compare = reversed ? (x: number) => x <= 0 : (x: number) => x >= 0;
+        const compare = reversed ? (x: number) => x < 0 : (x: number) => x > 0;
         while (low < high) {
             const mid = (low + high) >> 1;
             if (compare(Utils.binaryCompare(target, arr[mid][1]))) low = mid + 1;

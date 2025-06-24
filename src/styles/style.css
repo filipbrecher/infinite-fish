@@ -6,6 +6,7 @@ html, body {
     white-space: nowrap;
     color: var(--text-color);
     scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+    font-family: Roboto, sans-serif;
 }
 
 input {
