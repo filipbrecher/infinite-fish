@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS: SettingsProps = {
     theme: "light",
     allowCombineToNothing: false,
 
-    searchResultLimit: 100,
+    searchResultLimit: 0,
     searchResultDebounce: 0,
     searchShowUnicodeInput: false,
     searchShowReverseToggle: true,
