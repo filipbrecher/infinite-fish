@@ -1,8 +1,15 @@
 import "./settings.css";
 import type {IPopup} from "./IPopup";
-import type {SettingsProps, Theme} from "../../types/db/schema";
+import type {MouseProps, SettingsProps, Theme, WheelProps} from "../../types/db/schema";
+import {ButtonProps, KeyProps, KeyState} from "../../types/db/schema";
 import {app} from "../../main";
-import {SECTION_NAME_LIST, THEME_STYLES} from "../../constants/settings";
+import {
+    SECTION_NAME_LIST,
+    SETTINGS_BUTTONS_LIST,
+    SETTINGS_CONTROLS_LIST,
+    SETTINGS_KEYS_LIST,
+    THEMES_LIST
+} from "../../constants/settings";
 
 
 type SectionName = typeof SECTION_NAME_LIST[number];
@@ -52,7 +59,6 @@ export class SettingsPopup implements IPopup {
             section.content = document.getElementById(`settings-content-${sectionName}`) as HTMLDivElement;
             section.nav.addEventListener("click", () => { this.onClickSection(sectionName); });
         }
-        console.log(this.sections);
     }
 
     private initGeneral() {
@@ -77,18 +83,80 @@ export class SettingsPopup implements IPopup {
         section.themeToggle = content.querySelector("#settings-content-general-theme-toggle") as HTMLDivElement;
         section.nothingToggle = content.querySelector("#settings-content-general-nothing-toggle") as HTMLDivElement;
 
-        const theme = THEME_STYLES[app.settings.settings.theme];
+        const theme = THEMES_LIST[app.settings.settings.theme];
         section.themeName.innerText = theme.name;
         section.themeToggle.style.backgroundColor = theme.background;
         section.themeToggle.style.border = `1px solid ${theme.border}`;
-        section.nothingToggle.classList.toggle("toggle-on", app.settings.settings.allowCombineToNothing);
+        section.nothingToggle.classList.toggle("toggle-yes", app.settings.settings.allowCombineToNothing);
 
         section.themeToggle.addEventListener("click", this.onGeneralToggleTheme);
         section.nothingToggle.addEventListener("click", this.onGeneralToggleNothing);
     }
 
     private initControls() {
-        console.log("initControls", this.sections.controls);
+        const content = this.sections.controls.content;
+
+        let html = "";
+        SETTINGS_CONTROLS_LIST.forEach(row => {
+            html += `
+                <div class="settings-row">
+                    <div class="settings-row-title">${row.title}</div>
+                    <div class="settings-content-controls-${row.ident}" class="settings-content-controls-wrapper">
+            `;
+
+            if (row.isMouse) {
+                html += `<div class="settings-content-controls-subtitle">Any of (mouse buttons)</div><div class="settings-content-controls-subwrapper"> `;
+                SETTINGS_BUTTONS_LIST.forEach(button => {
+                    html += `
+                        <div class="settings-content-controls-vertical-wrapper">
+                            <div class="settings-content-controls-button-title">${button.title}</div>
+                            <div id="settings-content-controls-button-${row.ident}-${button.title.toLowerCase()}" class="yes-no-toggle small-toggle"></div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            html += `<div class="settings-content-controls-subtitle">All of (keys)</div><div class="settings-content-controls-subwrapper">`;
+            SETTINGS_KEYS_LIST.forEach(key => {
+                html += `
+                    <div class="settings-content-controls-vertical-wrapper">
+                        <div class="settings-content-controls-key-title">${key.title}</div>
+                        <div id="settings-content-controls-key-${row.ident}-${key.title.toLowerCase()}" class="yes-no-any-toggle small-toggle"></div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            html += `</div></div>`;
+        });
+        content.innerHTML = html;
+
+        SETTINGS_CONTROLS_LIST.forEach(row => {
+            const rowSettings = app.settings.settings[row.settingsKey] as WheelProps | MouseProps;
+            if (row.isMouse) {
+                SETTINGS_BUTTONS_LIST.forEach(button => {
+                    const div = content.querySelector(`#settings-content-controls-button-${row.ident}-${button.title.toLowerCase()}`) as HTMLDivElement;
+                    const buttons = (rowSettings as MouseProps).buttons;
+                    div.classList.toggle("toggle-yes", (buttons & button.props) !== 0);
+
+                    div.addEventListener("click", () => {
+                        this.onControlsToggleButton(row.settingsKey, button.props, div);
+                    });
+                });
+            }
+
+            SETTINGS_KEYS_LIST.forEach(key => {
+                const div = content.querySelector(`#settings-content-controls-key-${row.ident}-${key.title.toLowerCase()}`) as HTMLDivElement;
+                const keys = row.isMouse ? (rowSettings as MouseProps).keys : (rowSettings as WheelProps);
+                div.classList.toggle("toggle-yes", keys[key.props] === KeyState.YES);
+                div.classList.toggle("toggle-no", keys[key.props] === KeyState.NO);
+
+                div.addEventListener("click", () => {
+                    this.onControlsToggleKey(row.settingsKey, key.props, row.isMouse, div);
+                });
+            });
+        });
     }
 
     private initSidebar() {
@@ -129,10 +197,10 @@ export class SettingsPopup implements IPopup {
 
         resultLimit.value = app.settings.settings.searchResultLimit.toString();
         debounce.value = app.settings.settings.searchResultDebounce .toString();
-        unicodeInput.classList.toggle("toggle-on", app.settings.settings.searchShowUnicodeInput);
-        hidden.classList.toggle("toggle-on", app.settings.settings.searchShowHiddenToggle);
-        discovery.classList.toggle("toggle-on", app.settings.settings.searchShowDiscoveryToggle);
-        reversed.classList.toggle("toggle-on", app.settings.settings.searchShowReverseToggle);
+        unicodeInput.classList.toggle("toggle-yes", app.settings.settings.searchShowUnicodeInput);
+        hidden.classList.toggle("toggle-yes", app.settings.settings.searchShowHiddenToggle);
+        discovery.classList.toggle("toggle-yes", app.settings.settings.searchShowDiscoveryToggle);
+        reversed.classList.toggle("toggle-yes", app.settings.settings.searchShowReverseToggle);
 
         resultLimit.addEventListener("input", (e: InputEvent) => {
             this.onNaturalNumberInput(e, "searchResultLimit");
@@ -251,10 +319,11 @@ export class SettingsPopup implements IPopup {
     }
 
     /* common */
+
     private onToggleBoolean = (settingsKey: string, div: HTMLDivElement) => {
         const prev = this.getSettingsProperty<boolean>([settingsKey]);
         this.changeSettingsProperty<boolean>([settingsKey], !prev);
-        div.classList.toggle("toggle-on", !prev);
+        div.classList.toggle("toggle-yes", !prev);
     }
 
     private onNaturalNumberInput = (e: InputEvent, settingsKey: string) => {
@@ -281,6 +350,7 @@ export class SettingsPopup implements IPopup {
     }
 
     /* general */
+
     private onGeneralToggleTheme = () => {
         const prev = this.getSettingsProperty<Theme>(["theme"]);
         let next: Theme;
@@ -290,7 +360,7 @@ export class SettingsPopup implements IPopup {
         }
         this.changeSettingsProperty<Theme>(["theme"], next);
 
-        const theme = THEME_STYLES[next];
+        const theme = THEMES_LIST[next];
 
         const section = this.sections.general;
         section.themeName.innerText = theme.name;
@@ -312,11 +382,32 @@ export class SettingsPopup implements IPopup {
         
         this.changeSettingsProperty<boolean>(["allowCombineToNothing"], !prev);
 
-        this.sections.general.nothingToggle.classList.toggle("toggle-on", !prev);
+        this.sections.general.nothingToggle.classList.toggle("toggle-yes", !prev);
     }
 
     /* controls */
-    // todo
+
+    private onControlsToggleButton = (settingsKey: string, button: ButtonProps, div: HTMLDivElement) => {
+        const prev = this.getSettingsProperty<number>([settingsKey, "buttons"]);
+        const next = prev ^ button;
+        this.changeSettingsProperty<number>([settingsKey, "buttons"], next);
+        div.classList.toggle("toggle-yes", (next & button) !== 0);
+    }
+
+    private onControlsToggleKey = (settingsKey: string, keyKey: KeyProps, isMouse: boolean, div: HTMLDivElement) => {
+        const keys = isMouse ? [settingsKey, "keys", keyKey] : [settingsKey, keyKey];
+        const prev = this.getSettingsProperty<KeyState>(keys);
+        let next: KeyState;
+        switch (prev) {
+            case KeyState.YES: next = KeyState.NO; break;
+            case KeyState.NO: next = KeyState.ANY; break;
+            default: next = KeyState.YES;
+        }
+        this.changeSettingsProperty<KeyState>(keys, next);
+        div.classList.toggle("toggle-yes", next === KeyState.YES);
+        div.classList.toggle("toggle-no", next === KeyState.NO);
+    }
 
     /* sidebar - nothing extra */
+
 }

@@ -46,7 +46,7 @@
 
 #settings-content {
     flex: 1;
-    min-width: 500px;
+    min-width: 600px;
     padding: 10px;
 }
 
@@ -64,8 +64,11 @@
     flex-direction: row;
     align-items: center;
     align-content: flex-start;
-    padding-bottom: 0.5em;
+    justify-content: space-between;
+    padding: 0 0.5em 0.5em;
     border-bottom: 1px solid var(--options-popup-border);
+    gap: 10px;
+    box-sizing: border-box;
 }
 .settings-row:last-child {
     border-bottom: none;
@@ -75,6 +78,7 @@
     margin-right: auto;
 }
 
+/* TOGGLES */
 .yes-no-toggle::before {
     content: "NO";
     background-color: var(--red);
@@ -86,11 +90,38 @@
     vertical-align: middle;
     cursor: pointer;
 }
-.yes-no-toggle.toggle-on::before {
+.yes-no-toggle.toggle-yes::before {
     content: "YES";
     background-color: var(--green);
 }
 
+.yes-no-any-toggle::before {
+    content: "ANY";
+    background-color: var(--view-bg-hover);
+    border: var(--options-popup-border);
+    border-radius: 5px;
+    padding: 0.25em 0.5em;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+.yes-no-any-toggle.toggle-no::before {
+    content: "NO";
+    background-color: var(--red);
+}
+.yes-no-any-toggle.toggle-yes::before {
+    content: "YES";
+    background-color: var(--green);
+}
+
+.yes-no-toggle.small-toggle,
+.yes-no-any-toggle.small-toggle {
+    font-size: 0.8em;
+    padding: 0.2em 0.45em;
+}
+
+/* INPUT */
 .underlined-input {
     border-bottom: 1px solid var(--options-popup-border);
     width: 100px;
@@ -114,3 +145,39 @@
     cursor: pointer;
 }
 
+/* CONTROLS */
+.settings-content-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.settings-content-controls-subtitle {
+    text-align: center;
+    font-weight: bold;
+}
+.settings-content-controls-subtitle:not(:first-child) {
+    border-top: 1px solid var(--text-color-fainted);
+    padding-top: 5px;
+    margin-top: 5px;
+}
+.settings-content-controls-subwrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.settings-content-controls-vertical-wrapper {
+    width: 55px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.settings-content-controls-button-title,
+.settings-content-controls-key-title {
+    font-size: 0.9em;
+}

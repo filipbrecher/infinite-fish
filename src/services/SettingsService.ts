@@ -1,6 +1,7 @@
 import {app} from "../main";
 import type {SettingsProps} from "../types/db/schema";
 import {Subject} from "../signals/Subject";
+import {Utils} from "./Utils";
 
 
 // todo - make settings allow components to define their own settings ??? possibly in the future
@@ -19,10 +20,7 @@ export class SettingsService {
 
     public updateSettings(changes: Partial<SettingsProps>) {
         if (changes.theme !== undefined) document.body.dataset.theme = changes.theme;
-        this._settings = {
-            ...this._settings,
-            ...changes,
-        }
+        this._settings = Utils.deepUpdate(this._settings, changes);
         this._changed.notify(changes);
         app.database.updateSettings(this._settings).catch();
     }

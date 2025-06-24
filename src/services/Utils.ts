@@ -41,6 +41,33 @@ export class Utils {
         return a.length - b.length;
     }
 
+    public static deepUpdate(target: any, source: Partial<any>): any {
+        for (const key in source) {
+            if ( !Object.prototype.hasOwnProperty.call(source, key)) continue;
+
+            const targetVal = target[key];
+            const sourceVal = source[key];
+
+            if (
+                sourceVal !== null &&
+                typeof source[key] === 'object' &&
+                !Array.isArray(source[key])
+            ) {
+                if (
+                    targetVal === undefined ||
+                    typeof targetVal !== 'object' ||
+                    Array.isArray(targetVal)
+                ) {
+                    target[key] = {};
+                }
+                Utils.deepUpdate(target[key], source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        }
+        return target;
+    }
+
     public static wait(ms: number): Promise<void> {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
     }

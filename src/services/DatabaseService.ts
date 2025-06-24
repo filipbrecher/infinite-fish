@@ -23,6 +23,7 @@ import {
     DEFAULT_SETTINGS, DEFAULT_WORKSPACE,
     DEFAULT_WORKSPACE_NAME
 } from "../constants/defaults";
+import {Utils} from "./Utils";
 
 // todo - either disable multiple tabs (detect with broadcast channel)
 //      - or make a system to lock a certain save, then any other tab may not modify or access that save
@@ -89,10 +90,7 @@ export class DatabaseService {
             }
 
             req.onsuccess = () => {
-                const settings = {
-                    ...DEFAULT_SETTINGS,
-                    ...req.result,
-                };
+                const settings = Utils.deepUpdate(structuredClone(DEFAULT_SETTINGS), req.result);
 
                 app.logger.log("info", "db", "Settings loaded successfully");
                 resolve(settings);
