@@ -8,14 +8,18 @@
   </head>
   <body>
     <div id="app">
+      <!-- Board -->
       <div id="board-wrapper">
+        <!-- Layers with instances -->
         <div id="board"></div>
         <div id="drag-layer">
           <div id="selection-box"></div>
         </div>
 
+        <!-- Workspaces list -->
         <div id="workspaces-list"></div>
 
+        <!-- Sidebar -->
         <div id="sidebar">
           <div id="resizer"></div>
           <div id="sidebar-search">
@@ -33,18 +37,43 @@
         </div>
       </div>
 
+      <!-- Options -->
       <div id="options">
         <div id="settings-button" class="clickable-icon settings-icon"></div>
         <div id="saves-button" class="clickable-icon saves-icon"></div>
       </div>
 
       <div id="options-overlay" class="overlay"></div>
+
+      <!-- Settings -->
       <div id="settings-popup" class="popup" style="display: none">
         <div class="popup-title">
           <div class="static-icon settings-icon"></div>
           Settings
+          <div id="settings-apply-changes" class="options-button">Apply Changes</div>
+        </div>
+        <div id="settings-wrapper">
+          <div id="settings-navigation">
+            <div id="settings-navigation-general" class="settings-navigation-item">General</div>
+            <div id="settings-navigation-controls" class="settings-navigation-item">Controls</div>
+            <div id="settings-navigation-sidebar" class="settings-navigation-item">Sidebar</div>
+          </div>
+
+          <div id="settings-content">
+            <!-- General settings -->
+            <div id="settings-content-general" class="settings-section" data-section="general" style="display: none">General content
+            </div>
+            <!-- Controls settings -->
+            <div id="settings-content-controls" class="settings-section" data-section="controls" style="display: none">Controls content
+            </div>
+            <!-- Sidebar settings -->
+            <div id="settings-content-sidebar" class="settings-section" data-section="sidebar" style="display: none">Sidebar content
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Saves -->
       <div id="saves-popup" class="popup" style="display: none">
         <div class="popup-title">
           <div class="static-icon saves-icon"></div>

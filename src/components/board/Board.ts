@@ -549,7 +549,7 @@ export class Board implements IComponent {
 
     // todo - fix bug, where an instance isn't somehow moved from drag layer back to board, so when we drag a different instance, it moves, but upon dropping
     //        the dragged instances, this instance snaps back to its original position (because when we drop dragged, only stuff in this.dragged moves -> the
-    //        bugged instance is in drag-layer div, but not in this.dragged)
+    //        bugged instance is in drag-layer div, but not in this.dragged) -> or maybe it got fixed already??
     private clearDragging = () => {
         if ( !this.dragging) return;
         this.dragging = false;
@@ -571,7 +571,7 @@ export class Board implements IComponent {
         e.stopPropagation();
 
         if (this.dragging) {
-            // copy instances on top of the board - unless dragging unselected
+            // copy instances on top of the board - unless dragging unselected over sidebar
             if ( !this.draggingSelected && this.sidebar.isXOverSidebar(e.clientX)) return;
 
             const toCopy: InstanceWrapper[] = Array.from(this.dragged)
@@ -588,7 +588,7 @@ export class Board implements IComponent {
 
         } else {
             // need to start dragging the instances that just got created, leave the clicked ones as they were
-            // originally started dragging these instances, created new instances with the same zIndex,
+            // - previously was implemented by starting dragging these instances, created new instances with the same zIndex,
             //      but that didn't ensure unique zIndex when the page was closed before dropping the dragged instances
 
             const toCopy: InstanceWrapper[] = Array.from(this.selected.has(id) ? this.selected : [id])

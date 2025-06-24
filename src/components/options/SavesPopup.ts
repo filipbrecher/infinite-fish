@@ -1,3 +1,4 @@
+import "./saves.css";
 import type {SaveProps} from "../../types/db/schema";
 import {app} from "../../main";
 import {MAX_SAVE_NAME_LENGTH} from "../../constants/save";

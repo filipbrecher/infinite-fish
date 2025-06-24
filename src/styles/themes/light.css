@@ -62,6 +62,10 @@ body[data-theme="light"] {
     --options-popup-border: black;
     --options-popup-bg: var(--board-bg);
     --options-popup-button-hover: var(--view-bg-hover);
+    /* saves */
     --save-border: #8f8f8f;
     --active-save-bg: var(--view-bg-hover);
+    /* settings */
+    --navigation-item-bg-hover: var(--view-bg-hover);
+    --active-navigation-item-bg: #dcdcdc;
 }

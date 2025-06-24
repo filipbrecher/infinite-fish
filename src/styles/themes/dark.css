@@ -10,10 +10,10 @@ body[data-theme="dark"] {
     --board-bg: #1c1c1c;
 
     /* === VIEW === */
-    --view-border: #e0e0e0;
-    --view-border-hover: #dadada;
     --view-bg: var(--board-bg);
     --view-bg-hover: #2c2c2c;
+    --view-border: #e0e0e0;
+    --view-border-hover: #dadada;
     /* pulsing view */
     --view-pulsing-bg-1: #2d2d2d80;
     --view-pulsing-border-1: #ffffff80;
@@ -62,6 +62,10 @@ body[data-theme="dark"] {
     --options-popup-border: var(--text-color);
     --options-popup-bg: var(--board-bg);
     --options-popup-button-hover: var(--view-bg-hover);
+    /* saves */
     --save-border: #b6b6b6;
     --active-save-bg: var(--view-bg-hover);
+    /* settings */
+    --navigation-item-bg-hover: var(--view-bg-hover);
+    --active-navigation-item-bg: #3f3f3f;
 }

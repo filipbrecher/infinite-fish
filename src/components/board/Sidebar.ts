@@ -24,9 +24,6 @@ type Filters = {
 };
 
 // todo - toggles hideable via settings
-// todo - subscribe to state for _elementAdded and _elementUpdated
-// todo - add input captures:
-//      (onViewCopyEmojiText, onViewInfo, elementToggleVisibility)
 export class Sidebar implements IComponent {
     private readonly sidebar: HTMLDivElement;
     private disabled: boolean = false;

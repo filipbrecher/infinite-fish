@@ -1,0 +1,53 @@
+
+#settings-apply-changes {
+    margin-left: auto;
+}
+
+#settings-wrapper {
+    min-height: 100px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#settings-navigation,
+#settings-content {
+    min-height: 200px;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#settings-navigation {
+    width: max-content;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    direction: rtl;
+}
+
+.settings-navigation-item {
+    text-align: left;
+    vertical-align: middle;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 1.5em;
+}
+.settings-navigation-item.active {
+    background-color: var(--active-navigation-item-bg);
+}
+.settings-navigation-item:hover {
+    background-color: var(--navigation-item-bg-hover);
+}
+
+#settings-content {
+    flex: 1;
+    min-width: 500px;
+    background-color: pink;
+    padding: 5px;
+}
+
+
