@@ -35,6 +35,7 @@
     padding: 3px 6px;
     border-radius: 5px;
     font-size: 1.5em;
+    cursor: pointer;
 }
 .settings-navigation-item.active {
     background-color: var(--active-navigation-item-bg);
@@ -46,8 +47,65 @@
 #settings-content {
     flex: 1;
     min-width: 500px;
-    background-color: pink;
     padding: 5px;
 }
 
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.settings-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: flex-start;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid var(--options-popup-border);
+}
+.settings-row:last-child {
+    border-bottom: none;
+}
+.settings-row-title {
+    font-size: 1.25em;
+    margin-right: auto;
+}
+
+.yes-no-toggle::before {
+    content: "NO";
+    background-color: var(--red);
+    border: var(--options-popup-border);
+    border-radius: 5px;
+    padding: 0.25em 0.5em;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+.yes-no-toggle.toggle-on::before {
+    content: "YES";
+    background-color: var(--green);
+}
+
+/* GENERAL */
+#settings-content-general-theme-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+#settings-content-general-theme-name {
+    font-size: 1.1em;
+}
+#settings-content-general-theme-toggle {
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
 

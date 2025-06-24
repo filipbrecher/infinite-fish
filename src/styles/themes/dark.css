@@ -2,6 +2,8 @@
 body[data-theme="dark"] {
     --text-color: #cccccc;
     --text-color-fainted: #9d9d9d;
+    --red: #5d3131;
+    --green: #346433;
 
     --scrollbar-track-color: var(--board-bg);
     --scrollbar-thumb-color: #4f4f4f;

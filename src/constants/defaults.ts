@@ -13,15 +13,15 @@ const DEFAULT_KEY_PROPS: KeyPropsRecord = {
 
 export const DEFAULT_SETTINGS: SettingsProps = {
     id: SETTINGS_KEY,
-    theme: "dark",
+    theme: "light",
     allowCombineToNothing: false,
 
+    searchResultLimit: 100,
+    searchResultDebounce: 0,
     searchShowUnicodeInput: false,
     searchShowReverseToggle: true,
     searchShowHiddenToggle: true,
     searchShowDiscoveryToggle: true,
-    searchResultLimit: 100,
-    searchResultDebounce: 0,
 
     workspacePanning: {
         keys: {

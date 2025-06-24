@@ -39,8 +39,8 @@ export class SavesPopup implements IPopup {
         this.popup.style.display = "none";
     }
 
-    private onClickImportButton = (event) => {
-        console.log("clicked onMouseDownImportButton");
+    private onClickImportButton = () => {
+        console.log("onClickImportButton");
         // todo
     }
 

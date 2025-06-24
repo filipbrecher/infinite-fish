@@ -5,6 +5,12 @@ export interface IDBTransactionEvent extends Event {
 export type AbortReason = string | undefined;
 
 //============ SETTINGS ============//
+export const Theme = {
+    LIGHT: "light",
+    DARK: "dark",
+} as const;
+export type Theme = (typeof Theme)[keyof typeof Theme];
+
 export const enum KeyState {
     YES = "yes",
     NO = "no",
@@ -34,32 +40,33 @@ export type MouseProps = {
 export type SettingsProps = {
     id: number;
 
-    // general
-    theme: "light" | "dark";
+    // GENERAL
+    theme: Theme;
     allowCombineToNothing: boolean;
 
-    // sidebar
+    // SIDEBAR
+    searchResultLimit: number;      // 0 for unlimited
+    searchResultDebounce: number;   // in ms
     searchShowUnicodeInput: boolean;
     searchShowReverseToggle: boolean;
     searchShowHiddenToggle: boolean;
     searchShowDiscoveryToggle: boolean;
-    searchResultLimit: number;      // 0 for unlimited
-    searchResultDebounce: number;   // in ms
 
-    // controls workspace
+    // CONTROLS
+    // workspace
     workspacePanning: MouseProps;
     workspaceZooming: WheelProps;
     instanceSelecting: MouseProps;
 
-    // controls instance
+    // instance
     instanceDragging: MouseProps;
     instanceCopying: MouseProps;
     instanceDeleting: MouseProps;
 
-    // controls element
+    // element
     elementToggleVisibility: MouseProps; // item in sidebar
 
-    // controls view
+    // view
     viewInfo: MouseProps;
     viewCopyEmojiText: MouseProps; // copy emoji if mouse over emoji, copy text if mouse over text
 }

@@ -2,6 +2,8 @@
 body[data-theme="light"] {
     --text-color: black;
     --text-color-fainted: gray;
+    --red: #ffa2a2;
+    --green: #abffa7;
 
     --scrollbar-track-color: white;
     --scrollbar-thumb-color: gray;
