@@ -3,6 +3,8 @@ import type {IComponent} from "../IComponent";
 import {SavesPopup} from "./SavesPopup";
 import {SettingsPopup} from "./SettingsPopup";
 import type {IPopup} from "./IPopup";
+import {app} from "../../main";
+import {Sound} from "../../types/services";
 
 
 // todo - button to clear all instances
@@ -32,20 +34,22 @@ export class Options implements IComponent {
 
     private onClickSavesButton = (event) => {
         if (this.openedPopup) return;
+        event.stopPropagation();
         this.openedPopup = this.savesPopup;
 
         this.openedPopup.open();
         this.overlay.classList.add("visible");
-        event.stopPropagation();
+        app.audio.play(Sound.OPEN_POPUP);
     }
 
     private onClickSettingsButton = (event) => {
         if (this.openedPopup) return;
+        event.stopPropagation();
         this.openedPopup = this.settingsPopup;
 
         this.openedPopup.open();
         this.overlay.classList.add("visible");
-        event.stopPropagation();
+        app.audio.play(Sound.OPEN_POPUP);
     }
 
     private closePopup = (event) => {

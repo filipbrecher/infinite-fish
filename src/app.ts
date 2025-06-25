@@ -1,17 +1,17 @@
 import {DatabaseService} from "./services/DatabaseService";
-import {Sidebar} from "./components/board/Sidebar";
 import {Logger} from "./services/Logger";
 import {Options} from "./components/options/Options";
 import {StateService} from "./services/StateService";
 import {SettingsService} from "./services/SettingsService";
-import {Workspaces} from "./components/board/Workspaces";
 import {Board} from "./components/board/Board";
 import {InputCaptureService} from "./services/InputCaptureService";
 import type {IComponent} from "./components/IComponent";
+import {AudioService} from "./services/AudioService";
 
 
 export class App {
     private _logger: Logger;
+    private _audio: AudioService;
     private _database: DatabaseService;
     private _settings: SettingsService;
     private _state: StateService;
@@ -21,6 +21,7 @@ export class App {
     private _board: IComponent;
 
     public get logger() { return this._logger; }
+    public get audio() { return this._audio; }
     public get settings() { return this._settings; }
     public get database() { return this._database; }
     public get state() { return this._state; }
@@ -33,6 +34,7 @@ export class App {
 
             // setup logger, db and settings
             this._logger = new Logger();
+            this._audio = new AudioService();
 
             // await this.resetDb();
 

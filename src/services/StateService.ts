@@ -338,8 +338,7 @@ export class StateService {
     }
 
     // assumes data is all valid and returned successfully + recipe is valid and sorted
-    // returns undefined when nothing changed
-    private async upsertElement(emoji: string, text: string, discovery: boolean, recipe: RecipeProps): Promise<UpsertElementProps> {
+    private async upsertElement(emoji: string, text: string, discovery: boolean, recipe: RecipeProps): Promise<[UpsertElementProps, boolean]> {
         let existing = this._elementsByText.get(text);
         const recipeCountBefore = existing?.recipes?.length ?? 0;
 
@@ -354,14 +353,12 @@ export class StateService {
 
             if ( !isNewRecipe && !isNewDiscovery) {
                 // no change
-                return {
+                return [{
                     saveId: existing.saveId,
                     id: existing.id,
                     emoji: emoji,
                     text: text,
-                    discovery: discovery,
-                    recipe: recipe
-                }
+                }, false];
             }
         }
 
@@ -384,6 +381,7 @@ export class StateService {
         existing = this._elementsByText.get(text);
         const recipeCountAfter = existing?.recipes?.length ?? 0;
 
+        let isNew = false;
         if (existing) {
             const recipes = existing.recipes || [];
             const stillIsNewRecipe = isNewRecipe &&
@@ -403,6 +401,7 @@ export class StateService {
             this._elementUpdated.notify(upsertProps);
 
         } else {
+            isNew = true;
             const newElement: ElementProps = {
                 saveId: upsertProps.saveId,
                 id: upsertProps.id,
@@ -422,7 +421,7 @@ export class StateService {
             this._elementAdded.notify(upsertProps);
         }
 
-        return upsertProps;
+        return [upsertProps, isNew];
     }
 
     private replaceInstancesWithNew(id1: number, id2: number, instance: NewInstanceProps): InstanceProps {
@@ -456,8 +455,8 @@ export class StateService {
     }
 
     // returns only after the combination's result was successfully saved to the db (or not if the fetch failed)
-    // returns undefined when the combining fails (error or returned "non-real" Nothing)
-    public async startCombiningElements(e1: { id: number, text: string }, e2: { id: number, text: string }): Promise<UpsertElementProps | undefined> {
+    // returns undefined when the combining fails (error or returned "non-real" Nothing), second returns whether the element was or wasn't new
+    public async startCombiningElements(e1: { id: number, text: string }, e2: { id: number, text: string }): Promise<[UpsertElementProps, boolean] | undefined> {
         this._queuedCombinations++;
         let res = await StateService.fetchWithCatch(`${COMBINE_ELEMENTS}?first=${encodeURIComponent(e1.text)}&second=${encodeURIComponent(e2.text)}`);
         if (res === undefined) return undefined;
@@ -482,9 +481,9 @@ export class StateService {
         }
 
         const recipe = e1.id < e2.id ? [e1.id, e2.id] : [e2.id, e1.id];
-        const upsertProps = await this.upsertElement(data.emoji, data.result, data.isNew, recipe);
+        const [upsertProps, isNew] = await this.upsertElement(data.emoji, data.result, data.isNew, recipe);
         app.logger.log("info", "state", `Successfully combined elements ${e1.text} + ${e2.text} = ${data.result}`);
-        return upsertProps;
+        return [upsertProps, isNew];
     }
 
     public finishCombiningElements(id1: number, id2: number, instance: NewInstanceProps | undefined): void {

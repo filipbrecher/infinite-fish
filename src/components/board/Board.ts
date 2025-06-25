@@ -19,6 +19,7 @@ import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import {ElementView} from "./views/ElementView";
 import {Sidebar} from "./Sidebar";
 import {Workspaces} from "./Workspaces";
+import {Sound} from "../../types/services";
 
 
 // todo - fix height of views / items
@@ -178,6 +179,9 @@ export class Board implements IComponent {
             data: e.detail.data,
         });
         this.onStartDragging(e.detail.originalEvent, created.id);
+
+        console.log("onSpawnInstance");
+        app.audio.play(Sound.INSTANCE_OLD);
     }
 
     private onStartPanning = (e: MouseEvent) => {
@@ -305,6 +309,7 @@ export class Board implements IComponent {
     }
 
     private deleteInstancesFromBoard = (toDelete: Set<number>) => {
+        if (toDelete.size === 0) return;
         toDelete.forEach(id => {
             const i = this.instances.get(id);
             i.removeDiv();
@@ -372,6 +377,7 @@ export class Board implements IComponent {
         }
         if (deleted.size !== 0) {
             app.state.deleteInstances(deleted);
+            app.audio.play(Sound.POP);
         }
 
         window.addEventListener("mousemove", this.onUpdateDeleting);
@@ -384,6 +390,7 @@ export class Board implements IComponent {
         const deleted = this.removeAllInstancesByPosition(...this.getBoardCoordinates(e));
         if (deleted.size !== 0) {
             app.state.deleteInstances(deleted);
+            app.audio.play(Sound.POP);
         }
     }
 
@@ -477,15 +484,17 @@ export class Board implements IComponent {
         i2.setViewCombining(true);
 
         app.state.startCombiningElements(i1.getView() as ElementView, i2.getView() as ElementView)
-            .then((element: UpsertElementProps | undefined) => {
-                if (element === undefined) {
+            .then((res: [UpsertElementProps, boolean] | undefined) => {
+                if (res === undefined) {
                     i1.setViewCombining(false);
                     i2.setViewCombining(false);
                     i1.setDisabled(false);
                     i2.setDisabled(false);
                     app.state.finishCombiningElements(i1.id, i2.id, undefined);
+                    app.audio.play(Sound.FAILED_COMBINE);
                     return;
                 }
+                const [element, isNew] = res;
 
                 const view = View.getView(ViewTypeProps.Element, element.id);
                 const [ unscaledWidth, unscaledHeight ] = View.measureUnscaledSize(view);
@@ -502,6 +511,12 @@ export class Board implements IComponent {
 
                 app.state.finishCombiningElements(i1.id, i2.id, newInstance);
                 this.deleteInstancesFromBoard(new Set([i1.id, i2.id]));
+
+                if (isNew) {
+                    app.audio.play(element.discovery ? Sound.INSTANCE_DISCOVERY : Sound.INSTANCE_NEW);
+                } else {
+                    app.audio.play(Sound.INSTANCE_OLD);
+                }
             }).catch();
     }
 
@@ -617,6 +632,8 @@ export class Board implements IComponent {
 
             this.onStartDragging(e, created[0].id);
         }
+
+        app.audio.play(Sound.INSTANCE_OLD);
     }
 
     private onViewInfo = (e: MouseEvent) => {

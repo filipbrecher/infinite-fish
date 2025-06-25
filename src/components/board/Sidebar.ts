@@ -1,15 +1,15 @@
 import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
-import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
+import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {ElementProps, SettingsProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import {ItemWrapper} from "./wrappers/ItemWrapper";
 import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
 import {MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH} from "../../constants/interaction";
 import {ElementView} from "./views/ElementView";
-import {State} from "../../types/services";
+import {Sound, State} from "../../types/services";
 import type {UpsertElementProps} from "../../types/db/dto";
 import {Utils} from "../../services/Utils";
 
@@ -439,10 +439,12 @@ export class Sidebar implements IComponent {
             item.removeDiv();
             this.sidebarItems.splice(pos, 1);
             app.state.updateElementVisibility(ewl[0].id, true);
+            app.audio.play(Sound.POP);
             return;
         }
         item.setElementHide(!ewl[0].hide);
         app.state.updateElementVisibility(ewl[0].id, !ewl[0].hide);
+        app.audio.play(Sound.POP);
     }
 
     private onViewInfo = (e: MouseEvent) => {

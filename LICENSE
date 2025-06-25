@@ -45,11 +45,15 @@ The following assets are licensed under the CC BY 4.0 (https://creativecommons.o
 - /public/sidebar_order_z_a_light.svg
   Icons by Dazzle UI from https://www.svgrepo.com/
 
+- /public/instance_new.mps
+  New Notification #7 by Universfield -- https://freesound.org/s/736267/ -- License: Attribution 4.0
+
 Modified versions of these files are used as:
 
 - /public/sidebar_order_a_z_dark.svg
 - /public/sidebar_order_z_a_dark.svg
   Colors modified to support dark mode themes
+
 
 ### Assets under the Creative Commons CC0 1.0 Universal (Public Domain) License
 
@@ -61,3 +65,10 @@ These are original or modified versions with color changes:
 - /public/sidebar_hide_elements_light.svg
 - /public/sidebar_hide_elements_dark.svg
 - /public/sidebar_unicode_input.svg
+- /public/failed_combine.wav
+- /public/fart.wav
+- /public/instance_discovery.wav
+- /public/instance_old.ogg
+- /public/instance_pop.ogg
+- /public/open_popup.wav
+- /public/yay.wav
