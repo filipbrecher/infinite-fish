@@ -31,6 +31,7 @@ export class App {
         try {
             document.addEventListener("contextmenu", App.preventContextMenu, { capture: true });
             document.addEventListener("wheel", App.preventDefaultZoom, { capture: true, passive: false });
+            document.addEventListener("mousedown", App.preventAutoscroll, { capture: true });
 
             // setup logger, db and settings
             this._logger = new Logger();
@@ -68,6 +69,12 @@ export class App {
             e.preventDefault();
         }
     };
+
+    private static preventAutoscroll = (e: MouseEvent) => {
+        if (e.button === 1) {
+            e.preventDefault();
+        }
+    }
 
     public async resetDb() {
         indexedDB.deleteDatabase("infinite-fish");

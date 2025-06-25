@@ -82,6 +82,9 @@ export class Sidebar implements IComponent {
 
         // unicode input
         this.unicodeInput.addEventListener("input", this.onUnicodeInputChange);
+        this.unicodeInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") this.unicodeInputButton.click();
+        })
         this.unicodeInputButton.addEventListener("click", this.onUnicodeInputClick);
         if (app.settings.settings.searchShowUnicodeInput) this.unicodeInputWrapper.style.display = "flex";
 
