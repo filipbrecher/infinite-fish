@@ -1,20 +1,29 @@
+import {View} from "./View";
+import {GhostElementViewData, ViewTypeProps} from "../../../types/db/schema";
 
-
-abstract class View {}
 
 export class ElementGhostView extends View {
-    private emoji?: string;
-    private text: string;
-
-    private div: HTMLDivElement | undefined;
+    private _emoji?: string;
+    private _text: string;
 
     constructor(text: string) {
         super();
-        // todo - make a hook or something
+        // todo - make a hook or something + event listener (inputcapture)?
+        this._div = document.createElement("div"); // todo
     }
 
-    public getDiv(): HTMLDivElement {
-        // todo
-        return;
+    public mountTo(container: HTMLDivElement): void {
+        container.appendChild(this._div);
+    }
+
+    public data(): GhostElementViewData {
+        return {
+            emoji: this._emoji || "",
+            text: this._text,
+        };
+    }
+
+    public type(): ViewTypeProps {
+        return ViewTypeProps.GhostElement;
     }
 }

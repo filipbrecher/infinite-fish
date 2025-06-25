@@ -24,7 +24,6 @@ type Filters = {
     discovery: { curr: boolean, next: boolean, div: HTMLDivElement },
 };
 
-// todo - toggles hideable via settings
 export class Sidebar implements IComponent {
     private readonly sidebar: HTMLDivElement;
     private disabled: boolean = false;
@@ -102,13 +101,7 @@ export class Sidebar implements IComponent {
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.blockInputCapture },
         ]);
         app.inputCapture.set("sidebar-item", [
-            { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
-            { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onSpawnInstance },
             { kind: "mousedown", settingsKey: "elementToggleVisibility", handler: this.onToggleElementVisibility },
-        ]);
-        app.inputCapture.set("sidebar-view", [
-            { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
-            { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
         ]);
 
         // hooks
@@ -153,28 +146,13 @@ export class Sidebar implements IComponent {
         }
     }
 
-    private static getItemAndDiv(ewl: ElementWithLower): [ItemWrapper, HTMLDivElement] {
-        const view = new ElementView(ewl[0]);
-        const viewDiv = view.getDiv();
-        viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
-            app.inputCapture.matchMouseDown("sidebar-view", e)(e);
-        });
-
-        const item = new ItemWrapper(view);
-        const itemDiv = item.getDiv(viewDiv);
-        itemDiv.addEventListener("mousedown", (e: MouseEvent) => {
-            app.inputCapture.matchMouseDown("sidebar-item", e)(e, ewl);
-        });
-        return [item, itemDiv];
-    }
-
     private renderFiltered() {
         this.sidebarItemsContainer.innerHTML = "";
         this.sidebarItems = [];
         this.filteredElements.forEach((ewl) => {
-            const [item, itemDiv] = Sidebar.getItemAndDiv(ewl);
+            const item = new ItemWrapper(ewl[0]);
             this.sidebarItems.push(item);
-            this.sidebarItemsContainer.appendChild(itemDiv);
+            item.mountTo(this.sidebarItemsContainer);
         });
     }
 
@@ -220,14 +198,14 @@ export class Sidebar implements IComponent {
 
     private insertInFilteredAtPos(pos: number, ewl: ElementWithLower) {
         this.filteredElements.splice(pos, 0, ewl);
-        const [item, itemDiv] = Sidebar.getItemAndDiv(ewl);
+        const item = new ItemWrapper(ewl[0]);
         this.sidebarItems.splice(pos, 0, item);
 
         if (this.filteredElements.length === 1) {
-            this.sidebarItemsContainer.appendChild(itemDiv);
+            item.mountTo(this.sidebarItemsContainer);
         } else {
             const nextSibling = this.sidebarItemsContainer.children[pos] as Node || null;
-            this.sidebarItemsContainer.insertBefore(itemDiv, nextSibling);
+            item.insertBefore(this.sidebarItemsContainer, nextSibling);
         }
 
         const limit = this.filters.resultLimit.curr;
@@ -408,19 +386,6 @@ export class Sidebar implements IComponent {
         e.stopPropagation();
     }
 
-    private onSpawnInstance = (e: MouseEvent, ewl: ElementWithLower) => {
-        e.stopPropagation();
-        const event: WorkspaceSpawnEvent = new CustomEvent(WORKSPACE_SPAWN_INSTANCE, {
-            detail: {
-                originalEvent: e,
-                type: ViewTypeProps.Element,
-                data: ewl[0].id,
-            },
-            bubbles: true,
-        });
-        this.sidebar.dispatchEvent(event);
-    }
-
     public isXOverSidebar = (x: number): boolean => {
         return x >= window.innerWidth - this.width;
     }
@@ -448,20 +413,6 @@ export class Sidebar implements IComponent {
         item.setElementHide(!ewl[0].hide);
         app.state.updateElementVisibility(ewl[0].id, !ewl[0].hide);
         app.audio.play(Sound.POP);
-    }
-
-    private onViewInfo = (e: MouseEvent) => {
-        console.log("sidebar.view.onViewInfo");
-        e.stopPropagation();
-
-        // todo
-    }
-
-    private onViewCopyEmojiText = (e: MouseEvent) => {
-        console.log("sidebar.view.onViewCopyEmojiText");
-        e.stopPropagation();
-
-        // todo
     }
 
     private onKeyDown = () => {

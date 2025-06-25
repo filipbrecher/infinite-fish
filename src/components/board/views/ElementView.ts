@@ -1,9 +1,8 @@
 import type {ElementViewData, ViewDataProps, ElementProps} from "../../../types/db/schema";
 import {ViewTypeProps} from "../../../types/db/schema";
 import {app} from "../../../main";
+import {View} from "./View";
 
-
-abstract class View {}
 
 export class ElementView extends View {
     private readonly _elementId: number;
@@ -14,8 +13,6 @@ export class ElementView extends View {
     private _discovery: boolean;
     private _hide: boolean;
     private _combining: boolean = false; // when combining two elements
-
-    private div: HTMLDivElement | undefined;
 
     constructor(elementData: ElementViewData | ElementProps) {
         super();
@@ -38,6 +35,17 @@ export class ElementView extends View {
             this._discovery = elementData.discovery || false;
             this._hide = elementData.hide || false;
         }
+
+        this._div = document.createElement("div");
+
+        this._div.classList.add("view");
+        this._div.classList.add("element-view");
+        if (this._discovery) this._div.classList.add("discovery");
+        if (this._hide) this._div.classList.add("hide");
+        this._div.innerText = `${this._emoji} ${this._text}`;
+        this._div.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("view", e)(e);
+        });
     }
 
     public canCombine(): boolean {
@@ -46,28 +54,21 @@ export class ElementView extends View {
 
     public setDiscovery(discovery: boolean) {
         this._discovery = discovery;
-        this.div?.classList.toggle("discovery", discovery);
+        this._div.classList.toggle("discovery", discovery);
     }
 
     public setHide(hide: boolean) {
         this._hide = hide;
-        this.div?.classList.toggle("hide", hide);
+        this._div.classList.toggle("hide", hide);
     }
 
     public setCombining(combining: boolean) {
         this._combining = combining;
-        this.div?.classList.toggle("combining", combining);
+        this._div.classList.toggle("combining", combining);
     }
 
-    public getDiv(): HTMLDivElement {
-        if (this.div) return this.div;
-        this.div = document.createElement("div");
-        this.div.classList.add("view");
-        this.div.classList.add("element-view");
-        if (this._discovery) this.div.classList.add("discovery");
-        if (this._hide) this.div.classList.add("hide");
-        this.div.innerText = `${this._emoji} ${this._text}`;
-        return this.div;
+    protected mountTo(container: HTMLDivElement): void {
+        container.appendChild(this._div);
     }
 
     public type(): ViewTypeProps {

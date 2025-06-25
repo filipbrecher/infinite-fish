@@ -1,30 +1,20 @@
-import type {ElementViewData, ViewDataProps} from "../../../types/db/schema";
+import type {ViewDataProps} from "../../../types/db/schema";
 import {ViewTypeProps} from "../../../types/db/schema";
-import {ElementView} from "./ElementView";
 
 
 export abstract class View {
+    protected _div: HTMLDivElement;
 
-    public static getView(type: ViewTypeProps, props: ViewDataProps): View {
-        switch (type) {
-            case ViewTypeProps.Element:
-                return new ElementView(props as ElementViewData) as View;
-            default:
-                throw new Error("Couldn't create view: Unknown type " + type);
-        }
-    }
+    public measureUnscaledSize(): [ number, number ] {
+        this._div.style.position = 'absolute';
+        this._div.style.visibility = 'hidden';
+        this._div.style.pointerEvents = 'none';
+        this._div.style.left = '-9999px';
+        document.body.appendChild(this._div);
 
-    public static measureUnscaledSize(view: View): [ number, number ] {
-        const div = view.getDiv();
-        div.style.position = 'absolute';
-        div.style.visibility = 'hidden';
-        div.style.pointerEvents = 'none';
-        div.style.left = '-9999px';
-        document.body.appendChild(div);
-
-        const width = div.offsetWidth;
-        const height = div.offsetHeight;
-        div.remove();
+        const width = this._div.offsetWidth;
+        const height = this._div.offsetHeight;
+        this._div.remove();
 
         return [width, height];
     }
@@ -33,10 +23,10 @@ export abstract class View {
         return false;
     }
     public setCombining(combining: boolean) {}
-    public setHide() {}
-    public setDiscovery() {}
+    public setHide(hide: boolean) {}
+    public setDiscovery(discovery: boolean) {}
 
-    abstract getDiv(): HTMLDivElement;
+    abstract mountTo(container: HTMLDivElement): void;
     abstract type(): ViewTypeProps;
     abstract data(): ViewDataProps;
 }

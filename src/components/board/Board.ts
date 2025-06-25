@@ -2,7 +2,7 @@ import "./board.css";
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {InstanceWrapper} from "./wrappers/InstanceWrapper";
-import type {InstanceProps} from "../../types/db/schema";
+import type {InstanceProps, ViewDataProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import type {NewInstanceProps, UpsertElementProps, WorkspaceChangesProps} from "../../types/db/dto";
 import {
@@ -13,16 +13,15 @@ import {
     Z_INDEX_START,
     ZOOM_SENSITIVITY
 } from "../../constants/interaction";
-import {View} from "./views/View";
-import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
-import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import {ElementView} from "./views/ElementView";
 import {Sidebar} from "./Sidebar";
 import {Workspaces} from "./Workspaces";
 import {Sound} from "../../types/services";
+import {createView} from "./views/ViewFactory";
 
 
 // todo - fix height of views / items
+// todo - make this into a service class or smth??
 export class Board implements IComponent {
     private readonly sidebar: Sidebar;
     private readonly workspaces: Workspaces;
@@ -73,7 +72,6 @@ export class Board implements IComponent {
         boardWrapper.addEventListener("wheel", (e: WheelEvent) => {
             app.inputCapture.matchWheel("board", e)(e);
         });
-        boardWrapper.addEventListener(WORKSPACE_SPAWN_INSTANCE, this.onSpawnInstance);
 
         app.inputCapture.set("board", [
             { kind: "mousedown", settingsKey: "workspacePanning", handler: this.onStartPanning },
@@ -86,9 +84,13 @@ export class Board implements IComponent {
             { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onStartCopying },
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onStartDeleting },
         ]);
-        app.inputCapture.set("board-view", [
+        app.inputCapture.set("view", [
             { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
             { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
+        ]);
+        app.inputCapture.set("board-spawn-instance", [
+            { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
+            { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onSpawnInstance },
         ]);
 
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
@@ -113,27 +115,14 @@ export class Board implements IComponent {
 
     private addInstancesToBoard = (instances: Iterable<InstanceProps>) => {
         for (const props of instances) {
-            const view = View.getView(props.type || ViewTypeProps.Element, props.data);
-            const viewDiv = view.getDiv();
-            if ( !viewDiv) {
-                app.logger.log("warning", "board", `Failed to load instance ${props}: ViewDiv not generated`);
-                return;
-            }
-            viewDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("board-view", e)(e);
-            });
-
-            const instance = new InstanceWrapper(props, view);
-            const instanceDiv = instance.getDiv(viewDiv);
-            instanceDiv.addEventListener("mousedown", (e: MouseEvent) => {
-                app.inputCapture.matchMouseDown("board-instance", e)(e, props.id);
-            });
+            const instance = InstanceWrapper.create(props);
+            if ( !instance) continue;
 
             this.instancesByZIndex[props.zIndex] = instance;
             this.maxZIndex = Math.max(this.maxZIndex, props.zIndex);
 
             this.instances.set(props.id, instance);
-            this.board.appendChild(instanceDiv);
+            instance.mountTo(this.board);
         }
     }
 
@@ -164,10 +153,10 @@ export class Board implements IComponent {
         this.clearDragging();
     }
 
-    private onSpawnInstance = (e: WorkspaceSpawnEvent) => {
-        const view = View.getView(e.detail.type || ViewTypeProps.Element, e.detail.data);
-        const [ unscaledWidth, unscaledHeight ] = View.measureUnscaledSize(view);
-        const [ boardX, boardY ] = this.getBoardCoordinates(e.detail.originalEvent);
+    private onSpawnInstance = (e: MouseEvent, type: ViewTypeProps, data: ViewDataProps) => {
+        const view = createView(type, data);
+        const [ unscaledWidth, unscaledHeight ] = view.measureUnscaledSize();
+        const [ boardX, boardY ] = this.getBoardCoordinates(e);
         const x = boardX - unscaledWidth / 2;
         const y = boardY - unscaledHeight / 2;
 
@@ -175,12 +164,11 @@ export class Board implements IComponent {
             x: x,
             y: y,
             zIndex: ++this.maxZIndex,
-            type: e.detail.type || ViewTypeProps.Element,
-            data: e.detail.data,
+            type: type || ViewTypeProps.Element,
+            data: data,
         });
-        this.onStartDragging(e.detail.originalEvent, created.id);
+        this.onStartDragging(e, created.id);
 
-        console.log("onSpawnInstance");
         app.audio.play(Sound.INSTANCE_OLD);
     }
 
@@ -423,7 +411,7 @@ export class Board implements IComponent {
         this.dragLayer.style.zIndex = `${this.draggingSelected ? DRAG_Z_INDEX_BELOW_SIDEBAR  : DRAG_Z_INDEX_ABOVE_SIDEBAR}`;
         this.dragged.forEach((id) => {
             const i = this.instances.get(id);
-            i.moveDivTo(this.dragLayer);
+            i.mountTo(this.dragLayer);
             delete this.instancesByZIndex[i.zIndex];
         });
 
@@ -496,8 +484,8 @@ export class Board implements IComponent {
                 }
                 const [element, isNew] = res;
 
-                const view = View.getView(ViewTypeProps.Element, element.id);
-                const [ unscaledWidth, unscaledHeight ] = View.measureUnscaledSize(view);
+                const view = createView(ViewTypeProps.Element, element.id);
+                const [ unscaledWidth, unscaledHeight ] = view.measureUnscaledSize();
                 const { x: x1, y: y1, width: w1, height: h1 } = i1.getPosDim();
                 const { x: x2, y: y2, width: w2, height: h2 } = i2.getPosDim();
 
@@ -538,7 +526,7 @@ export class Board implements IComponent {
                     .sort((a, b) => (a.zIndex - b.zIndex));
 
                 toMove.forEach(i => {
-                    i.moveDivTo(this.board);
+                    i.mountTo(this.board);
                     i.updatePosition(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex);
                     this.instancesByZIndex[this.maxZIndex] = i;
                 });

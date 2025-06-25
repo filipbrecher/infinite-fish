@@ -1,16 +1,12 @@
 import type {SettingsProps} from "./db/schema";
 
 
-
-// open popup
-
+// AudioService
 // pop / remove instance + hide element when not showing hidden
 // failed to combine
 // new instance from old element
 // new instance from new element (not first discovery)
 // new instance from new element (first discovery)
-
-// AudioService
 export enum Sound {
     OPEN_POPUP = "openPopup",
     FAILED_COMBINE = "failedCombine",

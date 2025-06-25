@@ -5,8 +5,8 @@ import {StateService} from "./services/StateService";
 import {SettingsService} from "./services/SettingsService";
 import {Board} from "./components/board/Board";
 import {InputCaptureService} from "./services/InputCaptureService";
-import type {IComponent} from "./components/IComponent";
 import {AudioService} from "./services/AudioService";
+import type {IComponent} from "./components/IComponent";
 
 
 export class App {

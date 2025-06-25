@@ -1,30 +1,37 @@
 import {ElementView} from "../views/ElementView";
 import {Wrapper} from "./Wrapper";
-import {View} from "../views/View";
+import type {ElementProps} from "../../../types/db/schema";
+import {app} from "../../../main";
+import {ViewTypeProps} from "../../../types/db/schema";
 
 
 export class ItemWrapper extends Wrapper {
     private readonly _view: ElementView;
     private _div: HTMLDivElement | undefined;
 
-    constructor(view: ElementView) {
+    constructor(props: ElementProps) {
         super();
-        this._view = view;
-    }
-
-    public getDiv(viewDiv: HTMLDivElement): HTMLDivElement {
+        this._view = new ElementView(props);
         this._div = document.createElement("div");
 
         this._div.classList.add("wrapper");
         this._div.classList.add("item-wrapper");
+        this._div.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("sidebar-item", e)(e, props);
+        });
+        this._div.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("board-spawn-instance", e)(e, ViewTypeProps.Element, props.id);
+        });
 
-        this._div.appendChild(viewDiv);
-
-        return this._div;
+        this._view.mountTo(this._div);
     }
 
-    public getView(): View {
-        return this._view as View;
+    public mountTo(container: HTMLDivElement) {
+        container.appendChild(this._div);
+    }
+
+    public insertBefore(container: HTMLDivElement, nextSibling: Node | null) {
+        container.insertBefore(this._div, nextSibling);
     }
 
     public removeDiv() {

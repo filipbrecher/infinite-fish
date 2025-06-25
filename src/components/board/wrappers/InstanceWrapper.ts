@@ -1,7 +1,10 @@
 import type {InstanceProps} from "../../../types/db/schema";
+import {ViewTypeProps} from "../../../types/db/schema";
 import type {InstanceMoveProps, NewInstanceProps} from "../../../types/db/dto";
 import {View} from "../views/View";
+import {createView} from "../views/ViewFactory";
 import {Wrapper} from "./Wrapper";
+import {app} from "../../../main";
 
 
 // todo - if ghost, create a hook
@@ -17,24 +20,23 @@ export class InstanceWrapper extends Wrapper {
     private _height: number | undefined;
     private _width: number | undefined;
 
-    private _selected: boolean;
-    private _disabled: boolean;
+    private _selected: boolean = false;
+    private _disabled: boolean = false;
     public get disabled() { return this._disabled; }
 
     private readonly _view: View;
     private _div: HTMLDivElement | undefined;
 
-    constructor(props: InstanceProps, view: View) {
+    private constructor(props: InstanceProps) {
         super();
+        this._view = createView(props.type || ViewTypeProps.Element, props.data);
+
         this._workspaceId = props.workspaceId;
         this._instanceId = props.id;
         this._x = props.x;
         this._y = props.y;
         this._zIndex = props.zIndex;
-        this._view = view;
-    }
 
-    public getDiv(viewDiv: HTMLDivElement): HTMLDivElement {
         this._div = document.createElement("div");
 
         this._div.id = `instance-${this._instanceId}`;
@@ -42,10 +44,19 @@ export class InstanceWrapper extends Wrapper {
         this._div.classList.add("instance-wrapper");
         this._div.style.zIndex = `${this._zIndex}`;
         this._div.style.transform = `translate(${this._x}px, ${this._y}px)`;
+        this._div.addEventListener("mousedown", (e: MouseEvent) => {
+            app.inputCapture.matchMouseDown("board-instance", e)(e, this._instanceId);
+        });
 
-        this._div.appendChild(viewDiv);
+        this._view.mountTo(this._div);
+    }
 
-        return this._div;
+    public static create(props: InstanceProps): InstanceWrapper | null {
+        try {
+            return new InstanceWrapper(props);
+        } catch {
+            return null;
+        }
     }
 
     public getView(): View {
@@ -120,8 +131,8 @@ export class InstanceWrapper extends Wrapper {
         this._div!.style.transform = `translate(${this._x}px, ${this._y}px)`;
     }
 
-    public moveDivTo(dest: HTMLDivElement) {
-        dest.appendChild(this._div);
+    public mountTo(container: HTMLDivElement) {
+        container.appendChild(this._div);
     }
 
     public getDuplicate(dragOffsetX: number, dragOffsetY: number, zIndex?: number): NewInstanceProps {
