@@ -62,6 +62,8 @@ export class StateService {
     private _maxElementId: number;
     private _maxInstanceId: number;
 
+    private _newElementPendingUpsert: Map<string, number> = new Map(); // id of new elements that are being added to db (in transaction)
+
     // combineQueue
     private _queuedCombinations: number = 0;
     private _queueDoneCallback: () => void = () => {};
@@ -343,10 +345,12 @@ export class StateService {
         const recipeCountBefore = existing?.recipes?.length ?? 0;
 
         // check that there is a change that needs to be persisted to db
+        let id: number;
         let isNewRecipe = true;
         let isNewDiscovery = true;
 
         if (existing) {
+            id = existing.id;
             const recipes = existing.recipes || [];
             isNewRecipe = recipes.every(r => r[0] !== recipe[0] || r[1] !== recipe[1]);
             isNewDiscovery = !existing.discovery && discovery;
@@ -360,12 +364,20 @@ export class StateService {
                     text: text,
                 }, false];
             }
+        } else {
+            const pendingId = this._newElementPendingUpsert.get(text);
+            if (pendingId) {
+                id = pendingId;
+            } else {
+                id = ++this._maxElementId;
+                this._newElementPendingUpsert.set(text, id);
+            }
         }
 
         // prepare props for db upsert
         const upsertProps: UpsertElementProps = {
             saveId: existing ? existing.saveId : this._activeSave!.id,
-            id: existing ? existing.id : ++this._maxElementId,
+            id: id,
             emoji: emoji,
             text: text,
             recipe: recipe,
@@ -401,6 +413,7 @@ export class StateService {
             this._elementUpdated.notify(upsertProps);
 
         } else {
+            this._newElementPendingUpsert.delete(text);
             isNew = true;
             const newElement: ElementProps = {
                 saveId: upsertProps.saveId,
