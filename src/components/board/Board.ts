@@ -233,7 +233,7 @@ export class Board implements IComponent {
     }
 
     private onUpdateSelecting = (e: MouseEvent) => {
-        if ( !this.selecting) return;
+        if ( !this.selecting || this.panning) return;
         this.selectionBox.style.display = "block";
 
         const [ boardX, boardY ] = this.getBoardCoordinates(e);
