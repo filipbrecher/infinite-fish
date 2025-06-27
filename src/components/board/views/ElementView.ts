@@ -42,9 +42,16 @@ export class ElementView extends View {
         this._div.classList.add("element-view");
         if (this._discovery) this._div.classList.add("discovery");
         if (this._hide) this._div.classList.add("hide");
-        this._div.innerText = `${this._emoji} ${this._text}`;
+
+        const span = document.createElement("span");
+        span.classList.add("emoji");
+        span.innerText = this._emoji;
+        const textNode = document.createTextNode(" " + this._text);
+
+        this._div.append(span, textNode);
+
         this._div.addEventListener("mousedown", (e: MouseEvent) => {
-            app.inputCapture.matchMouseDown("view", e)(e);
+            app.inputCapture.matchMouseDown("element-view", e)(e, this._elementId);
         });
     }
 

@@ -84,9 +84,12 @@ export class Board implements IComponent {
             { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onStartCopying },
             { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onStartDeleting },
         ]);
-        app.inputCapture.set("view", [
+        app.inputCapture.set("element-view", [
             { kind: "mousedown", settingsKey: "viewInfo", handler: this.onViewInfo },
-            { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopyEmojiText },
+            { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onViewCopy },
+        ]);
+        app.inputCapture.set("ghost-element-view", [
+            { kind: "mousedown", settingsKey: "viewCopyEmojiText", handler: this.onGhostViewCopy },
         ]);
         app.inputCapture.set("board-spawn-instance", [
             { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
@@ -624,17 +627,33 @@ export class Board implements IComponent {
         app.audio.play(Sound.INSTANCE_OLD);
     }
 
-    private onViewInfo = (e: MouseEvent) => {
-        console.log("board.view.onViewInfo");
+    private onViewInfo = (e: MouseEvent, id: number) => {
+        console.log("onViewInfo");
         e.stopPropagation();
 
+        console.log(e.target);
         // todo
     }
 
-    private onViewCopyEmojiText = (e: MouseEvent) => {
-        console.log("board.view.onViewCopyEmojiText");
+    private onViewCopy = (e: MouseEvent, id: number) => {
         e.stopPropagation();
 
-        // todo
+        const target = e.target as HTMLElement;
+        const element = app.state.elementsById[id];
+        const txt = target.classList.contains("emoji") ? element.emoji : element.text;
+        navigator.clipboard.writeText(txt)
+            .catch(() => {
+                app.logger.log("error", "view", "Failed to copy text / emoji to clipboard: " + txt);
+            });
+    }
+
+    private onGhostViewCopy = (e: MouseEvent, str: string) => {
+        console.log("onGhostViewCopy");
+        e.stopPropagation();
+
+        navigator.clipboard.writeText(str)
+            .catch(() => {
+                app.logger.log("error", "view", "Failed to copy ghost view's text / emoji to clipboard: " + str);
+            });
     }
 }
