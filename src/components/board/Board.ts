@@ -48,6 +48,8 @@ export class Board implements IComponent {
     private dragged: Set<number> = new Set();
     private dragging: boolean = false;
     private draggingSelected: boolean = false;
+    private dragStartX: number = 0;
+    private dragStartY: number = 0;
     private dragOffsetX: number = 0;
     private dragOffsetY: number = 0;
     // combining - when dragging
@@ -187,7 +189,12 @@ export class Board implements IComponent {
     private onUpdatePanning = (e: MouseEvent) => {
         if ( !this.panning) return;
 
-        this.setOffsetAndScale({ x: this.offsetX + e.movementX / this.scale, y: this.offsetY + e.movementY / this.scale });
+        const zoomRatio = window.devicePixelRatio;
+
+        this.setOffsetAndScale({
+            x: this.offsetX + e.movementX / zoomRatio / this.scale,
+            y: this.offsetY + e.movementY / zoomRatio / this.scale
+        });
     }
 
     private onEndPanning = (e: MouseEvent) => {
@@ -418,8 +425,7 @@ export class Board implements IComponent {
             delete this.instancesByZIndex[i.zIndex];
         });
 
-        this.dragOffsetX = 0;
-        this.dragOffsetY = 0;
+        [this.dragStartX, this.dragStartY] = this.getBoardCoordinates(e);
         window.addEventListener("mousemove", this.onUpdateDragging);
         window.addEventListener("mouseup", this.onEndDragging);
     }
@@ -427,8 +433,9 @@ export class Board implements IComponent {
     private onUpdateDragging = (e: MouseEvent) => {
         if ( !this.dragging || this.panning) return;
 
-        this.dragOffsetX += e.movementX / this.scale;
-        this.dragOffsetY += e.movementY / this.scale;
+        const [x, y] = this.getBoardCoordinates(e);
+        this.dragOffsetX = x - this.dragStartX;
+        this.dragOffsetY = y - this.dragStartY;
 
         if (this.canCombine) {
             const [draggedId] = this.dragged;
@@ -515,6 +522,10 @@ export class Board implements IComponent {
         if ( !app.inputCapture.matchMouseUp(e, this.onStartDragging)) return;
         if ( !this.dragging) return;
 
+        const [x, y] = this.getBoardCoordinates(e);
+        this.dragOffsetX = x - this.dragStartX;
+        this.dragOffsetY = y - this.dragStartY;
+
         if (this.sidebar.isXOverSidebar(e.clientX) && !this.draggingSelected) {
             // delete if non-selected instance is dropped over sidebar
             this.deleteInstancesFromBoard(this.dragged);
@@ -561,6 +572,8 @@ export class Board implements IComponent {
         this.dragging = false;
         this.draggingSelected = false;
         this.sidebar.setDisabled(false);
+        this.dragStartX = 0;
+        this.dragStartY = 0;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         this.dragged = new Set();
