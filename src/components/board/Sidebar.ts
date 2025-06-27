@@ -38,6 +38,7 @@ export class Sidebar implements IComponent {
     private unicodeInputWrapper: HTMLDivElement;
     private unicodeInput: HTMLInputElement;
     private unicodeInputButton: HTMLDivElement;
+    private lastFocusedInput: HTMLElement;
 
     private lastCaret = 0;
     private readonly filters: Filters;
@@ -74,12 +75,14 @@ export class Sidebar implements IComponent {
             this.lastCaret = searchInputDiv.selectionStart ?? 0;
         });
         searchInputDiv.addEventListener("input", this.onSearchInputChange);
+        searchInputDiv.addEventListener('focus', () => this.lastFocusedInput = searchInputDiv);
 
         // unicode input
         this.unicodeInput.addEventListener("input", this.onUnicodeInputChange);
         this.unicodeInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter") this.unicodeInputButton.click();
         })
+        this.unicodeInput.addEventListener('focus', () => this.lastFocusedInput = this.unicodeInput);
         this.unicodeInputButton.addEventListener("click", this.onUnicodeInputClick);
         if (app.settings.settings.searchShowUnicodeInput) this.unicodeInputWrapper.style.display = "flex";
 
@@ -347,16 +350,17 @@ export class Sidebar implements IComponent {
         const char = String.fromCodePoint(codepoint);
 
         const input = this.filters.substring.div;
-        const start = input.selectionStart ?? 0;
-        const end = input.selectionEnd ?? 0;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? input.value.length;
         const value = input.value;
 
         input.value = value.slice(0, start) + char + value.slice(end);
 
         // set caret after inserted char
-        const caretPos = start + char.length;
-        input.setSelectionRange(caretPos, caretPos);
-        input.focus();
+        this.lastCaret = start + char.length;
+        input.setSelectionRange(this.lastCaret, this.lastCaret);
+
+        this.lastFocusedInput?.focus();
 
         this.onSearchInputChange();
     }
