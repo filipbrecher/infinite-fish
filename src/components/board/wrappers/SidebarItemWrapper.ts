@@ -5,7 +5,7 @@ import {app} from "../../../main";
 import {ViewTypeProps} from "../../../types/db/schema";
 
 
-export class ItemWrapper extends Wrapper {
+export class SidebarItemWrapper extends Wrapper {
     private readonly _view: ElementView;
     private _div: HTMLDivElement | undefined;
 

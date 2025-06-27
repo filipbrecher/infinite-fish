@@ -1,17 +1,13 @@
 import "./sidebar.css";
 import type {IComponent} from "../IComponent";
 import {app} from "../../main";
-import type {WorkspaceSpawnEvent} from "../../signals/CustomEvents";
-import {WORKSPACE_SPAWN_INSTANCE} from "../../signals/CustomEvents";
 import type {ElementProps, SettingsProps} from "../../types/db/schema";
-import {ViewTypeProps} from "../../types/db/schema";
-import {ItemWrapper} from "./wrappers/ItemWrapper";
 import {DEFAULT_SIDEBAR_WIDTH} from "../../constants/defaults";
 import {MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH} from "../../constants/interaction";
-import {ElementView} from "./views/ElementView";
 import {Sound, State} from "../../types/services";
 import type {UpsertElementProps} from "../../types/db/dto";
 import {Utils} from "../../services/Utils";
+import {SidebarItemWrapper} from "./wrappers/SidebarItemWrapper";
 
 
 type ElementWithLower = [ElementProps, string];
@@ -37,7 +33,7 @@ export class Sidebar implements IComponent {
     private sortedElements: ElementWithLower[] = [];
     // current filtered list shown in sidebar (sorted by mixed case + reversed if filter set)
     private filteredElements: ElementWithLower[] = [];
-    private sidebarItems: ItemWrapper[] = [];
+    private sidebarItems: SidebarItemWrapper[] = [];
 
     private unicodeInputWrapper: HTMLDivElement;
     private unicodeInput: HTMLInputElement;
@@ -112,14 +108,18 @@ export class Sidebar implements IComponent {
         app.settings._changed.subscribe(this.onSettingsChanged);
     }
 
-    private static lowerBound(arr: ElementWithLower[], target: string, reversed: boolean = false): number {
+    // first not smaller than target
+    private static lowerBound(arr: ElementWithLower[], target: string, targetLow: string, reversed: boolean = false): number {
         let low = 0;
         let high = arr.length;
         const compare = reversed ? (x: number) => x < 0 : (x: number) => x > 0;
         while (low < high) {
             const mid = (low + high) >> 1;
-            if (compare(Utils.binaryCompare(target, arr[mid][1]))) low = mid + 1;
+            if (compare(Utils.binaryCompare(targetLow, arr[mid][1]))) low = mid + 1;
             else high = mid;
+        }
+        while (low < arr.length && arr[low][0].text < target) {
+            low++;
         }
         return low;
     }
@@ -150,7 +150,7 @@ export class Sidebar implements IComponent {
         this.sidebarItemsContainer.innerHTML = "";
         this.sidebarItems = [];
         this.filteredElements.forEach((ewl) => {
-            const item = new ItemWrapper(ewl[0]);
+            const item = new SidebarItemWrapper(ewl[0]);
             this.sidebarItems.push(item);
             item.mountTo(this.sidebarItemsContainer);
         });
@@ -198,7 +198,7 @@ export class Sidebar implements IComponent {
 
     private insertInFilteredAtPos(pos: number, ewl: ElementWithLower) {
         this.filteredElements.splice(pos, 0, ewl);
-        const item = new ItemWrapper(ewl[0]);
+        const item = new SidebarItemWrapper(ewl[0]);
         this.sidebarItems.splice(pos, 0, item);
 
         if (this.filteredElements.length === 1) {
@@ -218,12 +218,12 @@ export class Sidebar implements IComponent {
     private onElementAdded = (props: UpsertElementProps) => {
         const e = app.state.elementsById[props.id];
         const ewl: ElementWithLower = [e, props.text.toLowerCase()];
-        const sortedPos = Sidebar.lowerBound(this.sortedElements, ewl[1]);
+        const sortedPos = Sidebar.lowerBound(this.sortedElements, ewl[0].text, ewl[1]);
         this.sortedElements.splice(sortedPos, 0, ewl);
 
         if ( !this.matchesFilter(ewl)) return;
         const limit = this.filters.resultLimit.curr;
-        const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
+        const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[0].text, ewl[1], this.filters.reversed.curr);
         if (filteredPos >= limit && limit !== 0) return;
 
         // insert
@@ -235,12 +235,12 @@ export class Sidebar implements IComponent {
         const e = app.state.elementsById[props.id];
         if (e.hide && !this.filters.hidden) return;
 
-        const sortedPos = Sidebar.lowerBound(this.sortedElements, props.text.toLowerCase());
+        const sortedPos = Sidebar.lowerBound(this.sortedElements, props.text, props.text.toLowerCase());
         const ewl = this.sortedElements[sortedPos];
         if ( !this.matchesFilter(ewl)) return;
 
         const limit = this.filters.resultLimit.curr;
-        const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[1], this.filters.reversed.curr);
+        const filteredPos = Sidebar.lowerBound(this.filteredElements, ewl[0].text, ewl[1], this.filters.reversed.curr);
         if (filteredPos >= limit && limit !== 0) return;
 
         if (this.filters.discovery.curr) {
@@ -396,22 +396,22 @@ export class Sidebar implements IComponent {
         this.sidebar.style.pointerEvents = disabled ? "none" : "auto";
     }
 
-    private onToggleElementVisibility = (e: MouseEvent, ewl: ElementWithLower) => {
+    private onToggleElementVisibility = (e: MouseEvent, props: ElementProps) => {
         e.stopPropagation();
 
-        const pos = Sidebar.lowerBound(this.filteredElements, ewl[1]);
-        if (this.filteredElements[pos] !== ewl) return;
+        const pos = Sidebar.lowerBound(this.filteredElements, props.text, props.text.toLowerCase());
+        if (this.filteredElements[pos][0].id !== props.id) return;
         const item = this.sidebarItems[pos];
         if ( !this.filters.hidden.curr) {
             this.filteredElements.splice(pos, 1);
             item.removeDiv();
             this.sidebarItems.splice(pos, 1);
-            app.state.updateElementVisibility(ewl[0].id, true);
+            app.state.updateElementVisibility(props.id, true);
             app.audio.play(Sound.POP);
             return;
         }
-        item.setElementHide(!ewl[0].hide);
-        app.state.updateElementVisibility(ewl[0].id, !ewl[0].hide);
+        item.setElementHide(!props.hide);
+        app.state.updateElementVisibility(props.id, !props.hide);
         app.audio.play(Sound.POP);
     }
 
