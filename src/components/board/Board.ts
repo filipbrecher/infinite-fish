@@ -21,7 +21,6 @@ import {createView} from "./views/ViewFactory";
 
 
 // todo - fix height of views / items
-// todo - make this into a service class or smth??
 export class Board implements IComponent {
     private readonly sidebar: Sidebar;
     private readonly workspaces: Workspaces;
@@ -530,6 +529,7 @@ export class Board implements IComponent {
             // delete if non-selected instance is dropped over sidebar
             this.deleteInstancesFromBoard(this.dragged);
             app.state.deleteInstances(this.dragged);
+            app.audio.play(Sound.POP);
 
         } else {
             const moved = this.dragOffsetX !== 0 || this.dragOffsetY !== 0;
@@ -580,6 +580,7 @@ export class Board implements IComponent {
         this.canCombine = false
         if (this.combinesWith !== undefined) this.instances.get(this.combinesWith)?.setHoveredOver(false);
         this.combinesWith = undefined;
+        this.dragLayer.style.zIndex = `${DRAG_Z_INDEX_ABOVE_SIDEBAR}`;
         this.updateTransform();
         window.removeEventListener("mousemove", this.onUpdateDragging);
         window.removeEventListener("mouseup", this.onEndDragging);
@@ -661,7 +662,6 @@ export class Board implements IComponent {
     }
 
     private onGhostViewCopy = (e: MouseEvent, str: string) => {
-        console.log("onGhostViewCopy");
         e.stopPropagation();
 
         navigator.clipboard.writeText(str)
