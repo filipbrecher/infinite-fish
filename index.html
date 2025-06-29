@@ -43,47 +43,49 @@
         <div id="saves-button" class="clickable-icon saves-icon"></div>
       </div>
 
-      <div id="options-overlay" class="overlay"></div>
+      <!-- Popups -->
+      <div id="popups-wrapper">
+        <div id="popups-overlay" class="overlay"></div>
 
-      <!-- Settings -->
-      <div id="settings-popup" class="popup" style="display: none">
-        <div class="popup-title">
-          <div class="static-icon settings-icon"></div>
-          Settings
-          <div id="settings-apply-changes" class="options-button">Apply Changes</div>
+        <!-- Settings popup -->
+        <div id="settings-popup" class="popup" style="display: none">
+          <div class="popup-title">
+            <div class="static-icon settings-icon"></div>
+            Settings
+            <div id="settings-apply-changes" class="options-button">Apply Changes</div>
+          </div>
+          <div id="settings-wrapper">
+            <div id="settings-navigation">
+              <div id="settings-navigation-general" class="settings-navigation-item">General</div>
+              <div id="settings-navigation-controls" class="settings-navigation-item">Controls</div>
+              <div id="settings-navigation-sidebar" class="settings-navigation-item">Sidebar</div>
+            </div>
+
+            <div id="settings-content">
+              <!-- General settings -->
+              <div id="settings-content-general" class="settings-section" data-section="general" style="display: none">General content
+              </div>
+              <!-- Controls settings -->
+              <div id="settings-content-controls" class="settings-section" data-section="controls" style="display: none">Controls content
+              </div>
+              <!-- Sidebar settings -->
+              <div id="settings-content-sidebar" class="settings-section" data-section="sidebar" style="display: none">Sidebar content
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="settings-wrapper">
-          <div id="settings-navigation">
-            <div id="settings-navigation-general" class="settings-navigation-item">General</div>
-            <div id="settings-navigation-controls" class="settings-navigation-item">Controls</div>
-            <div id="settings-navigation-sidebar" class="settings-navigation-item">Sidebar</div>
-          </div>
 
-          <div id="settings-content">
-            <!-- General settings -->
-            <div id="settings-content-general" class="settings-section" data-section="general" style="display: none">General content
-            </div>
-            <!-- Controls settings -->
-            <div id="settings-content-controls" class="settings-section" data-section="controls" style="display: none">Controls content
-            </div>
-            <!-- Sidebar settings -->
-            <div id="settings-content-sidebar" class="settings-section" data-section="sidebar" style="display: none">Sidebar content
-            </div>
+        <!-- Saves popup -->
+        <div id="saves-popup" class="popup" style="display: none">
+          <div class="popup-title">
+            <div class="static-icon saves-icon"></div>
+            Saves
+            <div id="saves-import" class="options-button">Import</div>
+            <div id="saves-create" class="options-button">Create new</div>
           </div>
+          <div id="saves-list"></div>
         </div>
       </div>
-
-      <!-- Saves -->
-      <div id="saves-popup" class="popup" style="display: none">
-        <div class="popup-title">
-          <div class="static-icon saves-icon"></div>
-          Saves
-          <div id="saves-import" class="options-button">Import</div>
-          <div id="saves-create" class="options-button">Create new</div>
-        </div>
-        <div id="saves-list"></div>
-      </div>
-
     </div>
     <div id="state-overlay" class="overlay">
       <div id="overlay-text"></div>

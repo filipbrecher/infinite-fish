@@ -38,28 +38,11 @@ h1, h2, h3 {
 
 #board-wrapper { z-index: 0; position: absolute; }
 #options { z-index: 1; position: absolute; }
-#options-overlay { z-index: 10; position: fixed; }
-.popup { z-index: 11; position: absolute; }
+#popups-wrapper { z-index: 10; position: absolute; }
 
 #app { z-index: 0; position: absolute; }
 #state-overlay { z-index: 1; position: fixed; }
 
 #app {
     top: 0; right: 0; bottom: 0; left: 0;
-}
-
-.overlay {
-    position: fixed;
-    top: 0; right: 0; bottom: 0; left: 0;
-    background-color: var(--overlay);
-    display: none;
-}
-.overlay.visible {
-    display: block;
-}
-#overlay-text {
-    font-size: 3em;
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
 }

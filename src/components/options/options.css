@@ -33,17 +33,6 @@
     background-image: var(--options-settings-popup);
 }
 
-.popup {
-    position: absolute;
-    top: 7vh; left: 50%;
-    transform: translate(-50%, 0);
-    background-color: var(--options-popup-bg);
-    border: 2px solid var(--options-popup-border);
-    border-radius: 5px;
-    display: none;
-    flex-direction: column;
-}
-
 .popup-title {
     flex-shrink: 0;
     border-bottom: 2px solid var(--options-popup-border);
@@ -55,7 +44,7 @@
     column-gap: 10px;
     flex-direction: row;
 }
-.popup-title .saves-icon, .popup .settings-icon {
+.saves-icon, .popup .settings-icon {
     height: 30px;
     width: 30px;
     background-size: contain;

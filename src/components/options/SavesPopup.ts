@@ -3,29 +3,27 @@ import type {SaveProps} from "../../types/db/schema";
 import {app} from "../../main";
 import {MAX_SAVE_NAME_LENGTH} from "../../constants/save";
 import {Utils} from "../../services/Utils";
-import type {IPopup} from "./IPopup";
+import {Popup} from "../popups/Popup";
 
 
-export class SavesPopup implements IPopup {
-    private readonly overlay: HTMLDivElement;
-    private readonly popup: HTMLDivElement;
-    private readonly importButton: HTMLDivElement;
-    private readonly createButton: HTMLDivElement;
-    private readonly savesList: HTMLDivElement;
+export class SavesPopup extends Popup<void> {
+    private readonly _importButton: HTMLDivElement;
+    private readonly _createButton: HTMLDivElement;
+    private readonly _savesList: HTMLDivElement;
 
     constructor() {
-        this.overlay = document.getElementById("options-overlay") as HTMLDivElement;
-        this.popup = document.getElementById("saves-popup") as HTMLDivElement;
-        this.importButton = document.getElementById("saves-import") as HTMLDivElement;
-        this.createButton = document.getElementById("saves-create") as HTMLDivElement;
-        this.savesList = document.getElementById("saves-list") as HTMLDivElement;
+        super();
+        this._popup = document.getElementById("saves-popup") as HTMLDivElement;
+        this._importButton = document.getElementById("saves-import") as HTMLDivElement;
+        this._createButton = document.getElementById("saves-create") as HTMLDivElement;
+        this._savesList = document.getElementById("saves-list") as HTMLDivElement;
 
-        this.importButton.addEventListener("click", this.onClickImportButton);
-        this.createButton.addEventListener("click", this.onClickCreateButton);
+        this._importButton.addEventListener("click", this.onClickImportButton);
+        this._createButton.addEventListener("click", this.onClickCreateButton);
     }
 
     public open = () => {
-        this.savesList.innerHTML = "";
+        this._savesList.innerHTML = "";
         this.getSortedSaves().forEach((save) => {
             this.prependSave(save);
         });
@@ -34,7 +32,7 @@ export class SavesPopup implements IPopup {
     }
 
     public close = () => {
-        this.savesList.innerHTML = "";
+        this._savesList.innerHTML = "";
 
         this.popup.style.display = "none";
     }
@@ -124,12 +122,12 @@ export class SavesPopup implements IPopup {
             deleteIcon.addEventListener("click", this.onClickDeleteButton);
         }
 
-        this.savesList.prepend(wrapper);
+        this._savesList.prepend(wrapper);
     }
 
     private onClickLoadButton = (event) => {
         const id = Number(event.target.parentElement.id.slice(13));
-        this.overlay.click();
+        app.popup.close(this);
         app.state.loadSave(id).catch();
     }
 

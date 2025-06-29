@@ -7,11 +7,13 @@ import {Board} from "./components/board/Board";
 import {InputCaptureService} from "./services/InputCaptureService";
 import {AudioService} from "./services/AudioService";
 import type {IComponent} from "./components/IComponent";
+import {PopupService} from "./services/PopupService";
 
 
 export class App {
     private _logger: Logger;
     private _audio: AudioService;
+    private _popup: PopupService;
     private _database: DatabaseService;
     private _settings: SettingsService;
     private _state: StateService;
@@ -22,6 +24,7 @@ export class App {
 
     public get logger() { return this._logger; }
     public get audio() { return this._audio; }
+    public get popup() { return this._popup; }
     public get settings() { return this._settings; }
     public get database() { return this._database; }
     public get state() { return this._state; }
@@ -36,6 +39,7 @@ export class App {
             // setup logger, db and settings
             this._logger = new Logger();
             this._audio = new AudioService();
+            this._popup = new PopupService();
 
             // await this.resetDb();
 
