@@ -52,14 +52,12 @@ const licenseComments = [
 ];
 
 const base64Encode = fileData => fileData.toString("base64");
-const TRANSFORMATIONS = [
-    {
-        fileType: "png",
+const TRANSFORMATIONS = {
+    png: {
         data: "image/png;base64",
         encode: base64Encode,
     },
-    {
-        fileType: "svg",
+    svg: {
         data: "image/svg+xml",
         encode: fileData => {
             return encodeURIComponent(fileData.toString('utf8'))
@@ -67,38 +65,51 @@ const TRANSFORMATIONS = [
                 .replace(/"/g, '%22');
         },
     },
-    {
-        fileType: "ogg",
+    ogg: {
         data: "audio/ogg;base64",
         encode: base64Encode,
     },
-    {
-        fileType: "mp3",
+    mp3: {
         data: "audio/mp3;base64",
         encode: base64Encode,
     },
-    {
-        fileType: "wav",
+    wav: {
         data: "audio/wav;base64",
         encode: base64Encode,
     }
-];
+}
 
-async function replaceWithEncoded(str, files) {
-    for (const t of TRANSFORMATIONS) {
-        const matchedFiles = files.filter(f => f.endsWith(`.${t.fileType}`));
+async function replaceWithEncoded(str) {
+    const regex = /(["'])\/public\/(.+?)\.([a-zA-Z0-9]+)\1/g;
+    const replacements = [];
 
-        for (const file of matchedFiles) {
-            const filePath = path.join(DIST_DIR, file);
-            const fileData = await fs.promises.readFile(filePath);
+    let match;
+    while ((match = regex.exec(str)) !== null) {
+        const [matched,, filePath, ext] = match;
 
-            const encodedFile = t.encode(fileData);
-            const replaceWith = `"data:${t.data},${encodedFile}"`;
-
-            const regex = new RegExp(`(["'])/public/${file}\\1`, "g");
-            str = str.replace(regex, replaceWith);
+        const transform = TRANSFORMATIONS[ext.toLowerCase()];
+        if ( !transform) {
+            console.log("Failed to encode: " + matched + ": no entry with an encode function");
+            continue;
         }
+
+        const distPath = path.join(DIST_DIR, `${filePath}.${ext}`);
+        if ( !fs.existsSync(distPath)) {
+            console.log("Failed to encode: " + matched + ": file not found in /dist directory");
+            continue;
+        }
+
+        const fileData = await fs.promises.readFile(distPath);
+        const encoded = transform.encode(fileData);
+        const dataUri = `"data:${transform.data},${encoded}"`;
+
+        replacements.push({ match: matched, replacement: dataUri });
     }
+
+    for (const { match, replacement } of replacements) {
+        str = str.replaceAll(match, replacement);
+    }
+
     return str;
 }
 
@@ -149,9 +160,8 @@ async function main() {
     // 8) Close setTimeout
     out += '}, 2000);\n';
 
-    // 9) Encode all images / audio
-    const files = await fs.promises.readdir(DIST_DIR);
-    out = await replaceWithEncoded(out, files);
+    // 9) Encode all "/public/..."
+    out = await replaceWithEncoded(out);
 
     // Write output
     await fs.promises.writeFile(OUTPUT_PATH, out, 'utf8');
