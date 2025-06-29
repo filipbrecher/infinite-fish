@@ -2,12 +2,10 @@ import type {InstanceProps} from "../../../types/db/schema";
 import {ViewTypeProps} from "../../../types/db/schema";
 import type {InstanceMoveProps, NewInstanceProps} from "../../../types/db/dto";
 import {View} from "../views/View";
-import {createView} from "../views/ViewFactory";
 import {Wrapper} from "./Wrapper";
 import {app} from "../../../main";
 
 
-// todo - if ghost, create a hook
 export class InstanceWrapper extends Wrapper {
     private readonly _workspaceId: number;
     private readonly _instanceId: number;
@@ -22,11 +20,8 @@ export class InstanceWrapper extends Wrapper {
 
     private _selected: boolean = false;
 
-    private readonly _view: View;
-
     private constructor(props: InstanceProps) {
-        super();
-        this._view = createView(props.type || ViewTypeProps.Element, props.data);
+        super(props.type || ViewTypeProps.Element, props.data);
 
         this._workspaceId = props.workspaceId;
         this._instanceId = props.id;
@@ -34,18 +29,13 @@ export class InstanceWrapper extends Wrapper {
         this._y = props.y;
         this._zIndex = props.zIndex;
 
-        this._div = document.createElement("div");
-
         this._div.id = `instance-${this._instanceId}`;
-        this._div.classList.add("wrapper");
         this._div.classList.add("instance-wrapper");
         this._div.style.zIndex = `${this._zIndex}`;
         this._div.style.transform = `translate(${this._x}px, ${this._y}px)`;
         this._div.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("board-instance", e)(e, this._instanceId);
         });
-
-        this._view.mountTo(this._div);
     }
 
     public static create(props: InstanceProps): InstanceWrapper | null {
