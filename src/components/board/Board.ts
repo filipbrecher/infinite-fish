@@ -1,4 +1,6 @@
 import "./board.css";
+import "./wrappers.css";
+import "./views.css";
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {InstanceWrapper} from "./wrappers/InstanceWrapper";

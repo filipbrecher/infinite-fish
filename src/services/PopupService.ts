@@ -1,4 +1,4 @@
-import "./styles/popup.css";
+import "../styles/popup.css";
 import {Popup} from "../components/popups/Popup";
 import {app} from "../main";
 import {Sound} from "../types/services";

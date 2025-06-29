@@ -7,7 +7,7 @@ import {ViewTypeProps} from "../../../types/db/schema";
 
 export class SidebarItemWrapper extends Wrapper {
     private readonly _view: ElementView;
-    private _div: HTMLDivElement | undefined;
+    private readonly _div: HTMLDivElement | undefined;
 
     constructor(props: ElementProps) {
         super();
@@ -15,7 +15,7 @@ export class SidebarItemWrapper extends Wrapper {
         this._div = document.createElement("div");
 
         this._div.classList.add("wrapper");
-        this._div.classList.add("item-wrapper");
+        this._div.classList.add("sidebar-item-wrapper");
         this._div.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("sidebar-item", e)(e, props);
         });
@@ -24,10 +24,6 @@ export class SidebarItemWrapper extends Wrapper {
         });
 
         this._view.mountTo(this._div);
-    }
-
-    public mountTo(container: HTMLDivElement) {
-        container.appendChild(this._div);
     }
 
     public insertBefore(container: HTMLDivElement, nextSibling: Node | null) {

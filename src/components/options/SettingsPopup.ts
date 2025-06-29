@@ -1,6 +1,6 @@
 import "./settings.css";
 import type {MouseProps, SettingsProps, Theme, WheelProps} from "../../types/db/schema";
-import {ButtonProps, KeyProps, KeyState} from "../../types/db/schema";
+import {ButtonProps, KeyProps, KeyState, ViewTypeProps} from "../../types/db/schema";
 import {app} from "../../main";
 import {
     SECTION_NAME_LIST,
@@ -10,6 +10,8 @@ import {
     THEMES_LIST
 } from "../../constants/settings";
 import {Popup} from "../popups/Popup";
+import {ItemWrapper} from "../board/wrappers/ItemWrapper";
+import {Wrapper} from "../board/wrappers/Wrapper";
 
 
 type SectionName = typeof SECTION_NAME_LIST[number];
@@ -70,10 +72,23 @@ export class SettingsPopup extends Popup<void> {
                 </div>
             </div>
             <div class="settings-row">
-                <div class="settings-row-title">Allow <b>Nothing</b> Element</div>
+                <div id="settings-content-general-nothing-title" class="settings-row-title" style="display: flex; flex-direction: row; align-items: center; gap: 5px;">Allow</div>
                 <div id="settings-content-general-nothing-toggle" class="yes-no-toggle"></div>
             </div>
         `;
+
+        const title = content.querySelector("#settings-content-general-nothing-title") as HTMLDivElement;
+        let item: Wrapper;
+        const e = app.state.elementsByText.get("Nothing");
+        if (e) {
+            item = new ItemWrapper(ViewTypeProps.Element, e.id);
+        } else {
+            item = new ItemWrapper(ViewTypeProps.GhostElement, {emoji: "", text: "Nothing"});
+        }
+        item.setDisabled(true);
+        item.mountTo(title);
+        const elemText = document.createTextNode("Element");
+        title.appendChild(elemText);
 
         const section = this._sections.general;
 

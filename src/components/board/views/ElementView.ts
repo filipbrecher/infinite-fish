@@ -43,12 +43,17 @@ export class ElementView extends View {
         if (this._discovery) this._div.classList.add("discovery");
         if (this._hide) this._div.classList.add("hide");
 
-        const span = document.createElement("span");
-        span.classList.add("emoji");
-        span.innerText = this._emoji;
-        const textNode = document.createTextNode(" " + this._text);
+        if (this._emoji && this._emoji.length !== 0) {
+            const span = document.createElement("span");
+            span.classList.add("emoji");
+            span.innerText = this._emoji;
+            const textNode = document.createTextNode(" " + this._text);
+            this._div.append(span, textNode);
 
-        this._div.append(span, textNode);
+        } else {
+            const textNode = document.createTextNode(this._text);
+            this._div.appendChild(textNode);
+        }
 
         this._div.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("element-view", e)(e, this._elementId);
@@ -72,10 +77,6 @@ export class ElementView extends View {
     public setCombining(combining: boolean) {
         this._combining = combining;
         this._div.classList.toggle("combining", combining);
-    }
-
-    protected mountTo(container: HTMLDivElement): void {
-        container.appendChild(this._div);
     }
 
     public type(): ViewTypeProps {

@@ -21,11 +21,8 @@ export class InstanceWrapper extends Wrapper {
     private _width: number | undefined;
 
     private _selected: boolean = false;
-    private _disabled: boolean = false;
-    public get disabled() { return this._disabled; }
 
     private readonly _view: View;
-    private _div: HTMLDivElement | undefined;
 
     private constructor(props: InstanceProps) {
         super();
@@ -105,10 +102,6 @@ export class InstanceWrapper extends Wrapper {
     public setViewCombining(combining: boolean) {
         this._view.setCombining(combining);
     }
-    public setDisabled(disabled: boolean) {
-        this._disabled = disabled;
-        this._div?.classList.toggle("disabled", disabled);
-    }
 
     public getPosDim(): {x: number, y: number, width: number, height: number} {
         if ( !this._height || !this._width) {
@@ -129,10 +122,6 @@ export class InstanceWrapper extends Wrapper {
         this._zIndex = zIndex;
         this._div!.style.zIndex = `${this._zIndex}`;
         this._div!.style.transform = `translate(${this._x}px, ${this._y}px)`;
-    }
-
-    public mountTo(container: HTMLDivElement) {
-        container.appendChild(this._div);
     }
 
     public getDuplicate(dragOffsetX: number, dragOffsetY: number, zIndex?: number): NewInstanceProps {

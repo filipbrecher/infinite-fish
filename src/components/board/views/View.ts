@@ -26,7 +26,9 @@ export abstract class View {
     public setHide(hide: boolean) {}
     public setDiscovery(discovery: boolean) {}
 
-    abstract mountTo(container: HTMLDivElement): void;
+    public mountTo(container: HTMLDivElement): void {
+        container.appendChild(this._div);
+    }
     abstract type(): ViewTypeProps;
     abstract data(): ViewDataProps;
 }

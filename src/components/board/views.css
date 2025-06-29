@@ -1,0 +1,92 @@
+
+/* general */
+.view {
+    background-color: var(--view-bg);
+    border: 1px solid var(--view-border);
+    padding: 4px 5px;
+    border-radius: 5px;
+    white-space: pre;
+}
+.view:hover {
+    background-color: var(--view-bg-hover);
+    border: 1px solid var(--view-border-hover);
+}
+
+.view.combining {
+    animation: combining-pulse 2s infinite ease-in-out;
+}
+@keyframes combining-pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.3; }
+}
+
+/* ghost */
+.ghost-element-view {
+    border: 1px solid var(--text-color-fainted);
+    color: var(--text-color-fainted);
+}
+
+/* in instance wrapper */
+.instance-wrapper.selected .view {
+    background-color: var(--view-selected-bg);
+    border: 1px solid var(--view-selected-border);
+}
+.instance-wrapper.selected .view:hover {
+    background-color: var(--view-selected-bg-hover);
+    border: 1px solid var(--view-selected-border-hover);
+}
+
+.instance-wrapper.hovered-over .view {
+    transform: scale(1.05);
+    background-color: var(--view-bg-hover);
+    border: 1px solid var(--view-border-hover);
+}
+.instance-wrapper.hovered-over.selected .view {
+    background-color: var(--view-selected-bg-hover);
+    border: 1px solid var(--view-selected-border-hover);
+}
+
+.instance-wrapper .view.discovery::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+
+    background-image: var(--view-discovery);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.instance-wrapper .view.discovery::after {
+    width: 20px;
+    height: 20px;
+}
+
+/* in sidebar wrapper */
+/*.sidebar-item-wrapper .view.discovery::after {*/
+/*    width: 15px;*/
+/*    height: 15px;*/
+/*}*/
+
+/*.sidebar-item-wrapper .discovery {*/
+/*    background-color: var(--view-discovery-bg);*/
+/*    border: 1px solid var(--view-discovery-border);*/
+/*}*/
+/*.sidebar-item-wrapper .discovery:hover {*/
+/*    background-color: var(--view-discovery-bg-hover);*/
+/*    border: 1px solid var(--view-discovery-border-hover);*/
+/*}*/
+
+.sidebar-item-wrapper .hide {
+    background-color: var(--view-hide-bg);
+    border: 1px solid var(--view-hide-border);
+}
+.sidebar-item-wrapper .hide:hover {
+    background-color: var(--view-hide-bg-hover);
+    border: 1px solid var(--view-hide-border-hover);
+}
+
+/* in item wrapper */
+

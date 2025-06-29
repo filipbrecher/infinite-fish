@@ -1,0 +1,22 @@
+
+.wrapper {
+    cursor: pointer;
+}
+.wrapper.disabled {
+    pointer-events: none;
+}
+
+/* instance wrapper */
+.instance-wrapper {
+    position: absolute;
+}
+
+/* sidebar item wrapper */
+.sidebar-item-wrapper {
+    position: relative;
+}
+
+/* item wrapper */
+.item-wrapper {
+    width: fit-content;
+}
