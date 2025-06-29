@@ -1,11 +1,14 @@
-import { defineConfig } from 'vite'
-import Userscript from 'vite-userscript-plugin'
-import { name, version } from './package.json'
+import { defineConfig } from 'vite';
+import {copyPublicFiles} from "./vite/plugins/copyPublicFiles";
+import Userscript from 'vite-userscript-plugin';
+import { name, version } from './package.json';
 import path from 'path';
+
 
 export default defineConfig((config) => {
     return {
         plugins: [
+            copyPublicFiles(),
             Userscript({
                 entry: 'src/main.ts',
                 header: {
@@ -18,9 +21,10 @@ export default defineConfig((config) => {
                     grant: ['GM_addStyle'],
                     author: "AlfoFish",
                 },
-            }),
+            })
         ],
         build: {
+            copyPublicDir: false,
             rollupOptions: {
                 input: path.resolve(__dirname, 'index.html'),
             },
