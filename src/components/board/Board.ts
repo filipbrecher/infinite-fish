@@ -20,6 +20,7 @@ import {Sidebar} from "./Sidebar";
 import {Workspaces} from "./Workspaces";
 import {Sound} from "../../types/services";
 import {createView} from "./views/ViewFactory";
+import {ElementInfoPopup} from "./ElementInfoPopup";
 
 
 // todo - fix height of views / items
@@ -28,6 +29,7 @@ export class Board implements IComponent {
 
     private readonly sidebar: Sidebar;
     private readonly workspaces: Workspaces;
+    private readonly elementInfoPopup: ElementInfoPopup;
 
     private readonly board: HTMLDivElement;
     private readonly dragLayer: HTMLDivElement;
@@ -66,6 +68,7 @@ export class Board implements IComponent {
     constructor() {
         this.sidebar = new Sidebar();
         this.workspaces = new Workspaces();
+        this.elementInfoPopup = new ElementInfoPopup();
 
         this.board = document.getElementById("board") as HTMLDivElement;
         this.dragLayer = document.getElementById("drag-layer") as HTMLDivElement;
@@ -674,11 +677,8 @@ export class Board implements IComponent {
     }
 
     private onViewInfo = (e: MouseEvent, id: number) => {
-        console.log("onViewInfo");
         e.stopPropagation();
-
-        console.log(e.target);
-        // todo
+        app.popup.open(null, this.elementInfoPopup, id);
     }
 
     private onViewCopy = (e: MouseEvent, id: number) => {

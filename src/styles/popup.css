@@ -36,3 +36,15 @@
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
 }
+
+.popup-title {
+    flex-shrink: 0;
+    border-bottom: 2px solid var(--options-popup-border);
+    padding: 5px 7px;
+    font-size: large;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 10px;
+    flex-direction: row;
+}

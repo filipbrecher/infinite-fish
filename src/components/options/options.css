@@ -33,18 +33,7 @@
     background-image: var(--options-settings-popup);
 }
 
-.popup-title {
-    flex-shrink: 0;
-    border-bottom: 2px solid var(--options-popup-border);
-    padding: 5px 10px 5px 5px;
-    font-size: large;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    column-gap: 10px;
-    flex-direction: row;
-}
-.saves-icon, .popup .settings-icon {
+.popup .saves-icon, .popup .settings-icon {
     height: 30px;
     width: 30px;
     background-size: contain;
