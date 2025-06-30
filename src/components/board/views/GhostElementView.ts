@@ -11,7 +11,7 @@ export class GhostElementView extends View {
     constructor(props: GhostElementViewData) {
         super();
         // todo - make a hook or something + event listener (inputcapture)?
-        this._div = document.createElement("div"); // todo
+        this._div = document.createElement("div");
         this._emoji = props.emoji || "";
         this._text = props.text;
 

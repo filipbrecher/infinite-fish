@@ -497,7 +497,16 @@ export class Board implements IComponent {
         this.updateTransform();
     }
 
-    private combineInstances = (i1: InstanceWrapper, i2: InstanceWrapper) => {
+    private combineInstances = (draggedId: number, draggedOverId: number) => {
+        const i1 = this.instances.get(draggedId);
+        const i2 = this.instances.get(draggedOverId);
+        this.instances.get(draggedOverId)!.setHoveredOver(false);
+
+        if (this.selected.has(i2.id)) {
+            i2.setSelected(false);
+            this.selected.delete(draggedOverId);
+        }
+
         i1.setDisabled(true);
         i2.setDisabled(true);
         i1.setViewCombining(true);
@@ -538,6 +547,8 @@ export class Board implements IComponent {
                     app.audio.play(Sound.INSTANCE_OLD);
                 }
             }).catch();
+
+        this.combinesWith = undefined;
     }
 
     private onEndDragging = (e: MouseEvent) => {
@@ -572,15 +583,7 @@ export class Board implements IComponent {
 
             if (this.canCombine && this.combinesWith !== undefined) {
                 const [draggedId] = this.dragged;
-                const i1 = this.instances.get(draggedId);
-                const i2 = this.instances.get(this.combinesWith);
-                this.instances.get(this.combinesWith)!.setHoveredOver(false);
-
-                if (this.selected.has(i2.id)) {
-                    i2.setSelected(false);
-                    this.selected.delete(this.combinesWith);
-                }
-                this.combineInstances(i1, i2);
+                this.combineInstances(draggedId, this.combinesWith);
             }
         }
 
@@ -611,7 +614,7 @@ export class Board implements IComponent {
     }
 
     private onStartCopying = (e: MouseEvent, id: number) => {
-        if (this.isBlocked || this.selecting) return;
+        if (this.isBlocked || this.selecting || this.deleting) return;
         e.stopPropagation();
 
         if (this.dragging) {
@@ -628,7 +631,12 @@ export class Board implements IComponent {
                 newInstances.push(i.getDuplicate(this.dragOffsetX, this.dragOffsetY, ++this.maxZIndex));
             });
 
-            app.state.createInstances(newInstances);
+            const props = app.state.createInstances(newInstances);
+
+            // if dragging unselected over a combinable element, then combine the newly created instance with it
+            if (this.canCombine && this.combinesWith !== undefined) {
+                this.combineInstances(props[0].id, this.combinesWith);
+            }
 
         } else {
             // need to start dragging the instances that just got created, leave the clicked ones as they were
