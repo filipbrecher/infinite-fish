@@ -2,12 +2,19 @@ import "../styles/popup.css";
 import {Popup} from "../components/popups/Popup";
 import {app} from "../main";
 import {Sound} from "../types/services";
+import {Subject} from "../signals/Subject";
 
 
 export class PopupService {
     private readonly wrapper: HTMLDivElement;
     private readonly overlay: HTMLDivElement;
     private stack: Popup<any>[] = [];
+
+    private hidden: boolean = false;
+    private hider: any; // object that hid the popup and only that subject can show it again
+
+    public _openedPopup: Subject<void> = new Subject();
+    public _closedPopup: Subject<void> = new Subject();
 
     constructor() {
         this.wrapper = document.getElementById("popups-wrapper") as HTMLDivElement;
@@ -25,6 +32,8 @@ export class PopupService {
         this.updateOverlay();
         popup.open(props);
         app.audio.play(Sound.OPEN_POPUP);
+
+        if (this.stack.length === 1) this._openedPopup.notify();
 
         return true;
     }
@@ -45,6 +54,9 @@ export class PopupService {
 
         this.overlay.classList.toggle("visible", false);
         this.updateOverlay();
+
+        if (this.stack.length === 0) this._closedPopup.notify();
+
         return true;
     }
 
@@ -58,5 +70,20 @@ export class PopupService {
         if (this.stack.length === 0) return;
         const top = this.stack[this.stack.length - 1];
         this.wrapper.insertBefore(this.overlay, top.popup);
+    }
+
+    public hide(hider: any): boolean {
+        if (this.hidden || this.stack.length === 0) return false;
+        this.hider = hider;
+        this.hidden = true;
+        this.wrapper.classList.toggle("visible", false);
+        return true;
+    }
+
+    public show(hider: any): boolean {
+        if ( !this.hidden || this.hider !== hider) return false;
+        this.hidden = false;
+        this.wrapper.classList.toggle("visible", true);
+        return true;
     }
 }

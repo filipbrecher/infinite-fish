@@ -1,5 +1,10 @@
 
-#popups-wrapper {}
+#popups-wrapper {
+    display: none;
+}
+#popups-wrapper.visible {
+    display: block;
+}
 
 .overlay {
     position: fixed;

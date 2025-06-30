@@ -1,5 +1,6 @@
 import {View} from "./View";
-import type {GhostElementViewData, ViewTypeProps} from "../../../types/db/schema";
+import type {GhostElementViewData} from "../../../types/db/schema";
+import {ViewTypeProps} from "../../../types/db/schema";
 import {app} from "../../../main";
 
 

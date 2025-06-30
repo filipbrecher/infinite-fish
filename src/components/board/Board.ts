@@ -24,6 +24,8 @@ import {createView} from "./views/ViewFactory";
 
 // todo - fix height of views / items
 export class Board implements IComponent {
+    private isBlocked: boolean = true;
+
     private readonly sidebar: Sidebar;
     private readonly workspaces: Workspaces;
 
@@ -32,6 +34,7 @@ export class Board implements IComponent {
     private instances: Map<number, InstanceWrapper> = new Map();
     private instancesByZIndex: InstanceWrapper[] = [];
 
+    // workspace
     private offsetX: number; // px in scale 1
     private offsetY: number; // px in scale 1
     private scale: number;
@@ -136,6 +139,7 @@ export class Board implements IComponent {
         this.setOffsetAndScale(app.state.activeWorkspace);
         this.maxZIndex = Z_INDEX_START;
         this.addInstancesToBoard(app.state.instances.values());
+        this.isBlocked = false;
     }
 
     private onWorkspaceTransformed = (changes: Partial<WorkspaceChangesProps>) => {
@@ -147,12 +151,14 @@ export class Board implements IComponent {
     }
 
     private onWorkspaceUnloaded = () => {
+        this.isBlocked = true;
         this.instances.forEach(i => i.removeDiv());
         this.instances = new Map();
         this.instancesByZIndex = [];
     }
 
     private onStateWaiting = () => {
+        this.isBlocked = true;
         this.clearPanning();
         this.clearDeleting();
         this.clearSelecting();
@@ -160,6 +166,8 @@ export class Board implements IComponent {
     }
 
     private onSpawnInstance = (e: MouseEvent, type: ViewTypeProps, data: ViewDataProps) => {
+        if (this.isBlocked) return;
+        app.popup.hide(this);
         const view = createView(type, data);
         const [ unscaledWidth, unscaledHeight ] = view.measureUnscaledSize();
         const [ boardX, boardY ] = this.getBoardCoordinates(e);
@@ -178,8 +186,18 @@ export class Board implements IComponent {
         app.audio.play(Sound.INSTANCE_OLD);
     }
 
+    // called when you aren't dragging anything anymore, (but were before) -> end of onSpawnInstance as well
+    private onEndedHolding = () => {
+        if (app.popup.show(this)) {
+            this.clearPanning();
+            this.clearDeleting();
+            this.clearSelecting();
+            this.clearDragging();
+        }
+    }
+
     private onStartPanning = (e: MouseEvent) => {
-        if (this.panning) return;
+        if (this.isBlocked || this.panning) return;
         e.stopPropagation();
 
         this.panning = true;
@@ -225,7 +243,7 @@ export class Board implements IComponent {
     }
 
     private onStartSelecting = (e: MouseEvent) => {
-        if (this.selecting || this.dragging) return;
+        if (this.isBlocked || this.selecting || this.dragging) return;
         e.stopPropagation();
 
         this.selecting = true;
@@ -286,6 +304,7 @@ export class Board implements IComponent {
     }
 
     private onWheel = (e: WheelEvent) => {
+        if (this.isBlocked) return;
         e.stopPropagation();
 
         const scaleFactor = Math.exp(-e.deltaY * ZOOM_SENSITIVITY);
@@ -363,8 +382,9 @@ export class Board implements IComponent {
     }
 
     private onStartDeleting = (e: MouseEvent, id?: number) => {
-        if (this.deleting) return;
+        if (this.isBlocked || this.deleting) return;
         e.stopPropagation();
+        const wasDragging = this.dragging;
 
         this.deleting = true;
 
@@ -381,6 +401,7 @@ export class Board implements IComponent {
 
         window.addEventListener("mousemove", this.onUpdateDeleting);
         window.addEventListener("mouseup", this.onEndDeleting);
+        if (wasDragging) this.onEndedHolding();
     }
 
     private onUpdateDeleting = (e: MouseEvent) => {
@@ -408,7 +429,7 @@ export class Board implements IComponent {
     }
 
     private onStartDragging = (e: MouseEvent, id: number) => {
-        if (this.dragging || this.selecting) return;
+        if (this.isBlocked || this.dragging || this.selecting || this.deleting) return;
         e.stopPropagation();
 
         this.dragging = true;
@@ -564,6 +585,7 @@ export class Board implements IComponent {
         }
 
         this.clearDragging();
+        this.onEndedHolding();
     }
 
     // todo - fix bug, where an instance isn't somehow moved from drag layer back to board, so when we drag a different instance, it moves, but upon dropping
@@ -589,7 +611,7 @@ export class Board implements IComponent {
     }
 
     private onStartCopying = (e: MouseEvent, id: number) => {
-        if (this.selecting) return;
+        if (this.isBlocked || this.selecting) return;
         e.stopPropagation();
 
         if (this.dragging) {

@@ -2,9 +2,13 @@ import {app} from "../main";
 import {
     DATABASE_NAME,
     DATABASE_VERSION,
-    ELEMENT_STORE, INSTANCE_STORE, SAVE_ID_INDEX,
-    SAVE_STORE, SETTINGS_KEY,
-    SETTINGS_STORE, WORKSPACE_ID_INDEX,
+    ELEMENT_STORE,
+    INSTANCE_STORE,
+    SAVE_ID_INDEX,
+    SAVE_STORE,
+    SETTINGS_KEY,
+    SETTINGS_STORE,
+    WORKSPACE_ID_INDEX,
     WORKSPACE_STORE
 } from "../constants/dbSchema";
 import type {
@@ -16,11 +20,14 @@ import type {
     SettingsProps,
     WorkspaceProps
 } from "../types/db/schema";
-import type {UpsertElementProps, InstanceMoveProps, WorkspaceChangesProps} from "../types/db/dto";
+import {ViewTypeProps} from "../types/db/schema";
+import type {InstanceMoveProps, UpsertElementProps, WorkspaceChangesProps} from "../types/db/dto";
 import {
-    DEFAULT_ELEMENTS, DEFAULT_SAVE,
+    DEFAULT_ELEMENTS,
+    DEFAULT_SAVE,
     DEFAULT_SAVE_NAME,
-    DEFAULT_SETTINGS, DEFAULT_WORKSPACE,
+    DEFAULT_SETTINGS,
+    DEFAULT_WORKSPACE,
     DEFAULT_WORKSPACE_NAME
 } from "../constants/defaults";
 import {Utils} from "./Utils";
@@ -685,6 +692,7 @@ export class DatabaseService {
                 });
 
                 createInstances?.forEach((instance) => {
+                    if (instance.type === ViewTypeProps.Element) delete instance.type;
                     instanceStore.add(instance);
                 });
             }
