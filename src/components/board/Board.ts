@@ -678,7 +678,8 @@ export class Board implements IComponent {
 
     private onViewInfo = (e: MouseEvent, id: number) => {
         e.stopPropagation();
-        app.popup.open(null, this.elementInfoPopup, id);
+        app.popup.close(this);
+        app.popup.open(this, this.elementInfoPopup, id);
     }
 
     private onViewCopy = (e: MouseEvent, id: number) => {

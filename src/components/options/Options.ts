@@ -26,11 +26,11 @@ export class Options implements IComponent {
 
     private onClickSavesButton = (event) => {
         event.stopPropagation();
-        app.popup.open(null, this.savesPopup);
+        app.popup.open(this, this.savesPopup);
     }
 
     private onClickSettingsButton = (event) => {
         event.stopPropagation();
-        app.popup.open(null, this.settingsPopup);
+        app.popup.open(this, this.settingsPopup);
     }
 }
