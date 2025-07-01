@@ -545,8 +545,8 @@ export class DatabaseService {
     // create a new element if it doesn't exist, otherwise updates recipes and/or discovery
     // DOES NOT check whether the element with this text exists or doesn't exist (just the id, saveId combo)
     // DOES NOT check that the ids of the elements in the recipe are valid within that save
+    // DOES NOT check whether the elements in the recipe are sorted correctly by text
     public async upsertElement(props: UpsertElementProps): Promise<void> {
-        if (props.recipe && props.recipe[0] > props.recipe[1]) props.recipe.reverse();
         return new Promise<void>((resolve, reject) => {
             const tx = this._db.transaction([SAVE_STORE, ELEMENT_STORE], "readwrite");
             const saveStore = tx.objectStore(SAVE_STORE);

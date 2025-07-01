@@ -493,7 +493,7 @@ export class StateService {
             }
         }
 
-        const recipe = e1.id < e2.id ? [e1.id, e2.id] : [e2.id, e1.id];
+        const recipe = e1.text < e2.text ? [e1.id, e2.id] : [e2.id, e1.id];
         const [upsertProps, isNew] = await this.upsertElement(data.emoji, data.result, data.isNew, recipe);
         app.logger.log("info", "state", `Successfully combined elements ${e1.text} + ${e2.text} = ${data.result}`);
         return [upsertProps, isNew];
