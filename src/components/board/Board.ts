@@ -23,7 +23,6 @@ import {createView} from "./views/ViewFactory";
 import {ElementInfoPopup} from "./ElementInfoPopup";
 
 
-// todo - fix height of views / items
 export class Board implements IComponent {
     private isBlocked: boolean = true;
 

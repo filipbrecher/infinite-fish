@@ -1,11 +1,18 @@
 
 /* general */
 .view {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 2px 6px 1px;
+    border-radius: 5px;
     background-color: var(--view-bg);
     border: 1px solid var(--view-border);
-    padding: 4px 5px;
-    border-radius: 5px;
-    white-space: pre;
+    height: 25px;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+    gap: 6px;
 }
 .view:hover {
     background-color: var(--view-bg-hover);
@@ -18,6 +25,23 @@
 @keyframes combining-pulse {
     0%, 100% { opacity: 0.8; }
     50% { opacity: 0.3; }
+}
+
+.text, .emoji {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    align-items: center;
+    line-height: 2;
+}
+.text { flex-shrink: 1; }
+.emoji { flex-shrink: 100000; }
+
+.separator {
+    width: 1px;
+    background-color: var(--view-border);
+    margin-left: -2px;
+    height: 35px;
+    display: var(--separator-display);
 }
 
 /* ghost */

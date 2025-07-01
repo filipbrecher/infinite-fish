@@ -20,6 +20,7 @@ h1, h2, h3 {
 
 :root {
     --sidebar-width: 400px;
+    --separator-display: none;
     --options-settings-popup: url("/public/options_settings_popup.svg");
     --options-saves-popup: url("/public/options_saves_popup.svg");
     --options-edit-save-name: url("/public/options_edit_save_name.svg");

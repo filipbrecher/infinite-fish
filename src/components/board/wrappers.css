@@ -1,5 +1,8 @@
 
 .wrapper {
+    min-width: 0;
+    width: fit-content;
+    display: flex;
     cursor: pointer;
 }
 .wrapper.disabled {
@@ -11,12 +14,8 @@
     position: absolute;
 }
 
-/* sidebar item wrapper */
-.sidebar-item-wrapper {
-    position: relative;
-}
-
 /* item wrapper */
-.item-wrapper {
-    width: fit-content;
-}
+.item-wrapper {}
+
+/* sidebar item wrapper */
+.sidebar-item-wrapper {}

@@ -21,16 +21,18 @@ export class GhostElementView extends View {
         this._div.classList.add("ghost-element-view");
 
         if (this._emoji && this._emoji.length !== 0) {
-            const span = document.createElement("span");
-            span.classList.add("emoji");
-            span.innerText = this._emoji;
-            const textNode = document.createTextNode(" " + this._text);
-            this._div.append(span, textNode);
-
-        } else {
-            const textNode = document.createTextNode(this._text);
-            this._div.appendChild(textNode);
+            const emojiSpan = document.createElement("span");
+            emojiSpan.classList.add("emoji");
+            emojiSpan.innerText = this._emoji;
+            const separatorSpan = document.createElement("span");
+            separatorSpan.classList.add("separator");
+            this._div.append(emojiSpan, separatorSpan);
         }
+
+        const textSpan = document.createElement("span");
+        textSpan.classList.add("text");
+        textSpan.innerText = this._text;
+        this._div.appendChild(textSpan);
 
         this._div.addEventListener("mousedown", (e: MouseEvent) => {
             let str = (e.target as HTMLElement).classList.contains("emoji") ? this._emoji : this._text;

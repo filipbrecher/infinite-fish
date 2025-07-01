@@ -7,6 +7,7 @@ export abstract class View {
 
     public measureUnscaledSize(): [ number, number ] {
         this._div.style.position = 'absolute';
+        this._div.style.width = 'auto';
         this._div.style.visibility = 'hidden';
         this._div.style.pointerEvents = 'none';
         this._div.style.left = '-9999px';

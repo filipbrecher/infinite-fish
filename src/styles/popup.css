@@ -25,6 +25,7 @@
 .popup {
     position: fixed;
     top: 7vh; left: 50%;
+    max-width: 80%;
     transform: translate(-50%, 0);
     background-color: var(--options-popup-bg);
     border: 2px solid var(--options-popup-border);

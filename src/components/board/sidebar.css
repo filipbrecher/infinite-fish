@@ -122,6 +122,5 @@
     gap: 8px;
     box-sizing: border-box;
     align-content: flex-start;
-    white-space: nowrap;
     overflow-y: scroll;
 }
