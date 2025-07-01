@@ -41,8 +41,9 @@ export class Utils {
         return a.length - b.length;
     }
 
-    public static deepUpdate(target: any, source: Partial<any>): any {
-        for (const key in source) {
+    public static deepUpdate(target: any, source: any): any {
+        if (source === undefined || source === null || typeof source !== 'object' || Array.isArray(source)) return target;
+        for (const key in target) {
             if ( !Object.prototype.hasOwnProperty.call(source, key)) continue;
 
             const targetVal = target[key];
