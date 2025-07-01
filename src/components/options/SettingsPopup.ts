@@ -72,6 +72,10 @@ export class SettingsPopup extends Popup<void> {
                 </div>
             </div>
             <div class="settings-row">
+                <div id="settings-content-general-separator-title" class="settings-row-title" style="display: flex; flex-direction: row; align-items: center; gap: 5px;">Show Emoji Separator</div>
+                <div id="settings-content-general-separator-toggle" class="yes-no-toggle"></div>
+            </div>
+            <div class="settings-row">
                 <div id="settings-content-general-nothing-title" class="settings-row-title" style="display: flex; flex-direction: row; align-items: center; gap: 5px;">Allow</div>
                 <div id="settings-content-general-nothing-toggle" class="yes-no-toggle"></div>
             </div>
@@ -94,15 +98,20 @@ export class SettingsPopup extends Popup<void> {
 
         section.themeName = content.querySelector("#settings-content-general-theme-name") as HTMLDivElement;
         section.themeToggle = content.querySelector("#settings-content-general-theme-toggle") as HTMLDivElement;
+        const separatorToggle = content.querySelector("#settings-content-general-separator-toggle") as HTMLDivElement;
         section.nothingToggle = content.querySelector("#settings-content-general-nothing-toggle") as HTMLDivElement;
 
         const theme = THEMES_LIST[app.settings.settings.theme];
         section.themeName.innerText = theme.name;
         section.themeToggle.style.backgroundColor = theme.background;
         section.themeToggle.style.border = `1px solid ${theme.border}`;
+        separatorToggle.classList.toggle("toggle-yes", app.settings.settings.showEmojiTextSeparator);
         section.nothingToggle.classList.toggle("toggle-yes", app.settings.settings.allowCombineToNothing);
 
         section.themeToggle.addEventListener("click", this.onGeneralToggleTheme);
+        separatorToggle.addEventListener("click", () => {
+            this.onToggleBoolean("showEmojiTextSeparator", separatorToggle);
+        });
         section.nothingToggle.addEventListener("click", this.onGeneralToggleNothing);
     }
 

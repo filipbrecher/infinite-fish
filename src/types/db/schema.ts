@@ -42,6 +42,7 @@ export type SettingsProps = {
 
     // GENERAL
     theme: Theme;
+    showEmojiTextSeparator: boolean;
     allowCombineToNothing: boolean;
 
     // SIDEBAR

@@ -16,12 +16,18 @@ export class SettingsService {
     public async init(): Promise<void> {
         this._settings = await app.database.loadSettings();
         document.body.dataset.theme = this._settings.theme;
+        document.documentElement.style.setProperty("--separator-display", this._settings.showEmojiTextSeparator ? "block" : "none");
     }
 
     public updateSettings(changes: Partial<SettingsProps>) {
         if (changes.theme !== undefined) document.body.dataset.theme = changes.theme;
+        if (changes.showEmojiTextSeparator !== undefined) {
+            document.documentElement.style.setProperty("--separator-display", changes.showEmojiTextSeparator ? "block" : "none");
+        }
+
         this._settings = Utils.deepUpdate(this._settings, changes);
         this._changed.notify(changes);
+
         app.database.updateSettings(this._settings).catch();
     }
 }
