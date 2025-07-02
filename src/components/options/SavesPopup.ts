@@ -69,10 +69,10 @@ export class SavesPopup extends Popup<void> {
                     </div>
                 </div>
                 <div id="save-actions-${save.id}" class="save-actions">
-                    <div class="name-action-icon edit-icon clickable-icon" title="Edit Name"></div>
-                    <div class="load-icon clickable-icon" title="Load"></div>
-                    <div class="export-icon clickable-icon" title="Export"></div>
-                    <div class="delete-icon clickable-icon" title="Delete"></div>
+                    <div class="icon mask-icon button-icon edit-save-name-icon" title="Edit Name"></div>
+                    <div class="icon mask-icon button-icon load-save-icon" title="Load"></div>
+                    <div class="icon mask-icon button-icon export-save-icon" title="Export"></div>
+                    <div class="icon mask-icon button-icon delete-save-icon" title="Delete"></div>
                 </div>
             </div>
             <div class="save-stats">
@@ -87,9 +87,9 @@ export class SavesPopup extends Popup<void> {
 
         const nameSpan = wrapper.querySelector(".name-display") as HTMLSpanElement;
         const nameInput = wrapper.querySelector(".name-input") as HTMLInputElement;
-        const editIcon = wrapper.querySelector(".name-action-icon") as HTMLDivElement;
-        const loadIcon = wrapper.querySelector(".load-icon") as HTMLDivElement;
-        const deleteIcon = wrapper.querySelector(".delete-icon") as HTMLDivElement;
+        const editIcon = wrapper.querySelector(".edit-save-name-icon") as HTMLDivElement;
+        const loadIcon = wrapper.querySelector(".load-save-icon") as HTMLDivElement;
+        const deleteIcon = wrapper.querySelector(".delete-save-icon") as HTMLDivElement;
 
         nameSpan.textContent = save.name;
 
@@ -99,8 +99,8 @@ export class SavesPopup extends Popup<void> {
                 nameSpan.style.display = "none";
                 nameInput.style.display = "inline";
                 nameInput.focus();
-                editIcon.classList.remove("edit-icon");
-                editIcon.classList.add("save-icon");
+                editIcon.classList.remove("edit-save-name-icon");
+                editIcon.classList.add("save-save-name-icon");
                 editIcon.title = "Save Name";
 
             } else {
@@ -112,8 +112,8 @@ export class SavesPopup extends Popup<void> {
                 }
                 nameSpan.style.display = "inline";
                 nameInput.style.display = "none";
-                editIcon.classList.remove("save-icon");
-                editIcon.classList.add("edit-icon");
+                editIcon.classList.remove("save-save-name-icon");
+                editIcon.classList.add("edit-save-name-icon");
                 editIcon.title = "Edit Name";
             }
         });

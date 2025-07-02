@@ -271,8 +271,11 @@ export class SettingsPopup extends Popup<void> {
 
         if (row.title!.icon !== undefined) {
             const icon = document.createElement("div") as HTMLDivElement;
+            icon.classList.add("icon");
+            icon.classList.add("mask-icon");
             icon.classList.add("settings-row-icon");
-            icon.style.backgroundImage = `var(${row.title!.icon})`;
+            icon.style.setProperty("mask-image", `var(${row.title!.icon})`);
+            icon.style.setProperty("-webkit-mask-image", `var(${row.title!.icon})`);
 
             labelWrapperLike = document.createElement("div") as HTMLDivElement;
             labelWrapperLike.classList.add("settings-row-label-wrapper");

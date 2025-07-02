@@ -49,16 +49,16 @@ export class Sidebar implements IComponent {
         this.resizer = document.getElementById("resizer") as HTMLDivElement;
         this.unicodeInputWrapper = document.getElementById("sidebar-search-unicode-input-wrapper") as HTMLDivElement;
         this.unicodeInput = document.getElementById("sidebar-search-unicode-input") as HTMLInputElement;
-        this.unicodeInputButton = document.getElementById("sidebar-search-unicode-input-button") as HTMLDivElement;
+        this.unicodeInputButton = document.getElementById("sidebar-search-unicode-input-icon") as HTMLDivElement;
         this.sidebarItemsContainer = document.getElementById("sidebar-items") as HTMLDivElement;
 
         const resultLimit = app.settings.settings.sidebar.resultLimit;
         this.filters = {
             resultLimit: { curr: resultLimit, next: resultLimit },
             substring: { curr: "", next: "", div: document.getElementById("sidebar-search-input") as HTMLInputElement },
-            reversed: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-order") as HTMLDivElement },
-            hidden: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement },
-            discovery: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement },
+            reversed: { curr: false, next: false, div: document.getElementById("sidebar-search-order-icon") as HTMLDivElement },
+            hidden: { curr: false, next: false, div: document.getElementById("sidebar-search-hidden-icon") as HTMLDivElement },
+            discovery: { curr: false, next: false, div: document.getElementById("sidebar-search-discovery-icon") as HTMLDivElement },
         };
         if ( !app.settings.settings.sidebar.showReverseToggle) this.filters.reversed.div.style.display = "none";
         if ( !app.settings.settings.sidebar.showHiddenToggle) this.filters.hidden.div.style.display = "none";

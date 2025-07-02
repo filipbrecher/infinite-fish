@@ -180,7 +180,6 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             {
                 key: "allowNothing",
                 getTitle: () => SettingsPopup.getNothingToggleTitle(),
-                // getTitle: getNothingToggleTitle,
                 content: {
                     type: "yesNoConfirmToggle",
                     default: false,
@@ -342,22 +341,22 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "showUnicodeInput",
-                title: { label: "Show Unicode Input", icon: "--sidebar-unicode-input" },
+                title: { label: "Show Unicode Input", icon: "--unicode-input-icon" },
                 content: { type: "yesNoToggle", default: false }
             },
             {
                 key: "showHiddenToggle",
-                title: { label: "Show Hidden Elements Toggle", icon: "--sidebar-unhide-elements" },
+                title: { label: "Show Hidden Elements Toggle", icon: "--unhide-elements-icon" },
                 content: { type: "yesNoToggle", default: true }
             },
             {
                 key: "showDiscoveryToggle",
-                title: { label: "Show Discovered Elements Toggle", icon: "--view-discovery" },
+                title: { label: "Show Discovered Elements Toggle", icon: "--discovery-icon" },
                 content: { type: "yesNoToggle", default: true }
             },
             {
                 key: "showReverseToggle",
-                title: { label: "Show Reversed Order Toggle", icon: "--sidebar-order-a-z" },
+                title: { label: "Show Reversed Order Toggle", icon: "--order-a-z-icon" },
                 content: { type: "yesNoToggle", default: true }
             },
         ]

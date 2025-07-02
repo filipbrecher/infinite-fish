@@ -9,6 +9,10 @@ body[data-theme="light"] {
     --scrollbar-track-color: white;
     --scrollbar-thumb-color: gray;
 
+    --mask-icon-color-unselected: #7e7e7e;
+    --mask-icon-color-selected: black;
+    --mask-icon-color-hover: #2a2a2a;
+
     /* board */
     --board-bg: white;
 
@@ -49,11 +53,11 @@ body[data-theme="light"] {
     /* sidebar */
     --sidebar-bg: var(--board-bg);
     --sidebar-border: black;
-    --sidebar-order-a-z: url("/public/sidebar_order_a_z_light.svg");
-    --sidebar-order-z-a: url("/public/sidebar_order_z_a_light.svg");
-    --sidebar-discovery-off: url("/public/sidebar_discovery_light.svg");
-    --sidebar-unhide-elements: url("/public/sidebar_unhide_elements_light.svg");
-    --sidebar-hide-elements: url("/public/sidebar_hide_elements_light.svg");
+    --hide-elements-icon: url("/public/images/sidebar_hide_elements_light.svg");
+    --unhide-elements-icon: url("/public/images/sidebar_unhide_elements_light.svg");
+    --discovery-unselected-icon: url("/public/images/discovery_unselected_light.svg");
+    --order-a-z-icon: url("/public/images/sidebar_order_a_z_light.svg");
+    --order-z-a-icon: url("/public/images/sidebar_order_z_a_light.svg");
 
     /* options */
     --overlay: #00000020;

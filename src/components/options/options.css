@@ -1,18 +1,4 @@
 
-.static-icon {
-    background-size: contain;
-    filter: opacity(var(--options-icon-opacity-hover)) var(--options-icon-filter);
-
-}
-.clickable-icon {
-    background-size: contain;
-    filter: opacity(var(--options-icon-opacity)) var(--options-icon-filter);
-    cursor: pointer;
-}
-.clickable-icon:hover {
-    filter: opacity(var(--options-icon-opacity-hover)) var(--options-icon-filter);
-}
-
 #options {
     position: absolute;
     bottom: 0; left: 0;
@@ -22,21 +8,22 @@
     padding: 10px;
 }
 
-#options>div {
+#options > div {
     height: 50px;
     width: 50px;
 }
 .saves-icon {
-    background-image: var(--options-saves-popup);
+    mask-image: var(--saves-icon);
+    -webkit-mask-image: var(--saves-icon);
 }
 .settings-icon {
-    background-image: var(--options-settings-popup);
+    mask-image: var(--settings-icon);
+    -webkit-mask-image: var(--settings-icon);
 }
 
-.popup .saves-icon, .popup .settings-icon {
+.popup > .icon {
     height: 30px;
     width: 30px;
-    background-size: contain;
 }
 .options-button {
     background-color: transparent;

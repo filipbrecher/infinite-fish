@@ -1,4 +1,5 @@
 import "./styles/style.css";
+import "./styles/icons.css";
 import "./styles/themes/light.css";
 import "./styles/themes/dark.css";
 import {App} from "./app";

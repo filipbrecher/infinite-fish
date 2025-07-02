@@ -3,12 +3,12 @@ import {Utils} from "./Utils";
 
 
 const PATHS: Record<Sound, [string, number][]> = {
-    [Sound.OPEN_POPUP]: [["/public/open_popup.wav", 0.5]],
-    [Sound.FAILED_COMBINE]: [["/public/failed_combine.wav", 0.15]],
-    [Sound.POP]: [["/public/instance_pop.ogg", 0.5]],
-    [Sound.INSTANCE_OLD]: [["/public/instance_old.ogg", 0.6]],
-    [Sound.INSTANCE_NEW]: [["/public/instance_new.mp3", 1]],
-    [Sound.INSTANCE_DISCOVERY]: [["/public/instance_discovery.wav", 1], ["/public/fart.wav", 1], ["/public/yay.wav", 0.8]],
+    [Sound.OPEN_POPUP]: [["/public/audio/open_popup.wav", 0.5]],
+    [Sound.FAILED_COMBINE]: [["/public/audio/failed_combine.wav", 0.15]],
+    [Sound.POP]: [["/public/audio/instance_pop.ogg", 0.5]],
+    [Sound.INSTANCE_OLD]: [["/public/audio/instance_old.ogg", 0.6]],
+    [Sound.INSTANCE_NEW]: [["/public/audio/instance_new.mp3", 1]],
+    [Sound.INSTANCE_DISCOVERY]: [["/public/audio/instance_discovery.wav", 1], ["/public/audio/fart.wav", 1], ["/public/audio/yay.wav", 0.8]],
 };
 
 export class AudioService {

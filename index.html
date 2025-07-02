@@ -25,13 +25,13 @@
           <div id="sidebar-search">
             <input id="sidebar-search-input" type="text" placeholder="Search..." maxlength="319" autocomplete="off" spellcheck="false" />
             <div id="sidebar-search-unicode-input-wrapper" style="display: none">
-              <div id="sidebar-search-unicode-input-button" title="Insert Codepoint At Caret"></div>
+              <div id="sidebar-search-unicode-input-icon" class="icon mask-icon button-icon" title="Insert Codepoint At Caret"></div>
               <span id="sidebar-search-unicode-input-prefix">U+</span>
               <input id="sidebar-search-unicode-input" type="text" placeholder="0000" maxlength="7" autocomplete="off" spellcheck="false" />
             </div>
-            <div id="sidebar-search-toggle-hidden" class="sidebar-search-toggle" title="Show Hidden Elements"></div>
-            <div id="sidebar-search-toggle-discovery" class="sidebar-search-toggle" title="Show Only Discoveries"></div>
-            <div id="sidebar-search-toggle-order" class="sidebar-search-toggle" title="Sort Order"></div>
+            <div id="sidebar-search-hidden-icon" class="icon bg-icon sidebar-search-icon" title="Show Hidden Elements"></div>
+            <div id="sidebar-search-discovery-icon" class="icon bg-icon sidebar-search-icon" title="Show Only Discoveries"></div>
+            <div id="sidebar-search-order-icon" class="icon bg-icon sidebar-search-icon" title="Sort Order"></div>
           </div>
           <div id="sidebar-items"></div>
         </div>
@@ -39,8 +39,8 @@
 
       <!-- Options -->
       <div id="options">
-        <div id="settings-button" class="clickable-icon settings-icon"></div>
-        <div id="saves-button" class="clickable-icon saves-icon"></div>
+        <div id="options-settings-icon" class="icon mask-icon button-icon settings-icon"></div>
+        <div id="options-saves-icon" class="icon mask-icon button-icon saves-icon"></div>
       </div>
 
       <!-- Popups -->
@@ -56,7 +56,7 @@
         <!-- Settings popup -->
         <div id="settings-popup" class="popup" style="display: none">
           <div class="popup-title">
-            <div class="static-icon settings-icon"></div>
+            <div class="icon mask-icon settings-icon"></div>
             Settings
             <div id="settings-apply-changes" class="options-button">Apply Changes</div>
           </div>
@@ -69,7 +69,7 @@
         <!-- Saves popup -->
         <div id="saves-popup" class="popup" style="display: none">
           <div class="popup-title">
-            <div class="static-icon saves-icon"></div>
+            <div class="icon mask-icon saves-icon"></div>
             Saves
             <div id="saves-import" class="options-button">Import</div>
             <div id="saves-create" class="options-button">Create new</div>

@@ -68,49 +68,38 @@
     height: 100%;
     display: inline-block;
 }
-#sidebar-search-unicode-input-button {
+#sidebar-search-unicode-input-icon {
     height: 20px;
     width: 20px;
-    padding-bottom: 2px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    filter: opacity(var(--options-icon-opacity)) var(--options-icon-filter);
-    cursor: pointer;
-    background-image: var(--sidebar-unicode-input);
+    margin-bottom: 1px;
     margin-left: 4px;
-}
-#sidebar-search-unicode-input-button:hover {
-    filter: opacity(var(--options-icon-opacity-hover)) var(--options-icon-filter);
+    mask-image: var(--unicode-input-icon);
+    -webkit-mask-image: var(--unicode-input-icon);
 }
 
-.sidebar-search-toggle {
+.sidebar-search-icon {
     flex: 0;
     min-width: 25px;
     min-height: 25px;
     cursor: pointer;
-
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
 }
-#sidebar-search-toggle-order {
-    background-image: var(--sidebar-order-a-z);
+#sidebar-search-hidden-icon {
+    background-image: var(--hide-elements-icon);
 }
-#sidebar-search-toggle-order.toggle-on {
-    background-image: var(--sidebar-order-z-a);
+#sidebar-search-hidden-icon.toggle-on {
+    background-image: var(--unhide-elements-icon);
 }
-#sidebar-search-toggle-hidden {
-    background-image: var(--sidebar-hide-elements);
+#sidebar-search-discovery-icon {
+    background-image: var(--discovery-unselected-icon);
 }
-#sidebar-search-toggle-hidden.toggle-on {
-    background-image: var(--sidebar-unhide-elements);
+#sidebar-search-discovery-icon.toggle-on {
+    background-image: var(--discovery-icon);
 }
-#sidebar-search-toggle-discovery {
-    background-image: var(--sidebar-discovery-off);
+#sidebar-search-order-icon {
+    background-image: var(--order-a-z-icon);
 }
-#sidebar-search-toggle-discovery.toggle-on {
-    background-image: var(--view-discovery);
+#sidebar-search-order-icon.toggle-on {
+    background-image: var(--order-z-a-icon);
 }
 
 #sidebar-items {

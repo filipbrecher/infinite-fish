@@ -7,30 +7,30 @@ import {app} from "../../main";
 
 // todo - button to clear all instances - maybe not here though?
 export class Options implements IComponent {
-    private readonly savesPopup: SavesPopup;
     private readonly settingsPopup: SettingsPopup;
+    private readonly savesPopup: SavesPopup;
 
-    private readonly savesButton: HTMLDivElement;
     private readonly settingsButton: HTMLDivElement;
+    private readonly savesButton: HTMLDivElement;
 
     constructor() {
-        this.savesPopup = new SavesPopup();
         this.settingsPopup = new SettingsPopup();
+        this.savesPopup = new SavesPopup();
 
-        this.savesButton = document.getElementById("saves-button") as HTMLDivElement;
-        this.settingsButton = document.getElementById("settings-button") as HTMLDivElement;
+        this.settingsButton = document.getElementById("options-settings-icon") as HTMLDivElement;
+        this.savesButton = document.getElementById("options-saves-icon") as HTMLDivElement;
 
-        this.savesButton.addEventListener("click", this.onClickSavesButton);
         this.settingsButton.addEventListener("click", this.onClickSettingsButton);
-    }
-
-    private onClickSavesButton = (event) => {
-        event.stopPropagation();
-        app.popup.open(this, this.savesPopup);
+        this.savesButton.addEventListener("click", this.onClickSavesButton);
     }
 
     private onClickSettingsButton = (event) => {
         event.stopPropagation();
         app.popup.open(this, this.settingsPopup);
+    }
+
+    private onClickSavesButton = (event) => {
+        event.stopPropagation();
+        app.popup.open(this, this.savesPopup);
     }
 }

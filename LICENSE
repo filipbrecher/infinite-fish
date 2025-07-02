@@ -28,30 +28,30 @@ SOFTWARE.
 
 The following asset is licensed under the MIT License (https://opensource.org/licenses/MIT):
 
-- /public/view_discovery.svg
+- /public/images/discovery.svg
   Sparkles SVG Vector from Twemoji Emojis
   Author: Twitter (https://github.com/twitter/twemoji/blob/master/LICENSE)
 
 Modified versions of this file are used as:
 
-- /public/sidebar_discovery_light.svg
-- /public/sidebar_discovery_dark.svg
+- /public/images/discovery_unselected_light.svg
+- /public/images/discovery_unselected_dark.svg
 
 ### Assets under the Creative Commons Attribution 4.0 License (CC BY 4.0)
 
 The following assets are licensed under the CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/):
 
-- /public/sidebar_order_a_z_light.svg
-- /public/sidebar_order_z_a_light.svg
+- /public/images/sidebar_order_a_z_light.svg
+- /public/images/sidebar_order_z_a_light.svg
   Icons by Dazzle UI from https://www.svgrepo.com/
 
-- /public/instance_new.mps
+- /public/audio/instance_new.mp3
   New Notification #7 by Universfield -- https://freesound.org/s/736267/ -- License: Attribution 4.0
 
 Modified versions of these files are used as:
 
-- /public/sidebar_order_a_z_dark.svg
-- /public/sidebar_order_z_a_dark.svg
+- /public/images/sidebar_order_a_z_dark.svg
+- /public/images/sidebar_order_z_a_dark.svg
   Colors modified to support dark mode themes
 
 
@@ -60,15 +60,15 @@ Modified versions of these files are used as:
 The following assets are provided under the Creative Commons CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain) License.
 These are original or modified versions with color changes:
 
-- /public/sidebar_unhide_elements_light.svg
-- /public/sidebar_unhide_elements_dark.svg
-- /public/sidebar_hide_elements_light.svg
-- /public/sidebar_hide_elements_dark.svg
-- /public/sidebar_unicode_input.svg
-- /public/failed_combine.wav
-- /public/fart.wav
-- /public/instance_discovery.wav
-- /public/instance_old.ogg
-- /public/instance_pop.ogg
-- /public/open_popup.wav
-- /public/yay.wav
+- /public/images/sidebar_unhide_elements_light.svg
+- /public/images/sidebar_unhide_elements_dark.svg
+- /public/images/sidebar_hide_elements_light.svg
+- /public/images/sidebar_hide_elements_dark.svg
+- /public/images/sidebar_unicode_input.svg
+- /public/audio/failed_combine.wav
+- /public/audio/fart.wav
+- /public/audio/instance_discovery.wav
+- /public/audio/instance_old.ogg
+- /public/audio/instance_pop.ogg
+- /public/audio/open_popup.wav
+- /public/audio/yay.wav

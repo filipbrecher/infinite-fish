@@ -81,7 +81,7 @@
     transform: translate(-50%, -50%);
     pointer-events: none;
 
-    background-image: var(--view-discovery);
+    background-image: var(--discovery-icon);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;

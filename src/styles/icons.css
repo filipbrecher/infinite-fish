@@ -1,0 +1,48 @@
+
+.icon {
+    width: 25px;
+    height: 25px;
+}
+
+.button-icon, .on-off-icon {
+    cursor: pointer;
+}
+
+.bg-icon { /* for each image you need to add the corresponding var(--this-icon-by-theme-and-selected/unselected/hover) */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.mask-icon { /* you only need to add a single var(--this-icon-by-theme) for the mask-image and same for -webkit-mask-image */
+    mask-size: cover;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: cover;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+.mask-icon {
+    background-color: var(--mask-icon-color-selected);
+}
+
+.mask-icon.button-icon {
+    background-color: var(--mask-icon-color-unselected);
+}
+
+.mask-icon.button-icon:hover {
+    background-color: var(--mask-icon-color-hover);
+}
+
+.mask-icon.on-off-icon {
+    background-color: var(--mask-icon-color-unselected);
+}
+
+.mask-icon.on-off-icon.toggle-on {
+    background-color: var(--mask-icon-color-selected);
+}
+
+.mask-icon.on-off-icon:hover {
+    background-color: var(--mask-icon-color-hover);
+}

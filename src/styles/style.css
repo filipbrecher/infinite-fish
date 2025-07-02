@@ -9,6 +9,17 @@ html, body {
     font-family: Roboto, sans-serif;
 }
 
+/* Safari and old Chrome */
+::-webkit-scrollbar {
+    /*width: 8px;*/
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+}
+::-webkit-scrollbar-track {
+    background-color: var(--scrollbar-track-color);
+}
+
 input {
     all: unset;
 }
@@ -21,15 +32,16 @@ h1, h2, h3 {
 :root {
     --sidebar-width: 400px;
     --separator-display: none;
-    --options-settings-popup: url("/public/options_settings_popup.svg");
-    --options-saves-popup: url("/public/options_saves_popup.svg");
-    --options-edit-save-name: url("/public/options_edit_save_name.svg");
-    --options-save-save-name: url("/public/options_save_save_name.svg");
-    --options-load-save: url("/public/options_load_save.svg");
-    --options-export-save: url("/public/options_export_save.svg");
-    --options-delete-save: url("/public/options_delete_save.svg");
-    --sidebar-unicode-input: url("/public/sidebar_unicode_input.svg");
-    --view-discovery: url("/public/view_discovery.svg");
+    --transparent-icon: url("/public/images/transparent.svg");
+    --settings-icon: url("/public/images/options_settings.svg");
+    --saves-icon: url("/public/images/options_saves.svg");
+    --edit-save-name-icon: url("/public/images/options_edit_save_name.svg");
+    --save-save-name-icon: url("/public/images/options_save_save_name.svg");
+    --load-save-icon: url("/public/images/options_load_save.svg");
+    --export-save-icon: url("/public/images/options_export_save.svg");
+    --delete-save-icon: url("/public/images/options_delete_save.svg");
+    --unicode-input-icon: url("/public/images/sidebar_unicode_input.svg");
+    --discovery-icon: url("/public/images/discovery.svg");
 }
 
 #board { z-index: 0; position: absolute; }

@@ -73,27 +73,33 @@
     margin: 5px;
 }
 
-.save-actions>div {
+.save-actions > .icon {
     width: 20px;
     height: 20px;
 }
-.edit-icon {
-    background-image: var(--options-edit-save-name);
+.edit-save-name-icon {
+    mask-image: var(--edit-save-name-icon);
+    -webkit-mask-image: var(--edit-save-name-icon);
 }
-.save-icon {
-    background-image: var(--options-save-save-name);
+.save-save-name-icon {
+    mask-image: var(--save-save-name-icon);
+    -webkit-mask-image: var(--save-save-name-icon);
 }
-.load-icon {
-    background-image: var(--options-load-save);
+.load-save-icon {
+    mask-image: var(--load-save-icon);
+    -webkit-mask-image: var(--load-save-icon);
 }
-.export-icon {
-    background-image: var(--options-export-save);
+.export-save-icon {
+    mask-image: var(--export-save-icon);
+    -webkit-mask-image: var(--export-save-icon);
 }
-.delete-icon {
-    background-image: var(--options-delete-save);
+.delete-save-icon {
+    mask-image: var(--delete-save-icon);
+    -webkit-mask-image: var(--delete-save-icon);
 }
-.save.active .delete-icon {
-    background-image: none;
+.save.active .delete-save-icon {
+    mask-image: var(--transparent-icon);
+    -webkit-mask-image: var(--transparent-icon);
     cursor: unset;
 }
 
