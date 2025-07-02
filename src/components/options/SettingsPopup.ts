@@ -270,7 +270,7 @@ export class SettingsPopup extends Popup<void> {
         label.innerText = row.title!.label;
 
         if (row.title!.icon !== undefined) {
-            const icon = document.getElementById("div") as HTMLDivElement;
+            const icon = document.createElement("div") as HTMLDivElement;
             icon.classList.add("settings-row-icon");
             icon.style.backgroundImage = `var(${row.title!.icon})`;
 
@@ -284,6 +284,7 @@ export class SettingsPopup extends Popup<void> {
         if (row.title!.description !== undefined) {
             const description = document.createElement("div") as HTMLDivElement;
             description.classList.add("settings-row-description");
+            description.innerText = row.title!.description;
 
             titleWrapperLike = document.createElement("div") as HTMLDivElement;
             titleWrapperLike.classList.add("settings-row-title-wrapper");

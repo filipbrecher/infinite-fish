@@ -24,7 +24,6 @@ export class SettingsService {
         const settingsInDb = await app.database.loadSettings();
         this._settings = Utils.deepUpdate(this._settings, settingsInDb);
 
-        console.log(this._settings);
         document.body.dataset.theme = this._settings.general.theme;
         document.documentElement.style.setProperty("--separator-display", this._settings.general.showSeparator ? "block" : "none");
     }
