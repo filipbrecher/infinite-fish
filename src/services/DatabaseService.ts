@@ -26,7 +26,6 @@ import {
     DEFAULT_ELEMENTS,
     DEFAULT_SAVE,
     DEFAULT_SAVE_NAME,
-    DEFAULT_SETTINGS,
     DEFAULT_WORKSPACE,
     DEFAULT_WORKSPACE_NAME
 } from "../constants/defaults";
@@ -83,7 +82,7 @@ export class DatabaseService {
         resolve();
     }
 
-    public async loadSettings(): Promise<SettingsProps> {
+    public async loadSettings(): Promise<Partial<SettingsProps> & { id: number }> {
         return new Promise<SettingsProps>((resolve, reject) => {
             const req = this._db
                 .transaction([SETTINGS_STORE], "readonly")
@@ -97,10 +96,8 @@ export class DatabaseService {
             }
 
             req.onsuccess = () => {
-                const settings = Utils.deepUpdate(structuredClone(DEFAULT_SETTINGS), req.result);
-
                 app.logger.log("info", "db", "Settings loaded successfully");
-                resolve(settings);
+                resolve(req.result);
             }
         });
     }

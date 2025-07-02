@@ -1,6 +1,6 @@
 import {app} from "../main";
-import type {KeyPropsRecord, MouseProps, WheelProps} from "../types/db/schema";
-import {ButtonProps, KeyState} from "../types/db/schema";
+import type {KeyPropsRecord, MouseProps, WheelProps} from "../constants/settings";
+import {ButtonProps, KeyState} from "../constants/settings";
 import type {ActionEntry, CaptureLevel, InputHandler} from "../types/services";
 
 
@@ -45,7 +45,7 @@ export class InputCaptureService {
         for (const entry of entries) {
             if (entry.kind !== "mousedown") continue;
 
-            const config = app.settings.settings[entry.settingsKey] as MouseProps;
+            const config = app.settings.settings.controls[entry.settingsKey] as MouseProps;
             if (InputCaptureService.satisfiesMouseDown(event, config)) {
                 return entry.handler;
             }
@@ -58,7 +58,7 @@ export class InputCaptureService {
             for (const entry of entries) {
                 if (entry.kind !== "mousedown") continue;
 
-                const config = app.settings.settings[entry.settingsKey] as MouseProps;
+                const config = app.settings.settings.controls[entry.settingsKey] as MouseProps;
                 if (entry.handler === handler && (event.buttons & config.buttons)) {
                     return false;
                 }
@@ -72,7 +72,7 @@ export class InputCaptureService {
         for (const entry of entries) {
             if (entry.kind !== "wheel") continue;
 
-            const config = app.settings.settings[entry.settingsKey] as WheelProps;
+            const config = app.settings.settings.controls[entry.settingsKey] as WheelProps;
             if (InputCaptureService.satisfiesWheel(event, config)) {
                 return entry.handler;
             }

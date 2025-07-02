@@ -13,7 +13,7 @@
 }
 
 #settings-navigation,
-#settings-content {
+#settings-sections-wrapper {
     min-height: 200px;
     max-height: 80vh;
     overflow-y: auto;
@@ -44,18 +44,21 @@
     background-color: var(--navigation-item-bg-hover);
 }
 
-#settings-content {
+#settings-sections-wrapper {
     flex: 1;
     min-width: 600px;
     padding: 10px;
 }
 
 .settings-section {
-    display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
+    display: none;
+}
+.settings-section.active {
+    display: flex;
 }
 
 .settings-row {
@@ -73,9 +76,37 @@
 .settings-row:last-child {
     border-bottom: none;
 }
-.settings-row-title {
-    font-size: 1.25em;
+.settings-row-title-outermost {
     margin-right: auto;
+}
+.settings-row-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.settings-row-label-wrapper {
+    display: inline-block;
+}
+.settings-row-icon {
+    min-width: 25px;
+    min-height: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+.settings-row-label {
+    font-size: 1.25em;
+}
+.settings-row-description {
+    font-size: 0.8em;
+    color: var(--text-color-fainted);
+}
+
+.settings-content-general-nothing-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
 }
 
 /* TOGGLES */
@@ -127,18 +158,18 @@
     width: 100px;
 }
 
-/* GENERAL */
-#settings-content-general-theme-wrapper {
+/* THEME */
+.settings-content-theme-wrapper {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: 10px;
 }
-#settings-content-general-theme-name {
+.settings-content-theme-name {
     font-size: 1.1em;
 }
-#settings-content-general-theme-toggle {
+.settings-content-theme-toggle {
     border-radius: 50%;
     width: 25px;
     height: 25px;
@@ -146,11 +177,11 @@
 }
 
 /* CONTROLS */
-.settings-content-controls-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+/*.settings-content-controls-wrapper {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    align-items: center;*/
+/*}*/
 .settings-content-controls-subtitle {
     text-align: center;
     font-weight: bold;

@@ -52,7 +52,7 @@ export class Sidebar implements IComponent {
         this.unicodeInputButton = document.getElementById("sidebar-search-unicode-input-button") as HTMLDivElement;
         this.sidebarItemsContainer = document.getElementById("sidebar-items") as HTMLDivElement;
 
-        const resultLimit = app.settings.settings.searchResultLimit;
+        const resultLimit = app.settings.settings.sidebar.resultLimit;
         this.filters = {
             resultLimit: { curr: resultLimit, next: resultLimit },
             substring: { curr: "", next: "", div: document.getElementById("sidebar-search-input") as HTMLInputElement },
@@ -60,9 +60,9 @@ export class Sidebar implements IComponent {
             hidden: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-hidden") as HTMLDivElement },
             discovery: { curr: false, next: false, div: document.getElementById("sidebar-search-toggle-discovery") as HTMLDivElement },
         };
-        if ( !app.settings.settings.searchShowReverseToggle) this.filters.reversed.div.style.display = "none";
-        if ( !app.settings.settings.searchShowHiddenToggle) this.filters.hidden.div.style.display = "none";
-        if ( !app.settings.settings.searchShowDiscoveryToggle) this.filters.discovery.div.style.display = "none";
+        if ( !app.settings.settings.sidebar.showReverseToggle) this.filters.reversed.div.style.display = "none";
+        if ( !app.settings.settings.sidebar.showHiddenToggle) this.filters.hidden.div.style.display = "none";
+        if ( !app.settings.settings.sidebar.showDiscoveryToggle) this.filters.discovery.div.style.display = "none";
 
         // resizer
         document.documentElement.style.setProperty("--sidebar-width", `${this.width}px`);
@@ -84,7 +84,7 @@ export class Sidebar implements IComponent {
         })
         this.unicodeInput.addEventListener('focus', () => this.lastFocusedInput = this.unicodeInput);
         this.unicodeInputButton.addEventListener("click", this.onUnicodeInputClick);
-        if (app.settings.settings.searchShowUnicodeInput) this.unicodeInputWrapper.style.display = "flex";
+        if (app.settings.settings.sidebar.showUnicodeInput) this.unicodeInputWrapper.style.display = "flex";
 
         // filters
         this.filters.reversed.div.addEventListener("click", this.toggleOrder);
@@ -175,7 +175,7 @@ export class Sidebar implements IComponent {
 
             this.calculateFiltered();
             this.renderFiltered();
-        }, app.settings.settings.searchResultDebounce);
+        }, app.settings.settings.sidebar.debounce);
     }
 
     private onSaveUnloaded = () => {
@@ -257,31 +257,33 @@ export class Sidebar implements IComponent {
     }
 
     private onSettingsChanged = (changes: Partial<SettingsProps>) => {
-        if (changes.hasOwnProperty("searchResultLimit")) {
-            this.filters.resultLimit.next = changes.searchResultLimit!;
+        if ( !changes.hasOwnProperty("sidebar")) return;
+        const sChanges = changes.sidebar;
+        if (sChanges.hasOwnProperty("resultLimit")) {
+            this.filters.resultLimit.next = sChanges!.resultLimit;
             this.onFilterChange();
         }
-        if (changes.hasOwnProperty("searchShowUnicodeInput")) {
-            this.unicodeInputWrapper.style.display = changes.searchShowUnicodeInput ? "flex" : "none";
+        if (sChanges.hasOwnProperty("showUnicodeInput")) {
+            this.unicodeInputWrapper.style.display = sChanges!.showUnicodeInput ? "flex" : "none";
         }
-        if (changes.hasOwnProperty("searchShowHiddenToggle")) {
+        if (sChanges.hasOwnProperty("showHiddenToggle")) {
             const hidden = this.filters.hidden;
-            hidden.div.style.display = changes.searchShowHiddenToggle ? "block" : "none";
-            if ( !changes.searchShowHiddenToggle && hidden.next) { // needs to disappear and was turned on
+            hidden.div.style.display = sChanges!.showHiddenToggle ? "block" : "none";
+            if ( !sChanges!.showHiddenToggle && hidden.next) { // needs to disappear and was turned on
                 this.toggleHidden();
             }
         }
-        if (changes.hasOwnProperty("searchShowDiscoveryToggle")) {
+        if (sChanges.hasOwnProperty("showDiscoveryToggle")) {
             const discovery = this.filters.discovery;
-            discovery.div.style.display = changes.searchShowDiscoveryToggle ? "block" : "none";
-            if ( !changes.searchShowHiddenToggle && discovery.next) { // needs to disappear and was turned on
+            discovery.div.style.display = sChanges!.showDiscoveryToggle ? "block" : "none";
+            if ( !sChanges!.showDiscoveryToggle && discovery.next) { // needs to disappear and was turned on
                 this.toggleHidden();
             }
         }
-        if (changes.hasOwnProperty("searchShowReverseToggle")) {
+        if (sChanges.hasOwnProperty("showReverseToggle")) {
             const reversed = this.filters.reversed;
-            reversed.div.style.display = changes.searchShowReverseToggle ? "block" : "none";
-            if ( !changes.searchShowHiddenToggle && reversed.next) { // needs to disappear and was turned on
+            reversed.div.style.display = sChanges!.showReverseToggle? "block" : "none";
+            if ( !sChanges!.showReverseToggle && reversed.next) { // needs to disappear and was turned on
                 this.toggleHidden();
             }
         }

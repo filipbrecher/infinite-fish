@@ -25,7 +25,7 @@ export type InputHandler = (e: MouseEvent | WheelEvent, ...args: any[]) => void;
 
 export type ActionEntry = {
     kind: EventKind;
-    settingsKey: keyof SettingsProps;
+    settingsKey: keyof SettingsProps["controls"];
     handler: InputHandler;
 };
 

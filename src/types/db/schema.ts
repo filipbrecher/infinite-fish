@@ -1,3 +1,4 @@
+import type {MouseProps, Theme, WheelProps} from "../../constants/settings";
 
 export interface IDBTransactionEvent extends Event {
     target: IDBTransaction;
@@ -5,72 +6,35 @@ export interface IDBTransactionEvent extends Event {
 export type AbortReason = string | undefined;
 
 //============ SETTINGS ============//
-export const Theme = {
-    LIGHT: "light",
-    DARK: "dark",
-} as const;
-export type Theme = (typeof Theme)[keyof typeof Theme];
-
-export const enum KeyState {
-    YES = "yes",
-    NO = "no",
-    ANY = "any",
-}
-export const enum KeyProps {
-    CTRL = "ctrlKey",
-    SHIFT = "shiftKey",
-    ALT = "altKey",
-    META = "metaKey",
-}
-export const enum ButtonProps {
-    LEFT = 1,
-    MIDDLE = 4,
-    RIGHT = 2,
-    BROWSER_BACK = 8,
-    BROWSER_FORWARD = 16,
-}
-
-export type KeyPropsRecord = Record<KeyProps, KeyState>;
-export type WheelProps = KeyPropsRecord;
-export type MouseProps = {
-    keys: KeyPropsRecord;
-    buttons: number;
-}
-
-export type SettingsProps = {
-    id: number;
-
-    // GENERAL
-    theme: Theme;
-    showEmojiTextSeparator: boolean;
-    allowCombineToNothing: boolean;
-
-    // SIDEBAR
-    searchResultLimit: number;      // 0 for unlimited
-    searchResultDebounce: number;   // in ms
-    searchShowUnicodeInput: boolean;
-    searchShowHiddenToggle: boolean;
-    searchShowDiscoveryToggle: boolean;
-    searchShowReverseToggle: boolean;
-
-    // CONTROLS
-    // workspace
-    workspacePanning: MouseProps;
-    workspaceZooming: WheelProps;
-    instanceSelecting: MouseProps;
-
-    // instance
-    instanceDragging: MouseProps;
-    instanceCopying: MouseProps;
-    instanceDeleting: MouseProps;
-
-    // element
-    elementToggleVisibility: MouseProps; // item in sidebar
-
-    // view
-    viewInfo: MouseProps;
-    viewCopyEmojiText: MouseProps; // copy emoji if mouse over emoji, copy text if mouse over text
-}
+export type SettingsProps = {id: number} & {
+    general: {
+        theme: Theme;
+        showSeparator: boolean;
+        allowNothing: boolean;
+    },
+    controls: {
+        workspacePanning: MouseProps;
+        workspaceZooming: WheelProps;
+        instanceSelecting: MouseProps;
+        instanceDragging: MouseProps;
+        instanceCopying: MouseProps;
+        instanceDeleting: MouseProps;
+        elementToggleVisibility: MouseProps;
+        viewInfo: MouseProps;
+        viewCopyEmojiText: MouseProps;
+    },
+    sidebar: {
+        resultLimit: number;
+        debounce: number;
+        showUnicodeInput: boolean;
+        showReverseToggle: boolean;
+        showHiddenToggle: boolean;
+        showDiscoveryToggle: boolean;
+    },
+    tooltips: {
+        // todo
+    }
+};
 
 
 //============ SAVES ============//
