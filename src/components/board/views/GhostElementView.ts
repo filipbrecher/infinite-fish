@@ -35,8 +35,7 @@ export class GhostElementView extends View {
         this._div.appendChild(textSpan);
 
         this._div.addEventListener("mousedown", (e: MouseEvent) => {
-            let str = (e.target as HTMLElement).classList.contains("emoji") ? this._emoji : this._text;
-            app.inputCapture.matchMouseDown("ghost-element-view", e)(e, str);
+            app.inputCapture.matchMouseDown("ghost-element-view", e)(e, props);
         });
     }
 

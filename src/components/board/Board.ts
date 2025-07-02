@@ -4,7 +4,7 @@ import "./views.css";
 import {app} from "../../main";
 import type {IComponent} from "../IComponent";
 import {InstanceWrapper} from "./wrappers/InstanceWrapper";
-import type {InstanceProps, ViewDataProps} from "../../types/db/schema";
+import type {GhostElementViewData, InstanceProps, ViewDataProps} from "../../types/db/schema";
 import {ViewTypeProps} from "../../types/db/schema";
 import type {NewInstanceProps, UpsertElementProps, WorkspaceChangesProps} from "../../types/db/dto";
 import {
@@ -688,18 +688,22 @@ export class Board implements IComponent {
         const target = e.target as HTMLElement;
         const element = app.state.elementsById[id];
         const txt = target.classList.contains("emoji") ? element.emoji : element.text;
+
         navigator.clipboard.writeText(txt)
             .catch(() => {
                 app.logger.log("error", "view", "Failed to copy text / emoji to clipboard: " + txt);
             });
     }
 
-    private onGhostViewCopy = (e: MouseEvent, str: string) => {
+    private onGhostViewCopy = (e: MouseEvent, props: GhostElementViewData) => {
         e.stopPropagation();
 
-        navigator.clipboard.writeText(str)
+        const target = e.target as HTMLElement;
+        const txt = target.classList.contains("emoji") ? props.emoji : props.text;
+
+        navigator.clipboard.writeText(txt)
             .catch(() => {
-                app.logger.log("error", "view", "Failed to copy ghost view's text / emoji to clipboard: " + str);
+                app.logger.log("error", "view", "Failed to copy ghost view's text / emoji to clipboard: " + txt);
             });
     }
 }
