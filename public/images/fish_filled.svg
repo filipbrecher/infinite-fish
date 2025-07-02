@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 818.20129 323.02582"
+   version="1.1"
+   id="svg1"
+   width="818.20129"
+   height="323.02582"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="Infinite Fish sub.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.75488281"
+     inkscape:cx="435.82924"
+     inkscape:cy="171.54981"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g2" />
+  <g
+     id="g2"
+     transform="translate(-11.240528)">
+    <path
+       id="path1-2"
+       style="fill:#262dca;fill-opacity:1"
+       d="M 208.62139 0 C 71.161402 0 11.240528 129.87305 11.240528 161.87305 C 11.240528 193.87305 71.161392 320 208.62139 320 C 311.66553 319.39126 384.44647 263.43071 419.5999 193.04688 C 454.16346 264.84599 527.54431 322.40795 632.06084 323.02539 C 769.52083 323.02539 829.4417 196.89844 829.4417 164.89844 C 829.4417 132.89844 769.52082 3.0253906 632.06084 3.0253906 C 495.74009 3.0253906 441.79388 75.287219 420.98076 123.42383 C 401.13772 75.355481 347.83 0 208.62139 0 z " />
+    <path
+       id="path1-2-3"
+       style="fill:#d4e4f0;fill-opacity:1;stroke-width:0.84921"
+       d="m 240.49145,23.715039 c -116.73244,0 -167.61719,110.290111 -167.61719,137.464841 0,27.17473 50.88474,134.28321 167.61719,134.28321 87.50613,-0.51695 149.31335,-48.03987 179.16602,-107.81055 29.35175,60.97255 91.6674,109.85457 180.42382,110.3789 116.7325,0 167.61719,-107.10651 167.61719,-134.28124 0,-27.17474 -50.88469,-137.464851 -167.61719,-137.464851 -115.76493,0 -161.57721,61.36604 -179.25195,102.244141 C 403.97843,87.709359 358.70884,23.715039 240.49145,23.715039 Z" />
+    <ellipse
+       style="fill:#262dca;fill-opacity:1;stroke-width:1.02318"
+       id="path2"
+       cx="143.04907"
+       cy="112.9112"
+       rx="17.88357"
+       ry="18.696461" />
+  </g>
+</svg>

@@ -49,6 +49,8 @@ const licenseComments = [
     '//',
     '// Other assets are under CC0 (Public Domain)',
     '// https://creativecommons.org/publicdomain/zero/1.0/',
+    '//',
+    '// Credit to @redtomato2589 for making the fish assets'
 ];
 
 const base64Encode = fileData => fileData.toString("base64");
