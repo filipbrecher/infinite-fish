@@ -199,7 +199,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
         rows: [
             {
                 key: "workspacePanning",
-                title: { label: "Workspace Panning" },
+                title: { label: "Workspace Panning", description: "Allows you to move around the workspace." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -213,7 +213,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "workspaceZooming",
-                title: { label: "Workspace Zooming" },
+                title: { label: "Workspace Zooming", description: "You can zoom using the scroll wheel." },
                 content: {
                     type: "wheelToggles",
                     default: {
@@ -224,7 +224,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "instanceSelecting",
-                title: { label: "Instance Selecting" },
+                title: { label: "Instance Selecting", description: "Hold and drag your mouse to select instances. You can pan the workspace concurrently. Selected instances cannot be dropped over the sidebar and also cannot combine when dragging (they can when you drop over them)." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -237,7 +237,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "instanceDragging",
-                title: { label: "Instance Dragging" },
+                title: { label: "Instance Dragging", description: "You can move instances with this. When moving a selected instance, all other selected instances move with it." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -252,7 +252,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "instanceCopying",
-                title: { label: "Instance Copying" },
+                title: { label: "Instance Copying", description: "You can either click and hold to grab a clone of instances, or press this button while moving instances to copy them in place." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -267,7 +267,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "instanceDeleting",
-                title: { label: "Instance Deleting" },
+                title: { label: "Instance Deleting", description: "Press this to delete a single instance. You can also keep holding this and when you move your mouse, all instances under your cursor will get deleted. Selected instances always get deleted together." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -278,7 +278,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "elementToggleVisibility",
-                title: { label: "Element Visibility Toggle" },
+                title: { label: "Element Visibility Toggle", description: "Press this over an element in the sidebar to hide or unhide it." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -289,7 +289,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "viewInfo",
-                title: { label: "Element Info Viewing" },
+                title: { label: "Element Info Viewing", description: "Press this over an element to view its info / recipes." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -303,7 +303,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "viewCopyEmojiText",
-                title: { label: "Element's Emoji/Text Copying" },
+                title: { label: "Element's Emoji/Text Copying", description: "Click an emoji to copy its text to clipboard, click the element's text to copy it to clipboard." },
                 content: {
                     type: "mouseToggles",
                     default: {
@@ -342,22 +342,22 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             },
             {
                 key: "showUnicodeInput",
-                title: { label: "Show Unicode Input" },
+                title: { label: "Show Unicode Input", icon: "--sidebar-unicode-input" },
                 content: { type: "yesNoToggle", default: false }
             },
             {
-                key: "showReverseToggle",
-                title: { label: "Show Hidden Elements Toggle" },
-                content: { type: "yesNoToggle", default: true }
-            },
-            {
                 key: "showHiddenToggle",
-                title: { label: "Show Discovered Elements Toggle" },
+                title: { label: "Show Hidden Elements Toggle", icon: "--sidebar-unhide-elements" },
                 content: { type: "yesNoToggle", default: true }
             },
             {
                 key: "showDiscoveryToggle",
-                title: { label: "Show Reversed Order Toggle" },
+                title: { label: "Show Discovered Elements Toggle", icon: "--view-discovery" },
+                content: { type: "yesNoToggle", default: true }
+            },
+            {
+                key: "showReverseToggle",
+                title: { label: "Show Reversed Order Toggle", icon: "--sidebar-order-a-z" },
                 content: { type: "yesNoToggle", default: true }
             },
         ]
