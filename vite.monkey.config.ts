@@ -8,7 +8,7 @@ import path from 'path';
 export default defineConfig((config) => {
     return {
         plugins: [
-            copyPublicFiles(),
+            copyPublicFiles(["audio", "images"]),
             Userscript({
                 entry: 'src/main.ts',
                 header: {
