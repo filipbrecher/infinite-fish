@@ -32,10 +32,16 @@ The following asset is licensed under the MIT License (https://opensource.org/li
   Sparkles SVG Vector from Twemoji Emojis
   Author: Twitter (https://github.com/twitter/twemoji/blob/master/LICENSE)
 
+- /public/images/options_saves.svg
+  /public/images/options_settings.svg
+  Author: Mikolaj Dobrucki from the Ikonate Bold Interface Icons collection (https://www.svgrepo.com/collection/ikonate-bold-interface-icons/)
+  with modified size
+
 Modified versions of this file are used as:
 
 - /public/images/discovery_unselected_light.svg
 - /public/images/discovery_unselected_dark.svg
+
 
 ### Assets under the Creative Commons Attribution 4.0 License (CC BY 4.0)
 
@@ -54,6 +60,14 @@ Modified versions of these files are used as:
 - /public/images/sidebar_order_z_a_dark.svg
   Colors modified to support dark mode themes
 
+Scaled versions of assets licensed under the CC:
+
+- /public/images/options_delete_save.svg
+  /public/images/options_edit_save_name.svg
+  /public/images/options_export_save.svg
+  /public/images/options_load_save.svg
+  /public/images/options_save_save_name.svg
+  from Wolf Kit Solid Glyph Icons collection by thewolfkit (https://www.svgrepo.com/collection/wolf-kit-solid-glyph-icons/)
 
 ### Assets under the Creative Commons CC0 1.0 Universal (Public Domain) License
 
