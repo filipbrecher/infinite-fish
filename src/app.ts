@@ -36,16 +36,19 @@ export class App {
             document.addEventListener("wheel", App.preventDefaultZoom, { capture: true, passive: false });
             document.addEventListener("mousedown", App.preventAutoscroll, { capture: true });
 
-            // setup logger, db and settings
+            // setup default settings, logger, audio, popup
+            this._settings = new SettingsService();
             this._logger = new Logger();
             this._audio = new AudioService();
             this._popup = new PopupService();
 
             // await this.resetDb();
 
+            // connect to db
             this._database = new DatabaseService();
             await this._database.connect();
-            this._settings = new SettingsService();
+
+            // load settings and setup input capture
             await this._settings.init();
             this._inputCapture = new InputCaptureService();
             await this._inputCapture.init();

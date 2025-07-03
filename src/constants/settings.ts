@@ -1,5 +1,6 @@
 
 import {SettingsPopup} from "../components/options/SettingsPopup";
+import {EMOJI_BY_LOG_TYPE} from "../types/services";
 
 export const THEMES_LIST: Record<Theme, { name: string; background: string; border: string }> = {
     light: {
@@ -152,7 +153,7 @@ export type SettingsSectionRow = {
 
 
 /* SECTION */
-export const SECTION_KEY_LIST = ["general", "controls", "sidebar", "tooltips"];
+export const SECTION_KEY_LIST = ["general", "controls", "sidebar", "tooltips", "logger"];
 export type SettingsSectionKey = typeof SECTION_KEY_LIST[number];
 export type SettingsSection = {
     key: SettingsSectionKey;
@@ -366,6 +367,77 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
         label: "Tooltips",
         rows: [
             // todo
+        ]
+    },
+    {
+        key: "logger",
+        label: "Logger",
+        rows: [
+            {
+                key: "logRecipes",
+                title: { label: "Log Recipes", description: "Logs every recipe when two elements combine successfully." },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logInfo",
+                title: { label: "Log info level" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logWarning",
+                title: { label: "Log warning level" },
+                content: { type: "yesNoToggle", default: true }
+            },
+            {
+                key: "logError",
+                title: { label: "Log error level" },
+                content: { type: "yesNoToggle", default: true }
+            },
+            {
+                key: "logDb",
+                title: { label: "Log Database 🛢️" },
+                content: { type: "yesNoToggle", default: true }
+            },
+            {
+                key: "logSettings",
+                title: { label: "Log Settings ⚙️" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logPopup",
+                title: { label: "Log Popup 💬" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logState",
+                title: { label: "Log State 🧠" },
+                content: { type: "yesNoToggle", default: true }
+            },
+            {
+                key: "logBoard",
+                title: { label: "Log Board 🧭" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logSidebar",
+                title: { label: "Log Sidebar 🧾" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logWorkspace",
+                title: { label: "Log Workspace 🗂️" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logInstance",
+                title: { label: "Log Instance 📦" },
+                content: { type: "yesNoToggle", default: false }
+            },
+            {
+                key: "logView",
+                title: { label: "Log View 🖼️" },
+                content: { type: "yesNoToggle", default: true }
+            },
         ]
     }
 ] as const;

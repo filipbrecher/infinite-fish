@@ -1,6 +1,23 @@
 import type {SettingsProps} from "./db/schema";
 
 
+// Logger
+export type LogLevel = "info" | "warning" | "error";
+export type LogType = "db" | "settings" | "popup" | "state" | "board" | "sidebar" | "workspace" | "instance" | "view" | string;
+export type RawLogType = "recipe" | string;
+export const EMOJI_BY_LOG_TYPE: Map<LogType, string> = new Map([
+    ["db", "🛢️"],
+    ["setting", "⚙️"],
+    ["popup", "💬"],
+    ["state", "🧠"],
+    ["board", "🧭"],
+    ["sidebar", "🧾"],
+    ["workspace", "🗂️"],
+    ["instance", "📦"],
+    ["view", "🖼️"],
+]);
+
+
 // AudioService
 // pop / remove instance + hide element when not showing hidden
 // failed to combine

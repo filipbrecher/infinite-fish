@@ -20,7 +20,7 @@ export class ElementView extends View {
         if (typeof elementData === "number") {
             const element = app.state.elementsById[elementData];
             if ( !element) {
-                app.logger.log("error", "element-view", `Failed to create ElementView: Element with id ${elementData} not found`);
+                app.logger.log("error", "view", `Failed to create ElementView: Element with id ${elementData} not found`);
                 throw new Error("");
             }
             this._elementId = elementData;

@@ -33,6 +33,21 @@ export type SettingsProps = {id: number} & {
     },
     tooltips: {
         // todo
+    },
+    logger: {
+        logRecipes: boolean;
+        logInfo: boolean;
+        logWarning: boolean;
+        logError: boolean;
+        logDb: boolean;
+        logSettings: boolean;
+        logPopup: boolean;
+        logState: boolean;
+        logBoard: boolean;
+        logSidebar: boolean;
+        logWorkspace: boolean;
+        logInstance: boolean;
+        logView: boolean;
     }
 };
 

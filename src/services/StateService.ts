@@ -481,7 +481,7 @@ export class StateService {
 
         const data: CombineElementsResponse = await res.json();
         if (data.result === "Nothing") {
-            if ( !app.settings.settings.allowCombineToNothing) {
+            if ( !app.settings.settings.general.allowNothing) {
                 app.logger.log("info", "state", `Tried to combine ${e1.text} + ${e2.text}, but they result in Nothing and it is blocked in Settings`);
                 return undefined;
             }
@@ -493,6 +493,7 @@ export class StateService {
             }
         }
 
+        app.logger.logRaw("recipe", `${e1.text < e2.text ? `${e1.text} + ${e2.text}` : `${e2.text} + ${e1.text}`} = ${data.result}`);
         const recipe = e1.text < e2.text ? [e1.id, e2.id] : [e2.id, e1.id];
         const [upsertProps, isNew] = await this.upsertElement(data.emoji, data.result, data.isNew, recipe);
         app.logger.log("info", "state", `Successfully combined elements ${e1.text} + ${e2.text} = ${data.result}`);
