@@ -15,10 +15,10 @@
 }
 
 .mask-icon { /* you only need to add a single var(--this-icon-by-theme) for the mask-image and same for -webkit-mask-image */
-    mask-size: cover;
+    mask-size: contain;
     mask-repeat: no-repeat;
     mask-position: center;
-    -webkit-mask-size: cover;
+    -webkit-mask-size: contain;
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
 }
