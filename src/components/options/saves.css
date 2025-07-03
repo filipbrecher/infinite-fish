@@ -8,10 +8,10 @@
     overflow-y: scroll;
     min-height: 100px;
     max-height: 80vh;
-    padding: 5px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    row-gap: 5px;
+    row-gap: 10px;
 }
 
 .save {
@@ -30,7 +30,6 @@
 }
 
 .save-top {
-    border-bottom: 2px solid var(--save-border);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;

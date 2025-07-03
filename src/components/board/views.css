@@ -43,7 +43,8 @@
     width: 1px;
     background-color: var(--view-border);
     margin-left: -2px;
-    height: 35px;
+    height: calc(100% + 3px); /* 100% + .view top and bottom padding in px */
+    margin-bottom: 1px;
     display: var(--separator-display);
 }
 
