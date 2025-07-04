@@ -96,7 +96,7 @@
     mask-image: var(--delete-save-icon);
     -webkit-mask-image: var(--delete-save-icon);
 }
-.save.active .delete-save-icon {
+.save.active .delete-save-icon, .save.active .load-save-icon {
     mask-image: var(--transparent-icon);
     -webkit-mask-image: var(--transparent-icon);
     cursor: unset;

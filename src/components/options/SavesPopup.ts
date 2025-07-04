@@ -117,8 +117,8 @@ export class SavesPopup extends Popup<void> {
                 editIcon.title = "Edit Name";
             }
         });
-        loadIcon.addEventListener("click", this.onClickLoadButton);
         if ( !isActive) {
+            loadIcon.addEventListener("click", this.onClickLoadButton);
             deleteIcon.addEventListener("click", this.onClickDeleteButton);
         }
 
