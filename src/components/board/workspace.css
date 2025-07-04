@@ -1,6 +1,9 @@
 
 #workspaces-list {
-    background-color: transparent;
+    transform: rotate(180deg);
+    background-color: var(--board-bg);
+    border-top: 1px solid var(--text-color-fainted);
+    border-left: 1px solid var(--text-color-fainted);
     position: absolute;
     top: 0; left: 0;
     min-height: 20px;
@@ -8,25 +11,51 @@
     width: max-content;
     overflow-x: auto;
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
     box-sizing: border-box;
+    padding: 0 5px;
+    gap: 5px;
 }
 
-.workspace-tab {
+.tab-wrapper {
+    transform: rotate(180deg);
     background-color: var(--workspace-tab-bg);
-    border-right: 1px solid var(--sidebar-border);
-    border-bottom: 1px solid var(--sidebar-border);
-    min-height: 20px;
-    padding: 6px 10px;
-    display: flex;
+    border: 1px solid transparent;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2em;
+    min-height: 20px;
     cursor: pointer;
 }
-.workspace-tab:hover {
+
+.tab-dots {
+    width: 0;
+    height: 20px;
+    opacity: 0;
+    mask-image: var(--vertical-dots-icon);
+    -webkit-mask-image: var(--vertical-dots-icon);
+    overflow: hidden;
+    /*flex-shrink: 0;*/
+    transition: width 0.2s ease, opacity 0.2s ease;
+}
+.tab-wrapper.active .tab-dots {
+    width: 20px;
+    opacity: 1;
+}
+
+.tab-name {
+    color: var(--text-color-fainted);
+    padding: 6px 10px 6px 3px;
+    font-size: 1.2em;
+    white-space-collapse: preserve;
+}
+.tab-wrapper:hover {
     background-color: var(--workspace-tab-bg-hover);
 }
-.workspace-tab.active {
-    background-color: var(--active-workspace-bg);
+
+.tab-wrapper.active {
+    border-bottom: 1px solid var(--select-blue);
+}
+.tab-wrapper.active .tab-name {
+    color: var(--select-blue);
 }

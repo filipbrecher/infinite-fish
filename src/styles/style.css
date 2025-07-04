@@ -42,6 +42,7 @@ h1, h2, h3 {
     --delete-save-icon: url("/public/images/options_delete_save.svg");
     --unicode-input-icon: url("/public/images/sidebar_unicode_input.svg");
     --discovery-icon: url("/public/images/discovery.svg");
+    --vertical-dots-icon: url("/public/images/vertical_dots.svg");
 }
 
 #board { z-index: 0; position: absolute; }

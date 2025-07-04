@@ -5,6 +5,7 @@ body[data-theme="dark"] {
     --red: #5d3131;
     --orange: #866c5c;
     --green: #346433;
+    --select-blue: #167adc;
 
     --scrollbar-track-color: var(--board-bg);
     --scrollbar-thumb-color: #4f4f4f;
