@@ -380,7 +380,7 @@ export const SETTINGS_CONFIG: SettingsSection[] = [
             {
                 key: "logInfo",
                 title: { label: "Log info level" },
-                content: { type: "yesNoToggle", default: false }
+                content: { type: "yesNoToggle", default: true }
             },
             {
                 key: "logWarning",
