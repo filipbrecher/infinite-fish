@@ -80,6 +80,7 @@ export class StateService {
     public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
     public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
     public readonly _workspaceCreated: Subject<WorkspaceProps> = new Subject();
+    public readonly _workspaceMoved: Subject<{ from: number, ws: WorkspaceProps, targetWs: WorkspaceProps }> = new Subject();
     public readonly _workspaceTransformed: Subject<Partial<WorkspaceChangesProps>> = new Subject();
     public readonly _workspaceDeleted: Subject<WorkspaceProps> = new Subject();
     public readonly _instancesMoved: Subject<InstanceMoveProps[]> = new Subject();
@@ -288,6 +289,39 @@ export class StateService {
         if (changes.scale !== undefined) this.activeWorkspace!.scale = changes.scale;
         this._workspaceTransformed.notify(changes);
         app.database.updateWorkspace(this._activeWorkspace!.id, changes).catch();
+    }
+
+    public async duplicateWorkspace(id: number): Promise<boolean> {
+        console.log("duplicateWorkspace");
+        // todo -> load from db (export-like) + save to db (import-like) + move next to id
+    }
+
+    public async moveWorkspace(id: number, targetWsId: number): Promise<boolean> {
+        try {
+            const ws = this._workspaces.get(id);
+            if ( !ws) return false;
+            const targetWs = this._workspaces.get(targetWsId);
+            if ( !targetWs) return false;
+            const newPos = targetWs.position;
+
+            await app.database.moveWorkspace(id, newPos);
+
+            const minPos = Math.min(ws.position, newPos);
+            const maxPos = Math.max(ws.position, newPos);
+            const inc = newPos < ws.position ? 1 : -1;
+
+            this._workspaces.forEach((props) => {
+                if (props.id === ws.id) return;
+                if (props.position >= minPos && props.position <= maxPos) props.position += inc;
+            });
+            const from = ws.position;
+            ws.position = newPos;
+
+            this._workspaceMoved.notify({ from: from, ws: ws, targetWs: targetWs });
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     public renameWorkspace(id: number, newName: string): boolean {

@@ -17,6 +17,16 @@ export class Workspaces implements IComponent {
     private readonly menu: HTMLDivElement;
     private readonly options: HTMLDivElement[] = [];
 
+    private moving: boolean = false;
+    private movingId: number;
+    private hoveredId: number | undefined;
+    private movingConfirmed: boolean = false;
+    private movingStartX: number;
+    private movingStartY: number;
+    private movingOffsetX: number;
+    private movingOffsetY: number;
+    private movingTab: HTMLSpanElement;
+
     constructor() {
         this.list = document.getElementById("tabs-list") as HTMLDivElement;
         this.list.addEventListener("mousedown", (e: MouseEvent) => {
@@ -30,6 +40,8 @@ export class Workspaces implements IComponent {
         this.menu.addEventListener("mousedown", (e: MouseEvent) => {
             app.inputCapture.matchMouseDown("block-board-partial", e)(e);
         });
+
+        this.movingTab = document.getElementById("moving-tab") as HTMLSpanElement;
 
         const optionsList: { name: string, action: (e: MouseEvent) => void }[] = [
             { name: "rename", action: this.onClickRename },
@@ -50,6 +62,7 @@ export class Workspaces implements IComponent {
         app.state._saveUnloaded.subscribe(this.onSaveUnloaded);
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
         app.state._workspaceCreated.subscribe(this.onWorkspaceCreated);
+        app.state._workspaceMoved.subscribe(this.onWorkspaceMoved);
         app.state._workspaceDeleted.subscribe(this.onWorkspaceDeleted);
         app.state._workspaceUnloaded.subscribe(this.onWorkspaceUnloaded);
     }
@@ -72,6 +85,9 @@ export class Workspaces implements IComponent {
         });
         tab.wrapper.addEventListener("contextmenu", (e: MouseEvent) => {
             this.onRightClickTab(e, props.id);
+        });
+        tab.wrapper.addEventListener("mousedown", (e: MouseEvent) => {
+            this.onStartMoving(e, props.id);
         });
 
         tab.insertBefore(this.list, this.plus);
@@ -103,6 +119,16 @@ export class Workspaces implements IComponent {
         this.appendWorkspace(ws);
     }
 
+    private onWorkspaceMoved = ({ from, ws, targetWs }: { from: number, ws: WorkspaceProps, targetWs: WorkspaceProps }) => {
+        const tab = this.tabs.get(ws.id);
+        const targetTab = this.tabs.get(targetWs.id);
+        if ( !tab || !targetTab) return;
+
+        let right: Node = targetTab.wrapper;
+        if (targetWs.position < ws.position) right = targetTab.wrapper.nextSibling;
+        tab.insertBefore(this.list, right);
+    }
+
     private onWorkspaceDeleted = (ws: WorkspaceProps) => {
         const tab = this.tabs.get(ws.id);
         tab.remove();
@@ -116,6 +142,74 @@ export class Workspaces implements IComponent {
         }
         this.activeWsId = ws.id;
         this.tabs.get(this.activeWsId).setActive(true);
+    }
+
+    private onStartMoving = (e: MouseEvent, id: number) => {
+        if (this.moving) return;
+        this.moving = true;
+        this.movingId = id;
+
+        const tab = this.tabs.get(id);
+        this.movingTab.innerText = tab.input.value;
+        this.movingStartX = e.clientX;
+        this.movingStartY = e.clientY;
+
+        const rectWrapper = tab.wrapper.getBoundingClientRect();
+        const rectSpan = tab.span.getBoundingClientRect();
+        const wRatio = rectSpan.width / rectWrapper.width;
+        const hRatio = rectSpan.height / rectWrapper.height;
+        this.movingOffsetX = (e.clientX - rectWrapper.left) * wRatio;
+        this.movingOffsetY = (e.clientY - rectWrapper.top) * hRatio;
+
+        this.movingTab.classList.toggle("active", this.activeWsId === id);
+
+        window.addEventListener("mousemove", this.onUpdateMoving);
+        window.addEventListener("mouseup", this.onEndMoving);
+    }
+
+    private onUpdateMoving = (e: MouseEvent) => {
+        if ( !this.moving) return;
+
+        if ( !this.movingConfirmed) {
+            const dist = Math.sqrt((e.clientX - this.movingStartX)**2 + (e.clientY - this.movingStartY)**2);
+            if (dist <= 10) return;
+        }
+        this.movingConfirmed = true;
+
+        this.movingTab.style.left = `${e.clientX - this.movingOffsetX}px`;
+        this.movingTab.style.top = `${e.clientY - this.movingOffsetY}px`;
+        this.movingTab.classList.toggle("show", true);
+
+        let newHoveredId = undefined;
+        for (const [id, tab] of this.tabs.entries()) {
+            if (id === this.movingId) continue;
+            if (tab.mouseIsOverWrapper(e.clientX, e.clientY)) {
+                newHoveredId = id; break;
+            }
+        }
+
+        if (this.hoveredId === newHoveredId) return;
+        if (this.hoveredId !== undefined) this.tabs.get(this.hoveredId).wrapper.classList.toggle("hovered-over", false);
+        this.hoveredId = newHoveredId;
+        if (this.hoveredId !== undefined) this.tabs.get(this.hoveredId).wrapper.classList.toggle("hovered-over", true);
+    }
+
+    private onEndMoving = (e: MouseEvent) => {
+        if ( !this.moving) return;
+        this.moving = false
+
+        if (this.movingConfirmed) {
+            this.movingConfirmed = false;
+            this.movingTab.classList.toggle("show", false);
+
+            if (this.hoveredId !== undefined) {
+                this.tabs.get(this.hoveredId).wrapper.classList.toggle("hovered-over", false);
+                app.state.moveWorkspace(this.movingId, this.hoveredId).catch();
+            }
+        }
+
+        window.removeEventListener("mousemove", this.onUpdateMoving);
+        window.removeEventListener("mouseup", this.onEndMoving);
     }
 
     private prepareMenuUnder(div: HTMLDivElement) {
@@ -217,9 +311,8 @@ export class Workspaces implements IComponent {
     }
 
     private onClickDuplicate = (e: MouseEvent) => {
-        console.log("ws.onClickDuplicate");
         e.stopPropagation();
-        // todo
+        app.state.duplicateWorkspace(this.menuTabId!).catch();
     }
 
     private onClickExport = (e: MouseEvent) => {

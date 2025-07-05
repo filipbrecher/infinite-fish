@@ -1,11 +1,11 @@
 import {MAX_WORKSPACE_NAME_LENGTH} from "../../constants/save";
-import type {WorkspaceProps} from "../../types/db/schema";
 
 
 export class Tab {
     private readonly _wrapper: HTMLDivElement;
     public get wrapper() { return this._wrapper; }
     private readonly _span: HTMLSpanElement;
+    public get span() { return this._span; }
     private readonly _input: HTMLInputElement;
     public get input() { return this._input; }
 
@@ -65,7 +65,7 @@ export class Tab {
         this._span.classList.toggle("hide", true);
         this._input.classList.toggle("hide", false);
         this._input.focus();
-        const len = this._span.innerText.length;
+        const len = this._input.value.length;
         this._input.setSelectionRange(len, len);
     }
 
@@ -74,5 +74,15 @@ export class Tab {
         this._editing = false;
         this._span.classList.toggle("hide", false);
         this._input.classList.toggle("hide", true);
+    }
+
+    public mouseIsOverWrapper(x: number, y: number): boolean {
+        const rect = this.wrapper.getBoundingClientRect();
+        return (
+            x >= rect.left &&
+            x <= rect.right &&
+            y >= rect.top &&
+            y <= rect.bottom
+        );
     }
 }
