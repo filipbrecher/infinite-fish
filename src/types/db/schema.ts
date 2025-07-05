@@ -54,7 +54,7 @@ export type SettingsProps = {id: number} & {
 
 //============ SAVES ============//
 export type SaveProps = {
-    id: number;
+    id: number;     // key
     name: string;
     datetimeCreated: number;
     datetimeActive: number;
@@ -73,8 +73,8 @@ export type RecipeProps = [  // sorted in ascending order
 ];
 
 export type ElementProps = {
-    saveId: number;
-    id: number;
+    saveId: number;     // key
+    id: number;         // key - not managed by db (unique per save)
     emoji: string;
     text: string;
     discovery?: boolean;   // false by default
@@ -85,7 +85,7 @@ export type ElementProps = {
 
 //============ WORKSPACES ============//
 export type WorkspaceProps = {
-    id: number;
+    id: number;         // key
     saveId: number;
     position: number;   // positions go always from 1 ... n (number of workspaces in a given save)
     name: string;
@@ -109,8 +109,8 @@ export type GhostElementViewData = {
 export type ViewDataProps = ElementViewData | GhostElementViewData;
 
 export type InstanceProps = {
-    workspaceId: number;
-    id: number;
+    workspaceId: number;    // key
+    id: number;             // key - not managed by db (unique per workspace)
     x: number;
     y: number;
     zIndex: number;
@@ -118,3 +118,22 @@ export type InstanceProps = {
     data: ViewDataProps;
 }
 
+
+//============ FOLDER ============//
+export type FolderProps = {
+    id: number;         // key
+    saveId: number;
+    position: number;   // positions go always from 1 ... n (number of folders in a given save)
+    name: string;
+    firstItemId: number | null;
+}
+
+
+//============ FOLDER ITEMS ============//
+export type FolderItemProps = { // single linked list
+    folderId: number;   // key
+    id: number;         // key - not managed by db (unique per folder)
+    nextId: number | null;
+    type?: ViewTypeProps;
+    data:ViewDataProps;
+}

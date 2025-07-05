@@ -2,7 +2,7 @@ import {app} from "../main";
 import {
     DATABASE_NAME,
     DATABASE_VERSION,
-    ELEMENT_STORE,
+    ELEMENT_STORE, FOLDER_ID_INDEX, FOLDER_ITEM_STORE, FOLDER_STORE,
     INSTANCE_STORE,
     SAVE_ID_INDEX,
     SAVE_STORE,
@@ -43,7 +43,7 @@ export class DatabaseService {
             const request = window.indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
 
             request.onerror = () => this.onOpenError(request, reject);
-            request.onupgradeneeded = () => this.onUpgradeNeeded(request);
+            request.onupgradeneeded = (event: IDBVersionChangeEvent) => this.onUpgradeNeeded(request, event);
             request.onsuccess = () => this.onOpenSuccess(request, resolve);
         });
     }
@@ -53,21 +53,35 @@ export class DatabaseService {
         reject();
     }
 
-    private async onUpgradeNeeded(request: IDBOpenDBRequest) {
+    private async onUpgradeNeeded(request: IDBOpenDBRequest, event: IDBVersionChangeEvent) {
         this._db = request.result;
 
-        this._db.createObjectStore(SETTINGS_STORE, { keyPath: "id", autoIncrement: false });
+        switch (event.oldVersion) {
+            case 0:
+                app.logger.log("info", "db", "Upgrading IndexedDB from version 0 to version 1");
 
-        this._db.createObjectStore(SAVE_STORE, { keyPath: "id", autoIncrement: true });
+                this._db.createObjectStore(SETTINGS_STORE, { keyPath: "id", autoIncrement: false });
 
-        const elementStore = this._db.createObjectStore(ELEMENT_STORE, { keyPath: ["saveId", "id"], autoIncrement: false });
-        elementStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
+                this._db.createObjectStore(SAVE_STORE, { keyPath: "id", autoIncrement: true });
 
-        const workspaceStore = this._db.createObjectStore(WORKSPACE_STORE, { keyPath: "id", autoIncrement: true });
-        workspaceStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
+                const elementStore = this._db.createObjectStore(ELEMENT_STORE, { keyPath: ["saveId", "id"], autoIncrement: false });
+                elementStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
 
-        const instanceStore = this._db.createObjectStore(INSTANCE_STORE, { keyPath: ["workspaceId", "id"], autoIncrement: false });
-        instanceStore.createIndex(WORKSPACE_ID_INDEX, "workspaceId", { unique: false });
+                const workspaceStore = this._db.createObjectStore(WORKSPACE_STORE, { keyPath: "id", autoIncrement: true });
+                workspaceStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
+
+                const instanceStore = this._db.createObjectStore(INSTANCE_STORE, { keyPath: ["workspaceId", "id"], autoIncrement: false });
+                instanceStore.createIndex(WORKSPACE_ID_INDEX, "workspaceId", { unique: false });
+
+            case 1:
+                app.logger.log("info", "db", "Upgrading IndexedDB from version 1 to version 2");
+
+                const folderStore = this._db.createObjectStore(FOLDER_STORE, { keyPath: "id", autoIncrement: true });
+                folderStore.createIndex(SAVE_ID_INDEX, "saveId", { unique: false });
+
+                const folderItemStore = this._db.createObjectStore(FOLDER_ITEM_STORE, { keyPath: ["folderId", "id"], autoIncrement: false });
+                folderItemStore.createIndex(FOLDER_ID_INDEX, "folderId", { unique: false });
+        }
 
         app.logger.log("info", "db", "IndexedDB upgrade completed successfully");
     }
