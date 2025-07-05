@@ -148,6 +148,7 @@ export class Workspaces implements IComponent {
         if (this.moving) return;
         this.moving = true;
         this.movingId = id;
+        this.hoveredId = undefined;
 
         const tab = this.tabs.get(id);
         this.movingTab.innerText = tab.input.value;
@@ -173,8 +174,9 @@ export class Workspaces implements IComponent {
         if ( !this.movingConfirmed) {
             const dist = Math.sqrt((e.clientX - this.movingStartX)**2 + (e.clientY - this.movingStartY)**2);
             if (dist <= 10) return;
+            this.tabs.get(this.movingId).wrapper.classList.toggle("moving", true);
+            this.movingConfirmed = true;
         }
-        this.movingConfirmed = true;
 
         this.movingTab.style.left = `${e.clientX - this.movingOffsetX}px`;
         this.movingTab.style.top = `${e.clientY - this.movingOffsetY}px`;
@@ -200,6 +202,7 @@ export class Workspaces implements IComponent {
 
         if (this.movingConfirmed) {
             this.movingConfirmed = false;
+            this.tabs.get(this.movingId).wrapper.classList.toggle("moving", false);
             this.movingTab.classList.toggle("show", false);
 
             if (this.hoveredId !== undefined) {

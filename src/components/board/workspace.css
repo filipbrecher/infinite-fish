@@ -42,8 +42,11 @@
     background-color: var(--workspace-tab-bg-hover);
 }
 
-.tab-wrapper.hovered-over {
+.tab-wrapper.moving {
     background-color: var(--workspace-tab-bg-hover);
+}
+.tab-wrapper.hovered-over {
+    border: 1px dashed var(--select-blue);
 }
 
 .tab-dots {
