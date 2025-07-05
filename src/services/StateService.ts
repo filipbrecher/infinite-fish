@@ -78,14 +78,16 @@ export class StateService {
     public readonly _saveUnloaded: Subject<SaveProps> = new Subject();
     public readonly _saveLoaded: Subject<SaveProps> = new Subject();
     public readonly _workspaceUnloaded: Subject<WorkspaceProps> = new Subject();
+    public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
+    public readonly _workspaceCreated: Subject<WorkspaceProps> = new Subject();
     public readonly _workspaceTransformed: Subject<Partial<WorkspaceChangesProps>> = new Subject();
+    public readonly _workspaceDeleted: Subject<WorkspaceProps> = new Subject();
     public readonly _instancesMoved: Subject<InstanceMoveProps[]> = new Subject();
     public readonly _instancesDeleted: Subject<number[]> = new Subject();
     public readonly _instancesCreated: Subject<InstanceProps[]> = new Subject();
     public readonly _elementAdded: Subject<UpsertElementProps> = new Subject();
     public readonly _elementUpdated: Subject<UpsertElementProps> = new Subject(); // visibility change NOT included
     public readonly _elementChangedVisibility: Subject<{id: number, hide: boolean}> = new Subject();
-    public readonly _workspaceLoaded: Subject<WorkspaceProps> = new Subject();
 
     constructor() {
         this._overlay = document.getElementById("state-overlay") as HTMLDivElement;
@@ -268,13 +270,67 @@ export class StateService {
         }
     }
 
+    public async createWorkspace(): Promise<boolean> {
+        try {
+            const newWs = await app.database.createWorkspace(this._activeSave!.id);
+            this._workspaces.set(newWs.id, newWs);
+            this._workspaceCreated.notify(newWs);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     // todo - debounce db
-    public updateWorkspace(changes: Partial<WorkspaceChangesProps>): void {
+    public updateActiveWorkspace(changes: Partial<WorkspaceChangesProps>): void {
         if (changes.x !== undefined) this.activeWorkspace!.x = changes.x;
         if (changes.y !== undefined) this.activeWorkspace!.y = changes.y;
         if (changes.scale !== undefined) this.activeWorkspace!.scale = changes.scale;
         this._workspaceTransformed.notify(changes);
         app.database.updateWorkspace(this._activeWorkspace!.id, changes).catch();
+    }
+
+    public renameWorkspace(id: number, newName: string): boolean {
+        const ws = this._workspaces.get(id);
+        if ( !ws) {
+            app.logger.log("error", "state", `Error renaming workspace with id ${id} to ${newName}: Workspace not found`);
+            return false;
+        }
+
+        ws.name = newName;
+        app.database.updateWorkspace(id, {name: newName}).catch();
+        return true;
+    }
+
+    public async deleteWorkspace(id: number): Promise<boolean> {
+        try {
+            const ws = this._workspaces.get(id);
+            if ( !ws) return false;
+            if (id === this._activeWorkspace!.id) {
+                if (this._workspaces.size <= 1) return false;
+
+                // find ws to load, so that we don't delete the active workspace
+                let nextWs: WorkspaceProps = {id: -1, position: Infinity} as WorkspaceProps;
+                let prevWs: WorkspaceProps = {id: -1, position: -Infinity} as WorkspaceProps;
+                this._workspaces.forEach((props: WorkspaceProps) => {
+                    if (props.position < ws.position && props.position > prevWs.position) prevWs = props;
+                    if (props.position > ws.position && props.position < nextWs.position) nextWs = props;
+                });
+                const loadWs = nextWs.id === -1 ? prevWs : nextWs;
+                await this.loadWorkspace(loadWs.id);
+            }
+
+            await app.database.deleteWorkspace(id);
+            this._workspaces.delete(id);
+            this._workspaces.forEach((props) => {
+                if (props.position > ws.position) props.position--;
+            });
+
+            this._workspaceDeleted.notify(ws);
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     // todo - debounce db

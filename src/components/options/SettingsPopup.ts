@@ -501,7 +501,6 @@ export class SettingsPopup extends Popup<void> {
     }
 
     private onControlsToggleKey = (keys: string[], div: HTMLDivElement) => {
-        console.log(keys);
         const prev = this.getSettingsProperty<KeyState>(keys);
         let next: KeyState;
         switch (prev) {

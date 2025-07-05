@@ -1,5 +1,5 @@
 
-#workspaces-list {
+#tabs-list {
     transform: rotate(180deg);
     background-color: var(--board-bg);
     border-top: 1px solid var(--text-color-fainted);
@@ -13,8 +13,19 @@
     display: flex;
     flex-direction: row-reverse;
     box-sizing: border-box;
+    align-items: center;
     padding: 0 5px;
     gap: 5px;
+}
+
+#tabs-plus {
+    mask-image: var(--plus-icon);
+    -webkit-mask-image: var(--plus-icon);
+    margin-left: 7px;
+    min-width: 15px;
+    min-height: 15px;
+    width: 15px;
+    height: 36px;
 }
 
 .tab-wrapper {
@@ -27,15 +38,17 @@
     min-height: 20px;
     cursor: pointer;
 }
+.tab-wrapper:hover {
+    background-color: var(--workspace-tab-bg-hover);
+}
 
 .tab-dots {
     width: 0;
-    height: 20px;
+    min-height: 36px;
     opacity: 0;
     mask-image: var(--vertical-dots-icon);
     -webkit-mask-image: var(--vertical-dots-icon);
     overflow: hidden;
-    /*flex-shrink: 0;*/
     transition: width 0.2s ease, opacity 0.2s ease;
 }
 .tab-wrapper.active .tab-dots {
@@ -44,18 +57,76 @@
 }
 
 .tab-name {
+    position: relative;
     color: var(--text-color-fainted);
-    padding: 6px 10px 6px 3px;
+    padding: 6px 7px;
     font-size: 1.2em;
     white-space-collapse: preserve;
+    border: 1px solid transparent;
+    height: 100%;
+    user-select: none;
 }
-.tab-wrapper:hover {
-    background-color: var(--workspace-tab-bg-hover);
+.tab-name.hide {
+    position: absolute;
+    visibility: hidden;
+    height: 0;
 }
 
 .tab-wrapper.active {
-    border-bottom: 1px solid var(--select-blue);
+    border-bottom: 1px solid var(--text-color);
 }
 .tab-wrapper.active .tab-name {
-    color: var(--select-blue);
+    color: var(--text-color);
+}
+
+#tab-menu {
+    display: none;
+    background-color: var(--workspace-tab-bg);
+    border: 1px solid var(--text-color-fainted);
+    margin-top: -1px;
+    position: fixed;
+    width: fit-content;
+    height: fit-content;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 4px;
+    gap: 4px;
+}
+#tab-menu.open {
+    display: flex;
+}
+
+#tab-menu-triangle {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 10px solid var(--workspace-tab-bg);
+}
+#tab-menu-triangle::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -6px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 11px solid var(--text-color-fainted);
+    z-index: -1;
+}
+
+.tab-menu-item {
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 3px 5px;
+    border-radius: 3px;
+    width: auto;
+    text-align: center;
+}
+.tab-menu-item:hover {
+    background-color: var(--workspace-tab-bg-hover);
 }

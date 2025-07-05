@@ -103,6 +103,10 @@ export class Board implements IComponent {
             { kind: "mousedown", settingsKey: "instanceDragging", handler: this.onSpawnInstance },
             { kind: "mousedown", settingsKey: "instanceCopying", handler: this.onSpawnInstance },
         ]);
+        app.inputCapture.set("block-board-partial", [
+            { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.onBlockInputCapture },
+            { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.onBlockInputCapture },
+        ]);
 
         app.state._workspaceLoaded.subscribe(this.onWorkspaceLoaded);
         app.state._workspaceTransformed.subscribe(this.onWorkspaceTransformed);
@@ -228,7 +232,7 @@ export class Board implements IComponent {
         if ( !this.panning) return;
         this.panning = false;
 
-        app.state.updateWorkspace({ x: this.offsetX, y: this.offsetY });
+        app.state.updateActiveWorkspace({ x: this.offsetX, y: this.offsetY });
         window.removeEventListener("mousemove", this.onUpdatePanning);
         window.removeEventListener("mouseup", this.onEndPanning);
     }
@@ -321,7 +325,7 @@ export class Board implements IComponent {
         const newX = this.offsetX - offsetChangeRatio * mouseX;
         const newY = this.offsetY - offsetChangeRatio * mouseY;
 
-        app.state.updateWorkspace({
+        app.state.updateActiveWorkspace({
             scale: newScale,
             x: newX,
             y: newY,
@@ -705,5 +709,9 @@ export class Board implements IComponent {
             .catch(() => {
                 app.logger.log("error", "view", "Failed to copy ghost view's text / emoji to clipboard: " + txt);
             });
+    }
+
+    private onBlockInputCapture = (e: MouseEvent) => {
+        e.stopPropagation();
     }
 }

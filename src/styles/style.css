@@ -43,11 +43,13 @@ h1, h2, h3 {
     --unicode-input-icon: url("/public/images/sidebar_unicode_input.svg");
     --discovery-icon: url("/public/images/discovery.svg");
     --vertical-dots-icon: url("/public/images/vertical_dots.svg");
+    --plus-icon: url("/public/images/plus.svg");
 }
 
 #board { z-index: 0; position: absolute; }
-#drag-layer { z-index: 4; position: absolute; } /* z-index can be either 2 or 4 */
-#workspaces-list { z-index: 1; position: absolute; }
+#drag-layer { z-index: 5; position: absolute; } /* z-index can be either 2 or 5 */
+#tabs-list { z-index: 1; position: absolute; }
+#tab-menu { z-index: 4; position: absolute; }
 #sidebar { z-index: 3; position: absolute; }
 
 #board-wrapper { z-index: 0; position: absolute; }

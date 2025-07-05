@@ -1,6 +1,5 @@
 
 import {SettingsPopup} from "../components/options/SettingsPopup";
-import {EMOJI_BY_LOG_TYPE} from "../types/services";
 
 export const THEMES_LIST: Record<Theme, { name: string; background: string; border: string }> = {
     light: {

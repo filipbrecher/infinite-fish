@@ -93,12 +93,8 @@ export class Sidebar implements IComponent {
 
         // input capture
         this.sidebar.addEventListener("mousedown", (e: MouseEvent) => {
-            app.inputCapture.matchMouseDown("sidebar", e)(e);
+            app.inputCapture.matchMouseDown("block-board-partial", e)(e);
         });
-        app.inputCapture.set("sidebar", [ // to block workspace actions
-            { kind: "mousedown", settingsKey: "instanceSelecting", handler: this.blockInputCapture },
-            { kind: "mousedown", settingsKey: "instanceDeleting", handler: this.blockInputCapture },
-        ]);
         app.inputCapture.set("sidebar-item", [
             { kind: "mousedown", settingsKey: "elementToggleVisibility", handler: this.onToggleElementVisibility },
         ]);
@@ -386,10 +382,6 @@ export class Sidebar implements IComponent {
         discovery.next = !discovery.next;
         discovery.div.classList.toggle("toggle-on", discovery.next);
         this.onFilterChange();
-    }
-
-    private blockInputCapture = (e: MouseEvent) => {
-        e.stopPropagation();
     }
 
     public isXOverSidebar = (x: number): boolean => {
